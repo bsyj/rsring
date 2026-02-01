@@ -1,0 +1,44 @@
+[
+{
+  "modid": "rsring",
+  "name": "RS Ring",
+  "description": "A bauble ring that binds to RS terminal and absorbs items across dimensions.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["MoreMod Team"],
+  "credits": "Based on Baubles framework for Minecraft 1.12.2",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": [
+    {
+      "modId": "forge",
+      "mandatory": true,
+      "versionRange": "[14.23.5.2847,)",
+      "ordering": "NONE",
+      "side": "BOTH"
+    },
+    {
+      "modId": "minecraft",
+      "mandatory": true,
+      "versionRange": "[1.12.2,1.13)",
+      "ordering": "NONE",
+      "side": "BOTH"
+    },
+    {
+      "modId": "refinedstorage",
+      "mandatory": false,
+      "versionRange": "[1.6,)",
+      "ordering": "NONE",
+      "side": "BOTH"
+    },
+    {
+      "modId": "baubles",
+      "mandatory": true,
+      "versionRange": "[1.5.2,)",
+      "ordering": "NONE",
+      "side": "BOTH"
+    }
+  ]
+}

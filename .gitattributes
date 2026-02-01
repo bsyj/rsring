@@ -1,0 +1,20 @@
+# 设置Markdown文件使用LF换行符（递归应用于所有子目录）
+**/*.md text eol=lf
+
+# 设置Java源文件使用LF换行符
+**/*.java text eol=lf
+
+# 设置Gradle文件使用LF换行符
+**/*.gradle text eol=lf
+
+# 设置属性文件使用LF换行符
+**/*.properties text eol=lf
+
+# 设置Shell脚本使用LF换行符
+**/*.sh text eol=lf
+
+# 对于二进制文件，不进行换行符转换
+*.png binary
+*.jpg binary
+*.gif binary
+*.zip binary

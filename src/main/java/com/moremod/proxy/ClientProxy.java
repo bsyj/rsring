@@ -25,6 +25,13 @@ import com.moremod.event.CommonEventHandler;
 @Mod.EventBusSubscriber(modid = RsRingMod.MODID, value = Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 
+    @Override
+    public void preInit() {
+        super.preInit();
+        // 注册戒指边框渲染器
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new com.moremod.client.RingBoundBoxRenderer());
+    }
+
     // 经验储罐不再有GUI，此方法已废弃
     @Override
     public void openExperiencePumpGui(ItemStack stack, EnumHand hand) {

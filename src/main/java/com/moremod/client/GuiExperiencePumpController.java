@@ -37,7 +37,8 @@ public class GuiExperiencePumpController extends GuiScreen {
     private static final int GUI_HEIGHT = 166;
     private static final int GOLD = 0xFFD700;
     private static final int BG_COLOR = 0xFF8B7355;
-    private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("textures/gui/container/generic_54.png");
+    // Use custom texture placed under resources: assets/rsring/textures/gui/kzq.png
+    private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("rsring", "textures/gui/kzq.png");
 
     // 操作按钮统一尺寸与间距
     private static final int OP_BUTTON_WIDTH = 60;
@@ -85,6 +86,36 @@ public class GuiExperiencePumpController extends GuiScreen {
         
         // 将控制器配置同步到所有储罐
         syncControllerToTanks();
+    }
+
+    /**
+     * Convert HSV (h: 0..1, s:0..1, v:0..1) to packed ARGB int (opaque)
+     */
+    private static int hsvToRgbInt(float h, float s, float v) {
+        if (s <= 0.0f) {
+            int c = (int) (v * 255.0f);
+            return (0xFF << 24) | (c << 16) | (c << 8) | c;
+        }
+        float hf = (h - (float)Math.floor(h)) * 6.0f;
+        int i = (int) Math.floor(hf);
+        float f = hf - i;
+        float p = v * (1.0f - s);
+        float q = v * (1.0f - s * f);
+        float t = v * (1.0f - s * (1.0f - f));
+        float r, g, b;
+        switch (i) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5:
+            default: r = v; g = p; b = q; break;
+        }
+        int ri = (int) (r * 255.0f);
+        int gi = (int) (g * 255.0f);
+        int bi = (int) (b * 255.0f);
+        return (0xFF << 24) | (ri << 16) | (gi << 8) | bi;
     }
 
     public void updateFromPacket(PacketPumpData msg) {
@@ -203,9 +234,9 @@ public class GuiExperiencePumpController extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         refreshTankData();
 
-        // 绘制背景
+        // 绘制背景：使用纯色背景（由控制器项的材质已在物品模型中定义）
         drawDefaultBackground();
-        drawRect(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, 0xFF8B7355); // 背景色
+        drawRect(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, BG_COLOR);
 
         // 绘制标题
         String title = "经验泵控制器";
@@ -221,9 +252,12 @@ public class GuiExperiencePumpController extends GuiScreen {
 
         // 绘制经验信息文本 - Enhanced with proper formatting (Requirement 6.3)
         drawExperienceInformation();
-        
+
         // 绘制综合坦克信息
         drawComprehensiveTankInfo();
+
+        // 绘制鼠标悬停提示
+        drawHoverTips(mouseX, mouseY);
     }
     
     /**
@@ -264,17 +298,46 @@ public class GuiExperiencePumpController extends GuiScreen {
     private void drawComprehensiveTankInfo() {
         // Tank count information (total capacity display removed)
         String tankCountInfo = "储罐数: " + totalTanks;
-        fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 145, animatedTankCountColor);
+        // 使用动画颜色显示储罐数，形成跑马灯效果
+        fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 135, animatedTankCountColor);
     }
 
-    // HSV [0..1] to RGB int (0xRRGGBB)
-    private static int hsvToRgbInt(float h, float s, float v) {
-        int rgb = java.awt.Color.HSBtoRGB(h, s, v);
-        // HSBtoRGB returns 0xAARRGGBB? Actually returns 0xFFRRGGBB, so mask
-        int r = (rgb >> 16) & 0xFF;
-        int g = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-        return (r << 16) | (g << 8) | b;
+    /**
+     * Draws hover tips for buttons
+     */
+    private void drawHoverTips(int mouseX, int mouseY) {
+        for (GuiButton button : buttonList) {
+            if (button.isMouseOver()) {
+                String tip = "";
+                switch (button.id) {
+                    case 0:
+                        tip = "经验修补开关：开启后储罐可自动修复附魔装备";
+                        break;
+                    case 1:
+                        tip = "模式切换：关闭/抽→罐/罐→人";
+                        break;
+                    case 2:
+                        tip = "保留等级：鼠标滚轮可快速调整";
+                        break;
+                    case 3:
+                        tip = "全部取出：将所有储罐中的经验取出到玩家";
+                        break;
+                    case 4:
+                        tip = "取N级：从储罐取出指定等级的经验到玩家，鼠标滚轮可调整等级数";
+                        break;
+                    case 5:
+                        tip = "存N级：从玩家存入指定等级的经验到储罐，鼠标滚轮可调整等级数";
+                        break;
+                    case 6:
+                        tip = "全部存入：将玩家多余经验全部存入储罐";
+                        break;
+                }
+
+                if (!tip.isEmpty()) {
+                    drawHoveringText(java.util.Arrays.asList(tip.split("\n")), mouseX, mouseY, fontRenderer);
+                }
+            }
+        }
     }
 
     private void updateButtonTexts() {

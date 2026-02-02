@@ -149,14 +149,42 @@ public class InventoryIntegrationLayer {
         LOGGER.debug("Scanning Baubles slots for experience tanks: {}", player.getName());
         
         try {
-            IInventory baublesInventory = getBaublesInventory(player);
-            if (baublesInventory != null) {
-                for (int i = 0; i < baublesInventory.getSizeInventory(); i++) {
-                    ItemStack stack = baublesInventory.getStackInSlot(i);
-                    if (isExperienceTank(stack)) {
-                        tanks.add(stack);
-                        LOGGER.debug("Found experience tank in Baubles slot {}: {}", i, stack.getDisplayName());
+            // Use reflection to access baubles handler without assuming IInventory
+            Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
+            Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
+            if (handler != null) {
+                // Try common methods: getSizeInventory / getStackInSlot
+                java.lang.reflect.Method sizeMethod = null;
+                java.lang.reflect.Method stackMethod = null;
+                try {
+                    sizeMethod = handler.getClass().getMethod("getSizeInventory");
+                } catch (NoSuchMethodException ignored) {
+                    try { sizeMethod = handler.getClass().getMethod("getSlots"); } catch (NoSuchMethodException ignored2) {}
+                }
+                try {
+                    stackMethod = handler.getClass().getMethod("getStackInSlot", int.class);
+                } catch (NoSuchMethodException ignored) {}
+
+                if (sizeMethod != null && stackMethod != null) {
+                    int size = (int) sizeMethod.invoke(handler);
+                    for (int i = 0; i < size; i++) {
+                        ItemStack stack = (ItemStack) stackMethod.invoke(handler, i);
+                        if (isExperienceTank(stack)) {
+                            tanks.add(stack);
+                            LOGGER.debug("Found experience tank in Baubles slot {}: {}", i, stack.getDisplayName());
+                        }
                     }
+                } else if (handler instanceof IInventory) {
+                    IInventory baublesInventory = (IInventory) handler;
+                    for (int i = 0; i < baublesInventory.getSizeInventory(); i++) {
+                        ItemStack stack = baublesInventory.getStackInSlot(i);
+                        if (isExperienceTank(stack)) {
+                            tanks.add(stack);
+                            LOGGER.debug("Found experience tank in Baubles slot {}: {}", i, stack.getDisplayName());
+                        }
+                    }
+                } else {
+                    LOGGER.debug("Baubles handler does not expose slot methods and is not IInventory: {}", handler.getClass().getName());
                 }
             }
         } catch (Exception e) {

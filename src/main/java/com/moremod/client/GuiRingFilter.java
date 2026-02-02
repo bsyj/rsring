@@ -17,26 +17,30 @@ import java.io.IOException;
 
 /**
  * 箱子戒指黑白名单过滤GUI
- * 参考Cyclic管道GUI设计：顶部9格过滤槽（仅匹配、不消耗），底部显示玩家背包
+ * 参考Cyclic管道GUI设计：顶部8格过滤槽（仅匹配、不消耗），底部显示玩家背包
  */
 @SideOnly(Side.CLIENT)
 public class GuiRingFilter extends GuiScreen {
 
-    private static final int SLOT_SIZE = 18;
+    // 参考 Cyclic 的常量定义
+    private static final int SQ = 18; // Const.SQ - 槽位大小
+    private static final int PAD = 8; // Const.PAD - 边距
     private static final int SLOT_COUNT = 9;
-    private static final int PADDING = 8;
-    private static final int TOGGLE_BTN_WIDTH = 60;
+    private static final int TOGGLE_BTN_WIDTH = 20;
     private static final int TOGGLE_BTN_HEIGHT = 20;
 
-    private static final int GUI_WIDTH = 176; // 标准GUI宽度
+    private static final int GUI_WIDTH = 176; // 标准GUI宽度 (Const.ScreenSize.STANDARD)
     private static final int GUI_HEIGHT = 166; // 标准GUI高度
 
-    // 纹理资源（已放置于 assets/rsring/textures/gui/ ）
-    private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/slot_large_plain.png");
-    private static final ResourceLocation BG_TEXTURE = new ResourceLocation("rsring", "textures/gui/pipe_gui.png");
-    private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/button_machine_field.png");
-    private static final ResourceLocation ICON_FILTER = new ResourceLocation("rsring", "textures/gui/icon_filter.png");
-    private static final ResourceLocation ICON_EXTRACT = new ResourceLocation("rsring", "textures/gui/icon_extract.png");
+    // 参考 Cyclic 的槽位布局
+    private static final int SLOTX_START = PAD; // 过滤槽起始X (参考 ContainerItemPump.SLOTX_START)
+    private static final int SLOTY = SQ + PAD * 4; // 过滤槽Y位置 (参考 ContainerItemPump.SLOTY = 18 + 32 = 50)
+    
+    // 纹理资源（参考 Cyclic 的 Const.Res）- 使用 Cyclic 的材质
+    private static final ResourceLocation GUI_BACKGROUND = new ResourceLocation("rsring", "textures/gui/table.png");
+    private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/inventory_slot.png");
+    private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/buttons.png");
+    private static final ResourceLocation VANILLA_BUTTON_TEXTURE = new ResourceLocation("minecraft", "textures/gui/widgets.png");
 
     private final ItemStack ringStack;
     private final String title;
@@ -106,112 +110,147 @@ public class GuiRingFilter extends GuiScreen {
         // no-op: custom button rendered directly
     }
 
+    /**
+     * 绘制自定义按钮（参考 Cyclic 的 ButtonTileEntityField 和 GuiButtonTexture）
+     * 使用 buttons.png 纹理，索引 11=黑名单，12=白名单
+     */
     private void drawCustomButtons(int mouseX, int mouseY) {
         if (capability == null) return;
-        int x = guiLeft + 10;
-        int y = guiTop + 10;
+        // 参考 GuiItemPump: x = guiLeft + 150, y = guiTop + PAD / 2
+        int x = guiLeft + 150;
+        int y = guiTop + PAD / 2;
 
-        // 绘制按钮背景
+        // 绘制按钮背景（参考 GuiButton 的标准渲染）
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        mc.getTextureManager().bindTexture(net.minecraft.client.renderer.texture.TextureMap.LOCATION_BLOCKS_TEXTURE);
+        
+        // 绘制按钮状态（悬停高亮）
+        int hoverState = isMouseOverButton(mouseX, mouseY, x, y) ? 2 : 1;
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+            GlStateManager.SourceFactor.SRC_ALPHA, 
+            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, 
+            GlStateManager.SourceFactor.ONE, 
+            GlStateManager.DestFactor.ZERO
+        );
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        
+        // 绘制按钮背景（使用原版按钮纹理）
+        mc.getTextureManager().bindTexture(VANILLA_BUTTON_TEXTURE);
+        drawTexturedModalRect(x, y, 0, 46 + hoverState * 20, TOGGLE_BTN_WIDTH / 2, TOGGLE_BTN_HEIGHT);
+        drawTexturedModalRect(x + TOGGLE_BTN_WIDTH / 2, y, 200 - TOGGLE_BTN_WIDTH / 2, 46 + hoverState * 20, TOGGLE_BTN_WIDTH / 2, TOGGLE_BTN_HEIGHT);
+        
+        // 绘制按钮图标（参考 GuiButtonTexture.drawButton）
         mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
-        // 假设按钮贴图为单帧
-        drawTexturedModalRect(x, y, 0, 0, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT);
-
-        // 绘制图标
-        ResourceLocation icon = capability.isWhitelistMode() ? ICON_FILTER : ICON_FILTER;
-        mc.getTextureManager().bindTexture(icon);
-        drawTexturedModalRect(x + 4, y + 2, 0, 0, 16, 16);
-
-        // 绘制文本
-        String txt = getToggleButtonText();
-        int txtX = x + 24;
-        int txtY = y + (TOGGLE_BTN_HEIGHT - 8) / 2;
-        fontRenderer.drawString(txt, txtX, txtY, 0xE0E0E0);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        
+        // 计算纹理索引：11=黑名单，12=白名单（参考 GuiItemPump）
+        int textureIndex = capability.isWhitelistMode() ? 12 : 11;
+        int sizeBtnTexture = 16; // Const.SQ - 2
+        int texX = textureIndex * sizeBtnTexture;
+        int texY = 0;
+        if (textureIndex > 15) {
+            texY = (textureIndex / 15) * sizeBtnTexture;
+        }
+        
+        // 绘制图标（参考 GuiButtonTexture: x+1 偏移，因为按钮宽18，纹理宽16）
+        drawTexturedModalRect(x + 2, y + 2, texX, texY, sizeBtnTexture, sizeBtnTexture);
+    }
+    
+    private boolean isMouseOverButton(int mouseX, int mouseY, int btnX, int btnY) {
+        return mouseX >= btnX && mouseX < btnX + TOGGLE_BTN_WIDTH && 
+               mouseY >= btnY && mouseY < btnY + TOGGLE_BTN_HEIGHT;
+    }
+    
+    /**
+     * 检查鼠标是否在指定区域内（参考 GuiContainer.isPointInRegion）
+     */
+    private boolean isPointInRegion(int rectX, int rectY, int rectWidth, int rectHeight, int pointX, int pointY) {
+        int x = guiLeft + rectX;
+        int y = guiTop + rectY;
+        return pointX >= x && pointX < x + rectWidth && pointY >= y && pointY < y + rectHeight;
     }
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int state) {
         super.mouseReleased(mouseX, mouseY, state);
-        // 检测自定义按钮点击（切换黑白名单）
+        // 检测自定义按钮点击（切换黑白名单）- 参考 Cyclic 按钮位置
         if (capability == null) return;
-        int x = guiLeft + 10;
-        int y = guiTop + 10;
-        if (mouseX >= x && mouseX < x + TOGGLE_BTN_WIDTH && mouseY >= y && mouseY < y + TOGGLE_BTN_HEIGHT) {
+        int x = guiLeft + 150;
+        int y = guiTop + PAD / 2;
+        if (isMouseOverButton(mouseX, mouseY, x, y)) {
             // 切换并发送到服务器
             capability.setWhitelistMode(!capability.isWhitelistMode());
             RsRingCapability.syncCapabilityToStack(ringStack, capability);
             // 发送同步包到服务器
-            String[] slots = new String[9];
-            for (int i = 0; i < 9; i++) slots[i] = capability.getFilterSlot(i);
+            String[] slots = new String[SLOT_COUNT];
+            for (int i = 0; i < SLOT_COUNT; i++) slots[i] = capability.getFilterSlot(i);
             com.moremod.rsring.RsRingMod.network.sendToServer(new com.moremod.network.PacketSyncRingFilter(capability.isWhitelistMode(), slots));
         }
     }
     
     /**
-     * 绘制GUI背景（参考Cyclic的renderBg方法）
+     * 绘制GUI背景（参考Cyclic的drawGuiContainerBackgroundLayer方法）
      */
     private void drawGuiBackground() {
+        // 使用 Cyclic 的 GUI 背景纹理
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        mc.getTextureManager().bindTexture(BG_TEXTURE);
+        mc.getTextureManager().bindTexture(GUI_BACKGROUND);
         
-        // 绘制主背景（参考Cyclic的drawBackground）
+        // 绘制背景纹理 (176x166)
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
     }
     
     /**
-     * 绘制过滤槽位（参考Cyclic的drawSlot方法）
+     * 绘制过滤槽位（参考 Cyclic 的 renderStackWrappers 方法）
+     * 槽位布局：SLOTX_START + (j-1) * SQ, SLOTY
      */
     private void drawFilterSlots() {
         if (capability == null) return;
         
-        // 过滤槽位起始位置（顶部居中，参考Cyclic的槽位布局）
-        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
-        int filterStartY = guiTop + 35;
-        
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         
-        // 绘制槽位背景（参考Cyclic的slot_large_plain.png）
+        // 绘制槽位背景（参考 Cyclic 的 Const.Res.SLOT 纹理）
+        mc.getTextureManager().bindTexture(SLOT_TEXTURE);
         for (int i = 0; i < SLOT_COUNT; i++) {
-            int slotX = filterStartX + i * SLOT_SIZE;
-            int slotY = filterStartY;
-            
-            // 绘制槽位纹理
-            mc.getTextureManager().bindTexture(SLOT_TEXTURE);
-            drawTexturedModalRect(slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE);
+            int slotX = guiLeft + SLOTX_START + i * SQ;
+            int slotY = guiTop + SLOTY;
+            // 绘制 18x18 槽位纹理
+            drawTexturedModalRect(slotX, slotY, 0, 0, SQ, SQ);
         }
         
-        // 绘制过滤槽位中的物品
-        GlStateManager.enableRescaleNormal();
+        // 绘制过滤槽位中的物品（参考 Cyclic 的 StackWrapper 渲染）
+        GlStateManager.pushMatrix();
         RenderHelper.enableGUIStandardItemLighting();
         
         for (int i = 0; i < SLOT_COUNT; i++) {
             String itemName = capability.getFilterSlot(i);
             if (itemName == null || itemName.isEmpty()) continue;
-            
+
             try {
                 ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
                 if (!display.isEmpty()) {
-                    int slotX = filterStartX + i * SLOT_SIZE + 1;
-                    int slotY = filterStartY + 1;
+                    int slotX = guiLeft + SLOTX_START + i * SQ + 1;
+                    int slotY = guiTop + SLOTY + 1;
                     mc.getRenderItem().renderItemAndEffectIntoGUI(display, slotX, slotY);
-                    mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, display, slotX, slotY, "");
+                    // 不渲染数量叠加层，保持 ghost item 外观
                 }
             } catch (Exception ignored) {}
         }
         
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableRescaleNormal();
+        GlStateManager.popMatrix();
     }
     
     /**
-     * 绘制玩家背包（参考Cyclic的layoutPlayerInventorySlots）
+     * 绘制玩家背包（参考 Cyclic 的 ScreenSize.STANDARD.playerOffsetX/Y）
+     * 标准布局：X=8 (PAD), Y=84
      */
     private void drawPlayerInventory() {
-        // 背包起始位置（参考Cyclic的8, 84布局）
-        int invStartX = guiLeft + 8;
+        // 背包起始位置（参考 Cyclic 的 ScreenSize.STANDARD: playerOffsetX=8, playerOffsetY=84）
+        int invStartX = guiLeft + PAD;
         int invStartY = guiTop + 84;
         
-        GlStateManager.enableRescaleNormal();
+        GlStateManager.pushMatrix();
         RenderHelper.enableGUIStandardItemLighting();
         
         // 绘制主背包（3行9列）
@@ -220,42 +259,38 @@ public class GuiRingFilter extends GuiScreen {
                 int slotIndex = 9 + row * 9 + col;
                 ItemStack stack = mc.player.inventory.getStackInSlot(slotIndex);
                 if (!stack.isEmpty()) {
-                    int x = invStartX + col * SLOT_SIZE;
-                    int y = invStartY + row * SLOT_SIZE;
+                    int x = invStartX + col * SQ;
+                    int y = invStartY + row * SQ;
                     mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, y);
                     mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, y, "");
                 }
             }
         }
         
-        // 绘制快捷栏（参考Cyclic的+58偏移）
+        // 绘制快捷栏（参考 Cyclic：主背包下方 +58 偏移）
         int hotbarY = invStartY + 58;
         for (int i = 0; i < 9; i++) {
             ItemStack stack = mc.player.inventory.getStackInSlot(i);
             if (!stack.isEmpty()) {
-                int x = invStartX + i * SLOT_SIZE;
+                int x = invStartX + i * SQ;
                 mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, hotbarY);
                 mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, hotbarY, "");
             }
         }
         
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableRescaleNormal();
+        GlStateManager.popMatrix();
     }
     
     /**
-     * 绘制工具提示（参考Cyclic的drawButtonTooltips）
+     * 绘制工具提示（参考 Cyclic 的 drawStackWrappers 悬停检测）
      */
     private void drawTooltips(int mouseX, int mouseY) {
         // 检查鼠标是否悬停在过滤槽位上
-        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
-        int filterStartY = guiTop + 35;
-        
         for (int i = 0; i < SLOT_COUNT; i++) {
-            int slotX = filterStartX + i * SLOT_SIZE;
-            int slotY = filterStartY;
+            int slotX = guiLeft + SLOTX_START + i * SQ;
+            int slotY = guiTop + SLOTY;
             
-            if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
+            if (isPointInRegion(SLOTX_START + i * SQ, SLOTY, SQ - 2, SQ - 2, mouseX, mouseY)) {
                 String itemName = capability != null ? capability.getFilterSlot(i) : "";
                 if (itemName != null && !itemName.isEmpty()) {
                     try {
@@ -275,7 +310,16 @@ public class GuiRingFilter extends GuiScreen {
             }
         }
         
-        // 底部提示已移除以简化界面
+        // 检查按钮悬停提示
+        int btnX = guiLeft + 150;
+        int btnY = guiTop + PAD / 2;
+        if (isMouseOverButton(mouseX, mouseY, btnX, btnY)) {
+            String mode = capability != null && capability.isWhitelistMode() ? "白名单模式" : "黑名单模式";
+            drawHoveringText(java.util.Arrays.asList(
+                TextFormatting.YELLOW + mode,
+                TextFormatting.GRAY + "点击切换过滤模式"
+            ), mouseX, mouseY);
+        }
     }
 
     @Override
@@ -287,33 +331,23 @@ public class GuiRingFilter extends GuiScreen {
         refreshCapability();
         if (capability == null) return;
         
-        // 检查是否点击过滤槽位
-        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
-        int filterStartY = guiTop + 35;
-        
+        // 检查是否点击过滤槽位（参考 Cyclic 的 mouseClickedWrapper）
         for (int i = 0; i < SLOT_COUNT; i++) {
-            int slotX = filterStartX + i * SLOT_SIZE;
-            int slotY = filterStartY;
-            
-            if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
-                // 点击过滤槽位
+            if (isPointInRegion(SLOTX_START + i * SQ, SLOTY, SQ - 2, SQ - 2, mouseX, mouseY)) {
                 handleFilterSlotClick(i);
                 return;
             }
         }
         
         // 检查是否点击背包槽位
-        int invStartX = guiLeft + 8;
-        int invStartY = guiTop + 84;
+        int invStartX = PAD;
+        int invStartY = 84;
         
         // 检查主背包
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 int slotIndex = 9 + row * 9 + col;
-                int x = invStartX + col * SLOT_SIZE;
-                int y = invStartY + row * SLOT_SIZE;
-                
-                if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
+                if (isPointInRegion(invStartX + col * SQ, invStartY + row * SQ, SQ - 2, SQ - 2, mouseX, mouseY)) {
                     handleInventorySlotClick(slotIndex);
                     return;
                 }
@@ -323,9 +357,7 @@ public class GuiRingFilter extends GuiScreen {
         // 检查快捷栏
         int hotbarY = invStartY + 58;
         for (int i = 0; i < 9; i++) {
-            int x = invStartX + i * SLOT_SIZE;
-            
-            if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= hotbarY && mouseY < hotbarY + SLOT_SIZE) {
+            if (isPointInRegion(invStartX + i * SQ, hotbarY, SQ - 2, SQ - 2, mouseX, mouseY)) {
                 handleInventorySlotClick(i);
                 return;
             }

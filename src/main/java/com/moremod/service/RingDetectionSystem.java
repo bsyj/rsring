@@ -1,7 +1,7 @@
 package com.moremod.service;
 
 import com.moremod.experience.RingDetectionResult;
-import com.moremod.item.ItemChestRing;
+import com.moremod.item.ItemAbsorbRing;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,7 +38,7 @@ public class RingDetectionSystem {
     
     // Known ring classes for detection
     private static final List<Class<? extends Item>> KNOWN_RING_CLASSES = Arrays.asList(
-        ItemChestRing.class
+        ItemAbsorbRing.class
         // Add other ring types here as they are implemented
     );
     
@@ -353,8 +353,8 @@ public class RingDetectionSystem {
                     result.getPrimaryLocation() != null ? result.getPrimaryLocation().getDisplayName() : "unknown");
         
         // Activate the ring based on its type
-        if (primaryRing.getItem() instanceof ItemChestRing) {
-            activateChestRing(player, primaryRing);
+        if (primaryRing.getItem() instanceof ItemAbsorbRing) {
+            activateAbsorbRing(player, primaryRing);
         }
         // Add other ring type activations here
         
@@ -365,22 +365,20 @@ public class RingDetectionSystem {
     /**
      * Activates chest ring functionality.
      */
-    private void activateChestRing(EntityPlayer player, ItemStack ringStack) {
+    private void activateAbsorbRing(EntityPlayer player, ItemStack ringStack) {
         try {
-            ItemChestRing chestRing = (ItemChestRing) ringStack.getItem();
-            
             // Use the improved GUI access method that works from any location
-            boolean success = ItemChestRing.tryOpenChestRingGui(player);
-            
+            boolean success = ItemAbsorbRing.tryOpenAbsorbRingGui(player);
+
             if (!success) {
-                LOGGER.warn("Failed to open chest ring GUI for player {}", player.getName());
+                LOGGER.warn("Failed to open absorb ring GUI for player {}", player.getName());
                 provideFeedbackActivationFailed(player);
             } else {
-                LOGGER.debug("Successfully opened chest ring GUI for player: {}", player.getName());
+                LOGGER.debug("Successfully opened absorb ring GUI for player: {}", player.getName());
             }
-            
+
         } catch (Exception e) {
-            LOGGER.error("Failed to activate chest ring for player {}: {}", player.getName(), e.getMessage());
+            LOGGER.error("Failed to activate absorb ring for player {}: {}", player.getName(), e.getMessage());
             provideFeedbackActivationFailed(player);
         }
     }

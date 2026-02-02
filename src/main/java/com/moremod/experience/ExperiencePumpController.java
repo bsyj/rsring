@@ -32,10 +32,8 @@ public class ExperiencePumpController {
     // Integration with inventory layer
     private final InventoryIntegrationLayer inventoryLayer;
     
-    // XP calculation constants (Minecraft 1.12.2 formulas - Before 14w02a)
-    private static final int XP_PER_LEVEL_0_15 = 17;   // Levels 0-15: 17 XP per level
-    private static final int XP_BASE_16_30 = 272;      // Base XP at level 16 (16 * 17)
-    private static final int XP_BASE_31_PLUS = 825;    // Base XP at level 31
+    // 经验计算现在委托给 XpHelper 工具类
+    // XpHelper 使用 Minecraft 官方公式，确保精确计算
     
     /**
      * Private constructor for singleton pattern.
@@ -199,8 +197,8 @@ public class ExperiencePumpController {
     
     /**
      * Extracts experience from tanks to player.
-     * Priority: empty tanks first, then non-empty tanks (to consolidate XP)
-     * 
+     * Priority: Consolidate XP from multiple tanks, prioritizing tanks with more XP first
+     *
      * @param player The player to give experience to
      * @param amount The amount of XP to extract
      * @return The actual amount extracted
@@ -208,41 +206,30 @@ public class ExperiencePumpController {
     private int extractExperienceFromTanks(EntityPlayer player, int amount) {
         TankScanResult scanResult = scanAllInventories(player);
         List<ItemStack> tanks = scanResult.getAllTanks();
-        
-        // Separate tanks into empty and non-empty for priority extraction
-        List<ItemStack> emptyTanks = new ArrayList<>();
-        List<ItemStack> nonEmptyTanks = new ArrayList<>();
-        
-        for (ItemStack tank : tanks) {
-            int storedInTank = ItemExperiencePump.getXpStoredFromNBT(tank);
-            if (storedInTank == 0) {
-                emptyTanks.add(tank);
-            } else {
-                nonEmptyTanks.add(tank);
-            }
-        }
-        
-        // Create prioritized list: empty tanks first (to keep them empty), then non-empty tanks
-        List<ItemStack> prioritizedTanks = new ArrayList<>();
-        prioritizedTanks.addAll(emptyTanks);
-        prioritizedTanks.addAll(nonEmptyTanks);
-        
+
+        // Sort tanks by stored XP in descending order to consolidate extraction from fullest tanks first
+        tanks.sort((tank1, tank2) -> {
+            int stored1 = ItemExperiencePump.getXpStoredFromNBT(tank1);
+            int stored2 = ItemExperiencePump.getXpStoredFromNBT(tank2);
+            return Integer.compare(stored2, stored1); // Descending order
+        });
+
         int totalExtracted = 0;
         int remainingToExtract = amount;
-        
+
         // Extract from tanks in priority order until we have enough or run out of stored XP
-        for (ItemStack tank : prioritizedTanks) {
+        for (ItemStack tank : tanks) {
             if (remainingToExtract <= 0) {
                 break;
             }
-            
+
             int storedInTank = ItemExperiencePump.getXpStoredFromNBT(tank);
             if (storedInTank <= 0) {
                 continue;
             }
-            
+
             int extractFromThisTank = Math.min(remainingToExtract, storedInTank);
-            
+
             // Remove XP from tank using capability
             com.moremod.capability.IExperiencePumpCapability tankCap = tank.getCapability(
                 com.moremod.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
@@ -250,25 +237,24 @@ public class ExperiencePumpController {
                 tankCap.takeXp(extractFromThisTank);
                 ItemExperiencePump.syncCapabilityToStack(tank, tankCap);
             }
-            
+
             // Add XP to player
             addExperienceToPlayer(player, extractFromThisTank);
-            
+
             totalExtracted += extractFromThisTank;
             remainingToExtract -= extractFromThisTank;
-            
-            LOGGER.debug("Extracted {} XP from tank (was empty: {}), total extracted: {}", 
-                        extractFromThisTank, storedInTank == 0, totalExtracted);
+
+            LOGGER.debug("Extracted {} XP from tank, total extracted: {}", extractFromThisTank, totalExtracted);
         }
-        
+
         LOGGER.debug("Extraction complete for player {}: {} XP extracted", player.getName(), totalExtracted);
         return totalExtracted;
     }
     
     /**
      * Injects experience from player to tanks.
-     * Bug Fix 5: 优先使用空的储罐，然后使用有空间的储罐
-     * 
+     * Improved algorithm: Prioritizes filling tanks to maximize efficiency
+     *
      * @param player The player to take experience from
      * @param amount The amount of XP to inject
      * @return The actual amount injected
@@ -279,51 +265,41 @@ public class ExperiencePumpController {
         if (playerXP < amount) {
             amount = playerXP;
         }
-        
+
         if (amount <= 0) {
             return 0;
         }
-        
+
         TankScanResult scanResult = scanAllInventories(player);
         List<ItemStack> tanks = scanResult.getAllTanks();
-        
-        // Bug Fix 5: 将储罐分为空储罐和非空储罐，优先填充空储罐
-        List<ItemStack> emptyTanks = new ArrayList<>();
-        List<ItemStack> nonEmptyTanks = new ArrayList<>();
-        
-        for (ItemStack tank : tanks) {
-            int storedInTank = ItemExperiencePump.getXpStoredFromNBT(tank);
-            if (storedInTank == 0) {
-                emptyTanks.add(tank);
-            } else {
-                nonEmptyTanks.add(tank);
-            }
-        }
-        
-        // 创建优先级列表：先空储罐，后非空储罐
-        List<ItemStack> prioritizedTanks = new ArrayList<>();
-        prioritizedTanks.addAll(emptyTanks);
-        prioritizedTanks.addAll(nonEmptyTanks);
-        
+
+        // Sort tanks by available space in ascending order to fill nearly-full tanks first
+        // This maximizes the efficiency of storage utilization
+        tanks.sort((tank1, tank2) -> {
+            int available1 = ItemExperiencePump.getMaxXpFromNBT(tank1) - ItemExperiencePump.getXpStoredFromNBT(tank1);
+            int available2 = ItemExperiencePump.getMaxXpFromNBT(tank2) - ItemExperiencePump.getXpStoredFromNBT(tank2);
+            return Integer.compare(available1, available2); // Ascending order (smaller available space first)
+        });
+
         int totalInjected = 0;
         int remainingToInject = amount;
-        
+
         // Inject into tanks in priority order until we fill them or run out of XP
-        for (ItemStack tank : prioritizedTanks) {
+        for (ItemStack tank : tanks) {
             if (remainingToInject <= 0) {
                 break;
             }
-            
+
             int storedInTank = ItemExperiencePump.getXpStoredFromNBT(tank);
             int tankCapacity = ItemExperiencePump.getMaxXpFromNBT(tank);
             int availableSpace = tankCapacity - storedInTank;
-            
+
             if (availableSpace <= 0) {
                 continue;
             }
-            
+
             int injectIntoThisTank = Math.min(remainingToInject, availableSpace);
-            
+
             // Add XP to tank using capability
             com.moremod.capability.IExperiencePumpCapability tankCap = tank.getCapability(
                 com.moremod.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
@@ -331,19 +307,18 @@ public class ExperiencePumpController {
                 tankCap.addXp(injectIntoThisTank);
                 ItemExperiencePump.syncCapabilityToStack(tank, tankCap);
             }
-            
+
             totalInjected += injectIntoThisTank;
             remainingToInject -= injectIntoThisTank;
-            
-            LOGGER.debug("Injected {} XP into tank (empty: {}), total injected: {}", 
-                        injectIntoThisTank, storedInTank == 0, totalInjected);
+
+            LOGGER.debug("Injected {} XP into tank, total injected: {}", injectIntoThisTank, totalInjected);
         }
-        
+
         // Remove XP from player
         if (totalInjected > 0) {
             removeExperienceFromPlayer(player, totalInjected);
         }
-        
+
         LOGGER.debug("Injection complete for player {}: {} XP injected", player.getName(), totalInjected);
         return totalInjected;
     }
@@ -351,63 +326,21 @@ public class ExperiencePumpController {
     /**
      * Converts XP points to equivalent level using Minecraft's official formulas.
      * Implements Requirements 6.1, 6.2 for accurate XP calculation.
+     * 
+     * 现在委托给 XpHelper 工具类，使用精确的 Minecraft 官方公式
      *
      * @param xp The XP amount to convert
      * @return The equivalent level (can be fractional)
      */
     public double convertXPToLevel(int xp) {
-        if (xp <= 0) {
-            return 0.0;
-        }
-
-        // Minecraft XP formula:
-        // Levels 0-15: XP = 17 * level
-        // Levels 16-30: XP = 1.5 * level^2 - 29.5 * level + 360
-        // Levels 31+: XP = 3.5 * level^2 - 151.5 * level + 2220
-
-        // At level 15: XP = 17 * 15 = 255
-        // At level 16: XP = 1.5*16^2 - 29.5*16 + 360 = 384 - 472 + 360 = 272
-        // At level 30: XP = 1.5*30^2 - 29.5*30 + 360 = 1350 - 885 + 360 = 825
-        // At level 31: XP = 3.5*31^2 - 151.5*31 + 2220 = 3363.5 - 4696.5 + 2220 = 887
-
-        if (xp <= 255) { // Levels 0-15
-            // Solve: XP = 17 * level => level = XP / 17
-            double level = (double) xp / 17.0;
-            return Math.max(0.0, Math.min(15.0, level));
-        } else if (xp <= 825) { // Levels 16-30
-            // Solve: 1.5*level^2 - 29.5*level + (360 - XP) = 0
-            double a = 1.5;
-            double b = -29.5;
-            double c = 360 - xp;
-            double discriminant = b * b - 4 * a * c;
-
-            if (discriminant < 0) {
-                LOGGER.warn("Negative discriminant in XP calculation, using boundary value");
-                return 15.0; // Fallback to boundary
-            }
-
-            double level = (-b + Math.sqrt(discriminant)) / (2 * a);
-            return Math.max(15.0, Math.min(30.0, level));
-        } else { // Levels 31+
-            // Solve: 3.5*level^2 - 151.5*level + (2220 - XP) = 0
-            double a = 3.5;
-            double b = -151.5;
-            double c = 2220 - xp;
-            double discriminant = b * b - 4 * a * c;
-
-            if (discriminant < 0) {
-                LOGGER.warn("Negative discriminant in XP calculation, using boundary value");
-                return 30.0; // Fallback to boundary
-            }
-
-            double level = (-b + Math.sqrt(discriminant)) / (2 * a);
-            return Math.max(30.0, level);
-        }
+        return com.moremod.util.XpHelper.getLevelsForExperience(xp);
     }
     
     /**
      * Converts level to XP points using Minecraft's official formulas.
      * Implements Requirements 6.1, 6.2 for accurate XP calculation.
+     * 
+     * 现在委托给 XpHelper 工具类，使用精确的 Minecraft 官方公式
      *
      * @param level The level to convert
      * @return The equivalent XP amount
@@ -423,22 +356,13 @@ public class ExperiencePumpController {
             level = 21863; // This level corresponds to near Integer.MAX_VALUE XP
         }
 
-        // Use the exact level value for calculation, not the floored value
-        // This ensures better round-trip accuracy
-        if (level <= 15) {
-            // Levels 0-15: XP = 17 * level
-            return (int) Math.floor(17 * level);
-        } else if (level <= 30) {
-            // Levels 16-30: XP = 1.5 * level^2 - 29.5 * level + 360
-            return (int) Math.floor(1.5 * level * level - 29.5 * level + 360);
-        } else {
-            // Levels 31+: XP = 3.5 * level^2 - 151.5 * level + 2220
-            return (int) Math.floor(3.5 * level * level - 151.5 * level + 2220);
-        }
+        // 使用 XpHelper 的精确计算
+        return com.moremod.util.XpHelper.getExperienceForLevel((int) Math.floor(level));
     }
     
     /**
      * Gets the player's total experience points.
+     * 现在委托给 XpHelper 工具类，使用精确的计算方法
      * 
      * @param player The player
      * @return The player's total XP
@@ -448,32 +372,23 @@ public class ExperiencePumpController {
             return 0;
         }
         
-        // Calculate total XP from level and experience progress
-        int levelXP = convertLevelToXP(player.experienceLevel);
-        int progressXP = (int) (player.experience * getXPToNextLevel(player.experienceLevel));
-        
-        return levelXP + progressXP;
+        return com.moremod.util.XpHelper.getPlayerTotalExperience(player);
     }
     
     /**
      * Gets the XP required to reach the next level from the current level.
+     * 现在委托给 XpHelper 工具类
      *
      * @param currentLevel The current level
      * @return XP required for next level
      */
     public int getXPToNextLevel(int currentLevel) {
-        if (currentLevel < 16) {
-            return 17; // Static 17 XP for levels 0-15
-        } else if (currentLevel < 31) {
-            return 17 + (currentLevel - 15) * 3; // 17 + 3 more per level for levels 16-30
-        } else {
-            // For levels 31+, XP requirement is 62 + (currentLevel - 30) * 7
-            return 62 + (currentLevel - 30) * 7;
-        }
+        return com.moremod.util.XpHelper.getExperienceLimitOnLevel(currentLevel);
     }
     
     /**
      * Adds experience to a player using Minecraft's experience system.
+     * 现在委托给 XpHelper 工具类
      * 
      * @param player The player to add experience to
      * @param amount The amount of XP to add
@@ -483,12 +398,13 @@ public class ExperiencePumpController {
             return;
         }
         
-        player.addExperience(amount);
+        com.moremod.util.XpHelper.addExperienceToPlayer(player, amount);
         LOGGER.debug("Added {} XP to player {}", amount, player.getName());
     }
     
     /**
      * Removes experience from a player.
+     * 现在委托给 XpHelper 工具类
      * 
      * @param player The player to remove experience from
      * @param amount The amount of XP to remove
@@ -498,19 +414,8 @@ public class ExperiencePumpController {
             return;
         }
         
-        int currentXP = getPlayerTotalExperience(player);
-        int newXP = Math.max(0, currentXP - amount);
-        
-        // Reset player XP and set to new amount
-        player.experienceTotal = 0;
-        player.experienceLevel = 0;
-        player.experience = 0.0f;
-        
-        if (newXP > 0) {
-            player.addExperience(newXP);
-        }
-        
-        LOGGER.debug("Removed {} XP from player {}, new total: {}", amount, player.getName(), newXP);
+        int actualRemoved = com.moremod.util.XpHelper.removeExperienceFromPlayer(player, amount);
+        LOGGER.debug("Removed {} XP from player {}", actualRemoved, player.getName());
     }
     
     /**
@@ -662,17 +567,13 @@ public class ExperiencePumpController {
     /**
      * Formats experience amount for display showing both XP points and equivalent levels.
      * Implements Requirement 6.3 for experience display format.
+     * 现在委托给 XpHelper 工具类
      * 
      * @param xp The XP amount to format
      * @return Formatted string showing XP and levels
      */
     public String formatExperienceDisplay(int xp) {
-        if (xp <= 0) {
-            return "0 XP (0 levels)";
-        }
-        
-        double levels = convertXPToLevel(xp);
-        return String.format("%d XP (%.1f levels)", xp, levels);
+        return com.moremod.util.XpHelper.formatExperience(xp);
     }
     
     /**

@@ -127,17 +127,9 @@ public class PacketPumpAction implements IMessage {
                 prioritized.addAll(controllerManaged);
                 prioritized.addAll(unmanaged);
 
-                java.util.function.Function<Integer, Integer> levelToTotalXp = (lvl) -> {
-                    int level = lvl;
-                    if (level <= 0) return 0;
-                    if (level < 16) return level * (6 + level);
-                    if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
-                    return (int) (level * (4.5 * level - 162.5) + 2220);
-                };
-
-                java.util.function.Supplier<Integer> getPlayerTotalXp = () -> {
-                    return (int) (player.experience * (float) player.xpBarCap()) + levelToTotalXp.apply(player.experienceLevel);
-                };
+                // Use centralized ExperiencePumpController for XP/level calculations to avoid inconsistencies
+                java.util.function.Function<Integer, Integer> levelToTotalXp = (lvl) -> pumpController.convertLevelToXP(lvl);
+                java.util.function.Supplier<Integer> getPlayerTotalXp = () -> pumpController.getPlayerTotalExperience(player);
 
                 switch (msg.action) {
                     case ACTION_MODE:
@@ -210,7 +202,12 @@ public class PacketPumpAction implements IMessage {
                     case ACTION_TAKE_ONE: {
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
                         int currentTotal = getPlayerTotalXp.get();
-                        int targetTotal = levelToTotalXp.apply(player.experienceLevel + levelsToTake);
+                        // Preserve player's fractional progress when calculating target total
+                        float frac = player.experience; // 0.0 .. 1.0
+                        int targetLevelInt = player.experienceLevel + levelsToTake;
+                        int baseTarget = levelToTotalXp.apply(targetLevelInt);
+                        int xpToNextTarget = getXPToNextLevel(targetLevelInt);
+                        int targetTotal = baseTarget + Math.round(frac * xpToNextTarget);
                         int need = Math.max(0, targetTotal - currentTotal);
                         if (need <= 0) break;
 
@@ -261,8 +258,12 @@ public class PacketPumpAction implements IMessage {
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
                         int currentTotal = getPlayerTotalXp.get();
+                        // Preserve player's fractional progress when calculating target total
+                        float frac = player.experience; // 0.0 .. 1.0
                         int targetLevel = Math.max(0, player.experienceLevel - levelsToStore);
-                        int targetTotal = levelToTotalXp.apply(targetLevel);
+                        int baseTarget = levelToTotalXp.apply(targetLevel);
+                        int xpToNextTarget = getXPToNextLevel(targetLevel);
+                        int targetTotal = baseTarget + Math.round(frac * xpToNextTarget);
                         int toStore = Math.max(0, currentTotal - targetTotal);
                         if (toStore <= 0) break;
 
@@ -355,6 +356,16 @@ public class PacketPumpAction implements IMessage {
             if (level < 16) return level * (6 + level);
             if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
             return (int) (level * (4.5 * level - 162.5) + 2220);
+        }
+
+        private static int getXPToNextLevel(int level) {
+            if (level < 0) return IExperiencePumpCapability.BASE_XP_PER_LEVEL;
+            return levelToTotalXp(level + 1) - levelToTotalXp(level);
+        }
+
+        private static int getXPToPreviousLevel(int level) {
+            if (level <= 0) return 0;
+            return levelToTotalXp(level) - levelToTotalXp(level - 1);
         }
 
         private static void addPlayerXp(net.minecraft.entity.player.EntityPlayer player, int amount) {

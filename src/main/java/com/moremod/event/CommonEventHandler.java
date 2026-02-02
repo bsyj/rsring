@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import com.moremod.rsring.RsRingMod;
-import com.moremod.item.ItemChestRing;
+import com.moremod.item.ItemAbsorbRing;
 import com.moremod.item.ItemExperiencePump;
 import com.moremod.capability.IRsRingCapability;
 import com.moremod.capability.RsRingCapability;
@@ -75,7 +75,7 @@ public class CommonEventHandler {
 
     /** 供 K 键切换使用：与 onPlayerTick 相同的查找顺序，确保饰品栏戒指能被找到 */
     public static ItemStack findAnyRingForToggle(EntityPlayer player) {
-        return findRing(player, ItemChestRing.class);
+        return findRing(player, ItemAbsorbRing.class);
     }
 
     public static ItemStack findRing(EntityPlayer player, Class<? extends Item> ringClass) {
@@ -172,16 +172,34 @@ public class CommonEventHandler {
     }
 
     /**
-     * 查找经验泵控制器
+     * 查找经验泵控制器（扫描整个背包）
+     * 优先级：主手 > 副手 > 背包 > 快捷栏
      */
     private ItemStack findExperiencePumpController(EntityPlayer player) {
-        // 检查主手和副手
+        // 1. 检查主手和副手（优先级最高）
         for (EnumHand hand : EnumHand.values()) {
             ItemStack heldStack = player.getHeldItem(hand);
             if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePumpController) {
                 return heldStack;
             }
         }
+        
+        // 2. 检查主背包（9-35槽位）
+        for (int i = 9; i < 36; i++) {
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePumpController) {
+                return stack;
+            }
+        }
+        
+        // 3. 检查快捷栏（0-8槽位）
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePumpController) {
+                return stack;
+            }
+        }
+        
         return ItemStack.EMPTY;
     }
 
@@ -215,9 +233,9 @@ public class CommonEventHandler {
         EntityPlayer player = event.player;
         if (player.world.isRemote) return;
 
-        ItemStack chestRingStack = findRing(player, ItemChestRing.class);
-        if (!chestRingStack.isEmpty()) {
-            ((ItemChestRing) chestRingStack.getItem()).onWornTick(chestRingStack, player);
+        ItemStack absorbRingStack = findRing(player, ItemAbsorbRing.class);
+        if (!absorbRingStack.isEmpty()) {
+            ((ItemAbsorbRing) absorbRingStack.getItem()).onWornTick(absorbRingStack, player);
         }
 
         // 查找经验泵控制器和储罐
@@ -243,6 +261,36 @@ public class CommonEventHandler {
                 cap.setRetainLevel(retainLevel);
                 cap.setUseForMending(useForMending);
                 com.moremod.item.ItemExperiencePump.syncCapabilityToStack(tank, cap);
+            }
+            // 控制器应主动执行泵送行为：如果模式为罐->人或人->罐，调用中央控制器执行一次按等级计算的泵送
+            if (mode == com.moremod.capability.IExperiencePumpCapability.MODE_PUMP_TO_PLAYER ||
+                mode == com.moremod.capability.IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
+                // 计算需要移动的经验量（基于保留等级）
+                com.moremod.experience.ExperiencePumpController controller = com.moremod.experience.ExperiencePumpController.getInstance();
+                if (mode == com.moremod.capability.IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
+                    int playerTotal = controller.getPlayerTotalExperience(player);
+                    int targetXp = controller.convertLevelToXP(retainLevel);
+                    if (playerTotal < targetXp) {
+                        int need = targetXp - playerTotal;
+                        int available = controller.calculateTotalStored(player);
+                        int toMove = Math.min(need, available);
+                        if (toMove > 0) {
+                            // 直接按需要量/可用量进行转移，确保玩家能被补足到保留等级
+                            controller.performExperienceOperation(player, toMove, true);
+                        }
+                    }
+                } else if (mode == com.moremod.capability.IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
+                    // 计算玩家超过保留等级可抽取的经验
+                    int canExtract = controller.calculateLevelBasedExtraction(player, retainLevel);
+                    if (canExtract > 0) {
+                        int availableSpace = controller.calculateTotalRemainingCapacity(player);
+                        int toMove = Math.min(canExtract, availableSpace);
+                        if (toMove > 0) {
+                            // 从玩家到罐（isExtraction = false 表示注入到罐）
+                            controller.performExperienceOperation(player, toMove, false);
+                        }
+                    }
+                }
             }
         }
 
@@ -359,7 +407,7 @@ public class CommonEventHandler {
 
         // 箱子戒指 + 箱子/容器（仅手持时绑定）
         if (isChestOrContainer(world, pos)) {
-            ItemStack ringStack = findHeldRing(player, ItemChestRing.class);
+            ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
             if (!ringStack.isEmpty()) {
                 IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
                 if (capability != null) {

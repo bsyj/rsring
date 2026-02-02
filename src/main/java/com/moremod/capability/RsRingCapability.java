@@ -156,6 +156,7 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setFilterSlot(int slot, String itemRegistryName) {
+        // Allow slots 0..8 (9 slots)
         if (slot < 0 || slot > 8) return;
         while (blacklistItems.size() <= slot) blacklistItems.add("");
         blacklistItems.set(slot, itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName);

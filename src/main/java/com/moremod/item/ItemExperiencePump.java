@@ -102,10 +102,11 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (data == null) {
             // 即使没有NBT数据也要显示基础信息
             int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL; // 1级容量 = 1000 mb
+            tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "1");
             tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + initialCapacity + " mb");
-            tooltip.add(TextFormatting.GRAY + "容量: " + initialCapacity + " mb");
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+                tooltip.add("");
                 tooltip.add(TextFormatting.GOLD + "功能介绍:");
                 tooltip.add(TextFormatting.GRAY + "  · 吸收周围经验球");
                 tooltip.add(TextFormatting.GRAY + "  · 存储经验 (需配合经验泵控制器使用)");
@@ -122,16 +123,10 @@ public class ItemExperiencePump extends Item implements IBauble {
         int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;  // 默认1级
         // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
         int max = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1));
-        boolean mendingEnabled = data.hasKey(MENDING_KEY) ? data.getBoolean(MENDING_KEY) : false;
 
         // 基础信息显示
+        tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + capacityLevels);
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
-        int actualCapacity = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1)); // 实际容量
-        tooltip.add(TextFormatting.GRAY + "容量: " + actualCapacity + " mb");
-
-        // 不在GUI中显示等级信息以保持界面简洁
-        
-        // 已移除状态、修补、经验瓶转换标签显示，保持提示简洁
         
         // 详细信息（Shift显示）
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
@@ -223,41 +218,10 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        // 右键交互已被移除：经验储罐统一由经验泵控制器管理，
+        // 直接返回 PASS 以避免本地或服务器端进行任何模式/保留等级更改。
         ItemStack stack = player.getHeldItem(hand);
-        if (stack == null || stack.isEmpty()) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
-        }
-
-        // 服务器端处理交互：非潜行右击切换模式，潜行右击调整保留等级
-        if (world.isRemote) {
-            // 客户端直接返回成功以避免双重处理
-            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-        }
-
-        com.moremod.capability.IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-        if (cap == null) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
-        }
-
-        if (player.isSneaking()) {
-            // 调整保留等级（循环 0 .. 30）
-            final int MAX_RETAIN = 30;
-            int current = cap.getRetainLevel();
-            int next = current + 1;
-            if (next > MAX_RETAIN) next = 0;
-            cap.setRetainLevel(next);
-            ItemExperiencePump.syncCapabilityToStack(stack, cap);
-            player.sendMessage(new TextComponentString("[经验储罐] 保留等级: " + next));
-            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-        } else {
-            // 切换模式：0 -> 1 -> 2 -> 0
-            int mode = cap.getMode();
-            int nextMode = (mode + 1) % 3;
-            cap.setMode(nextMode);
-            ItemExperiencePump.syncCapabilityToStack(stack, cap);
-            player.sendMessage(new TextComponentString("[经验储罐] 模式: " + getModeText(nextMode)));
-            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-        }
+        return new ActionResult<>(EnumActionResult.PASS, stack);
     }
 
     public static void syncCapabilityToStack(ItemStack stack, IExperiencePumpCapability cap) {
@@ -427,10 +391,13 @@ public class ItemExperiencePump extends Item implements IBauble {
                 }
             }
         } else if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-            // 向玩家泵出：立即补足玩家至保留等级，优先使用储罐内可用的全部经验
+            // 向玩家泵出：补足玩家至保留等级，但限制每 tick 最大泵送量以平滑体验
             if (playerTotal < targetXp && cap.getXpStored() > 0) {
                 int need = targetXp - playerTotal;
-                int give = cap.takeXp(need);
+                // 限制每 tick 最大泵送量，避免一次性大幅度改动玩家经验
+                int perTickLimit = Math.max(1, getExtractionRate());
+                int toTake = Math.min(need, perTickLimit);
+                int give = cap.takeXp(toTake);
                 if (give > 0) {
                     addPlayerXp(player, give);
                     syncCapabilityToStack(stack, cap);
@@ -708,14 +675,11 @@ public class ItemExperiencePump extends Item implements IBauble {
     }
 
     private static int getPlayerTotalXp(EntityPlayer player) {
-        return (int) (player.experience * (float) player.xpBarCap()) + getTotalXpForLevel(player.experienceLevel);
+        return com.moremod.util.XpHelper.getPlayerTotalExperience(player);
     }
 
     private static int getTotalXpForLevel(int level) {
-        if (level <= 0) return 0;
-        if (level < 16) return level * (6 + level);
-        if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
-        return (int) (level * (4.5 * level - 162.5) + 2220);
+        return com.moremod.util.XpHelper.getExperienceForLevel(level);
     }
 
     private static int levelToTotalXp(int level) {
@@ -723,19 +687,15 @@ public class ItemExperiencePump extends Item implements IBauble {
     }
 
     private static void addPlayerXp(EntityPlayer player, int amount) {
-        if (amount <= 0) {
-            int take = -amount;
-            int current = getPlayerTotalXp(player);
-            take = Math.min(take, current);
-            if (take <= 0) return;
-            int remain = current - take;
-            player.experienceLevel = 0;
-            player.experienceTotal = 0;
-            player.experience = 0;
-            if (remain > 0) player.addExperience(remain);
-        } else {
-            player.addExperience(amount);
+        if (amount == 0) return;
+        if (amount > 0) {
+            com.moremod.util.XpHelper.addExperienceToPlayer(player, amount);
+            return;
         }
+
+        // amount < 0 : remove XP safely using XpHelper
+        int take = -amount;
+        com.moremod.util.XpHelper.removeExperienceFromPlayer(player, take);
     }
 
     /** 有经验时显示附魔瓶材质（从 NBT 读，与耐久条一致） */
@@ -752,40 +712,49 @@ public class ItemExperiencePump extends Item implements IBauble {
      * 4 = 76-100% (满)
      */
     public static int getXpFillLevel(ItemStack stack) {
-        // 避免重复的NBT查询，直接从NBT获取所需数据
-        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+        if (stack == null || stack.isEmpty()) {
             return FILL_LEVEL_EMPTY;
         }
 
-        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
-        if (data == null) {
-            return FILL_LEVEL_EMPTY;
-        }
+        // 首选 capability（如果可用），以确保升级后客户端能读取最新状态；否则回退到 NBT
+        int stored = 0;
+        int max = 0;
 
-        int stored = data.getInteger(XP_KEY);
-        int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
-        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        IExperiencePumpCapability cap = null;
         try {
-            long maxLong = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
-            if (maxLong > Integer.MAX_VALUE) {
-                maxLong = Integer.MAX_VALUE;
+            cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        } catch (Throwable ignored) {}
+
+        if (cap != null) {
+            try {
+                stored = cap.getXpStored();
+                max = cap.getMaxXp();
+            } catch (Throwable ignored) {
+                // fallthrough to NBT
+                cap = null;
             }
-            int max = (int) maxLong;
-
-            if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
-            if (stored >= max) return FILL_LEVEL_FULL;
-
-            // 使用整数运算替代浮点运算以提高性能
-            int percentage = (stored * 100) / max;
-
-            if (percentage <= 0) return FILL_LEVEL_EMPTY;       // 0% 空
-            if (percentage <= (int)XP_FILL_LEVEL_25) return FILL_LEVEL_QUARTER;   // 1-25%
-            if (percentage <= (int)XP_FILL_LEVEL_50) return FILL_LEVEL_HALF;      // 26-50%
-            if (percentage <= (int)XP_FILL_LEVEL_75) return FILL_LEVEL_THREE_QUARTERS; // 51-75%
-            return FILL_LEVEL_FULL; // 76-100%
-        } catch (Exception e) {
-            // 异常情况下返回空状态
-            return FILL_LEVEL_EMPTY;
         }
+
+        if (cap == null) {
+            net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
+            if (data == null) return FILL_LEVEL_EMPTY;
+            stored = data.getInteger(XP_KEY);
+            int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
+            long maxLong = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (Math.max(1, capacityLevels) - 1));
+            if (maxLong > Integer.MAX_VALUE) maxLong = Integer.MAX_VALUE;
+            max = (int) maxLong;
+        }
+
+        if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
+        if (stored >= max) return FILL_LEVEL_FULL;
+
+        // 使用精确的整数比例判断以避免浮点舍入问题
+        int percentage = (int) ((long) stored * 100 / max);
+
+        if (percentage <= 0) return FILL_LEVEL_EMPTY;
+        if (percentage <= 25) return FILL_LEVEL_QUARTER;          // 1-25%
+        if (percentage <= 50) return FILL_LEVEL_HALF;             // 26-50%
+        if (percentage <= 75) return FILL_LEVEL_THREE_QUARTERS;   // 51-75%
+        return FILL_LEVEL_FULL;                                   // 76-99% -> treated as full handled above
     }
 }

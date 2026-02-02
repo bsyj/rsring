@@ -92,7 +92,7 @@ public class ItemExperiencePumpController extends Item {
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         tooltip.add(TextFormatting.GRAY + "经验泵控制器");
         tooltip.add(TextFormatting.GRAY + "配合经验储罐使用");
-        tooltip.add(TextFormatting.GRAY + "仅限手持使用");
+        tooltip.add(TextFormatting.AQUA + "放在背包即可生效");
         
         // 显示控制器当前配置
         NBTTagCompound data = getControllerData(stack);
@@ -117,6 +117,7 @@ public class ItemExperiencePumpController extends Item {
             tooltip.add(TextFormatting.GRAY + "  · 配置存储在控制器上");
             tooltip.add(TextFormatting.GOLD + "使用方法:");
             tooltip.add(TextFormatting.GRAY + "  · 右键打开控制界面");
+            tooltip.add(TextFormatting.GRAY + "  · 放在背包中自动生效");
             tooltip.add(TextFormatting.GRAY + "  · 切换控制器会应用不同配置");
         } else {
             tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看详细信息");

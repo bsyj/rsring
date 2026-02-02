@@ -17,6 +17,11 @@ public class CommonProxy {
         net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "物品吸收戒指"));
     }
 
+    /** 仅客户端：打开物品吸收戒指 GUI（兼容方法） */
+    public void openAbsorbRingGui(ItemStack stack) {
+        openChestRingGui(stack);
+    }
+
     public void handleToggleRsRing(EntityPlayerMP player) {
         // 服务端默认实现，什么都不做
     }

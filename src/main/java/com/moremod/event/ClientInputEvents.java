@@ -1,6 +1,6 @@
 package com.moremod.event;
 
-import com.moremod.item.ItemChestRing;
+import com.moremod.item.ItemAbsorbRing;
 import com.moremod.rsring.RsRingMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -57,7 +57,7 @@ public class ClientInputEvents {
             ItemStack stackInSlot = slotUnderMouse.getStack();
             
             // 检查是否是箱子戒指
-            if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof ItemChestRing) {
+            if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof ItemAbsorbRing) {
                 // 直接在客户端打开GUI，不需要发送数据包
                 com.moremod.rsring.RsRingMod.proxy.openChestRingGui(stackInSlot);
                 event.setCanceled(true);

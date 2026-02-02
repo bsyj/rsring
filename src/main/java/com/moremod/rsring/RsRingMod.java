@@ -24,7 +24,7 @@ import com.moremod.capability.IRsRingCapability;
 import com.moremod.capability.RsRingCapability;
 import com.moremod.event.CommonEventHandler;
 import com.moremod.event.CraftingExperiencePumpController;
-import com.moremod.item.ItemChestRing;
+import com.moremod.item.ItemAbsorbRing;
 import com.moremod.item.ItemExperiencePump;
 import com.moremod.network.PacketPumpAction;
 import com.moremod.network.PacketPumpData;
@@ -47,7 +47,7 @@ public class RsRingMod
     @SidedProxy(serverSide = "com.moremod.proxy.CommonProxy", clientSide = "com.moremod.proxy.ClientProxy")
     public static CommonProxy proxy;
 
-    public static ItemChestRing chestRing;
+    public static ItemAbsorbRing absorbRing;
     public static ItemExperiencePump experiencePump;
     public static com.moremod.item.ItemExperiencePumpController experiencePumpController;
     public static SimpleNetworkWrapper network;
@@ -68,8 +68,9 @@ public class RsRingMod
 
         if (config.hasChanged()) config.save();
 
-        chestRing = new ItemChestRing();
-        ForgeRegistries.ITEMS.register(chestRing);
+        // Register absorb ring (replaces old chest ring)
+        absorbRing = new ItemAbsorbRing();
+        ForgeRegistries.ITEMS.register(absorbRing);
         experiencePump = new ItemExperiencePump();
         ForgeRegistries.ITEMS.register(experiencePump);
         experiencePumpController = new com.moremod.item.ItemExperiencePumpController();

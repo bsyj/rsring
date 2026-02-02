@@ -12,14 +12,14 @@ import org.apache.logging.log4j.Logger;
  * Centralized ring detection service that provides unified ring detection logic
  * across all inventory locations with robust error handling and comprehensive logging.
  * 
- * Search priority: main hand â†’ off hand â†’ Baubles slots â†’ inventory
+ * Search priority: main hand â†?off hand â†?Baubles slots â†?inventory
  */
 public class RingDetectionService {
     private static final Logger LOGGER = LogManager.getLogger(RingDetectionService.class);
     
     /**
      * Finds any ring type in the player's inventory locations.
-     * Searches in priority order: main hand â†’ off hand â†’ Baubles â†’ inventory
+     * Searches in priority order: main hand â†?off hand â†?Baubles â†?inventory
      * 
      * @param player The player to search
      * @return The first ring found, or ItemStack.EMPTY if none found
@@ -40,7 +40,7 @@ public class RingDetectionService {
             return result;
         }
         
-        result = findRing(player, com.moremod.item.ItemChestRing.class);
+        result = findRing(player, com.moremod.item.ItemAbsorbRing.class);
         if (!result.isEmpty()) {
             return result;
         }
@@ -51,7 +51,7 @@ public class RingDetectionService {
     
     /**
      * Finds a specific ring type in the player's inventory locations.
-     * Searches in priority order: main hand â†’ off hand â†’ Baubles â†’ inventory
+     * Searches in priority order: main hand â†?off hand â†?Baubles â†?inventory
      * 
      * @param player The player to search
      * @param ringClass The specific ring class to search for
@@ -75,7 +75,7 @@ public class RingDetectionService {
         // Search in priority order
         ItemStack result;
         
-        // 1. Check hands (main hand â†’ off hand)
+        // 1. Check hands (main hand â†?off hand)
         result = findInHands(player, ringClass);
         if (!result.isEmpty()) {
             logSearchResult("hands", true, result);

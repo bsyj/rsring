@@ -1,5 +1,6 @@
 #PARSE_ESCAPES
 item.rsring.chestring.name=Chest Ring
+item.rsring.item_absorb_ring.name=Item Absorb Ring
 item.rsring.experience_tank.name=Experience Tank
 item.rsring.experience_pump_controller.name=Experience Pump Controller
 key.rsring.toggle.desc=Toggle Ring

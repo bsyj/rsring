@@ -215,7 +215,7 @@ public class InventoryChangeEvent extends Event {
         if (item.isEmpty()) return false;
         
         // Check for known ring types
-        return item.getItem() instanceof com.moremod.item.ItemChestRing;
+        return item.getItem() instanceof com.moremod.item.ItemAbsorbRing;
         // Add other ring types as needed
     }
     

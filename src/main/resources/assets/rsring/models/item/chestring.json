@@ -1,7 +1,7 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "rsring:items/ring"
+        "layer0": "rsring:items/chest_ring"
     },
     "display": {
         "thirdperson": {

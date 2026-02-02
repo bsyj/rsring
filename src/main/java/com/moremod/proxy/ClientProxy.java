@@ -1,7 +1,7 @@
 package com.moremod.proxy;
 
 import com.moremod.capability.ExperiencePumpCapability;
-import com.moremod.item.ItemChestRing;
+import com.moremod.item.ItemAbsorbRing;
 import com.moremod.item.ItemExperiencePump;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -35,14 +35,14 @@ public class ClientProxy extends CommonProxy {
     // 打开箱子戒指的黑白名单GUI
     @Override
     public void openChestRingGui(ItemStack stack) {
-        Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "箱子戒指 - 黑白名单"));
+        Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "物品吸收戒指 - 黑白名单"));
     }
 
     @Override
     public void handleToggleRsRing(EntityPlayerMP player) {
         // 在服务器上处理切换逻辑
         ItemStack ringStack = CommonEventHandler.findAnyRingForToggle(player);
-        if (!ringStack.isEmpty() && ringStack.getItem() instanceof ItemChestRing) {
+        if (!ringStack.isEmpty() && ringStack.getItem() instanceof ItemAbsorbRing) {
             IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
                 capability.setEnabled(!capability.isEnabled());
@@ -58,8 +58,9 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
+        // Register model for absorb ring (formerly chest ring)
         ModelLoader.setCustomModelResourceLocation(
-            RsRingMod.chestRing, 0, new ModelResourceLocation(RsRingMod.chestRing.getRegistryName(), "inventory"));
+            RsRingMod.absorbRing, 0, new ModelResourceLocation(RsRingMod.absorbRing.getRegistryName(), "inventory"));
 
         // 经验储罐：根据经验百分比显示不同纹理（0%, 25%, 50%, 75%, 100%）
         ModelLoader.setCustomMeshDefinition(RsRingMod.experiencePump, stack -> {
@@ -84,8 +85,8 @@ public class ClientProxy extends CommonProxy {
             new ResourceLocation("rsring", "experience_pump_75"),
             new ResourceLocation("rsring", "experience_pump_100"));
 
-        // 经验泵控制器（使用红石材质）
+        // 经验泵控制器（使用自定义材质）
         ModelLoader.setCustomModelResourceLocation(
-            RsRingMod.experiencePumpController, 0, new ModelResourceLocation(new ResourceLocation("minecraft", "redstone"), "inventory"));
+            RsRingMod.experiencePumpController, 0, new ModelResourceLocation(new ResourceLocation("rsring", "experience_pump_controller"), "inventory"));
     }
 }

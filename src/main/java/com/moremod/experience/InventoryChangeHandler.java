@@ -465,7 +465,7 @@ public class InventoryChangeHandler {
     }
     
     private boolean isRing(ItemStack item) {
-        return !item.isEmpty() && item.getItem() instanceof com.moremod.item.ItemChestRing;
+        return !item.isEmpty() && item.getItem() instanceof com.moremod.item.ItemAbsorbRing;
     }
     
     private InventoryChangeEvent.InventoryLocation parseLocationFromKey(String key) {

@@ -8,6 +8,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.item.EntityXPOrb;
+import net.minecraft.entity.item.EntityExpBottle;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -32,24 +33,43 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     public static final String XP_TAG = "ExperiencePumpData";
 
+    // 常量定义
+    private static final int XP_PER_BOTTLE = 36; // MC原版：1瓶=36经验
+    private static final int MAX_EXTRACT_PER_CYCLE = 100; // 每次最多抽取100 XP
+    private static final int DEFAULT_RETAIN_LEVEL = 1; // 默认保留等级
+    private static final String CAPACITY_LEVELS_KEY = "capacityLevels";
+    private static final String XP_KEY = "xp";
+    private static final String MENDING_KEY = "mending";
+    private static final double XP_FILL_LEVEL_25 = 25.0;
+    private static final double XP_FILL_LEVEL_50 = 50.0;
+    private static final double XP_FILL_LEVEL_75 = 75.0;
+    private static final int FILL_LEVEL_EMPTY = 0;
+    private static final int FILL_LEVEL_QUARTER = 1;
+    private static final int FILL_LEVEL_HALF = 2;
+    private static final int FILL_LEVEL_THREE_QUARTERS = 3;
+    private static final int FILL_LEVEL_FULL = 4;
+
     /** 从 NBT 直接读显示用数据，避免 capability 缓存导致升级后仍显示 1000/10000、耐久条不变 */
     public static net.minecraft.nbt.NBTTagCompound getDataFromNBT(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasTagCompound() || !stack.getTagCompound().hasKey(XP_TAG))
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound() || !stack.getTagCompound().hasKey(XP_TAG))
             return null;
         return stack.getTagCompound().getCompoundTag(XP_TAG);
     }
 
     public static int getXpStoredFromNBT(ItemStack stack) {
+        if (stack == null) return 0;
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
-        return data != null ? data.getInteger("xp") : 0;
+        return data != null ? data.getInteger(XP_KEY) : 0;
     }
 
     public static int getCapacityLevelsFromNBT(ItemStack stack) {
+        if (stack == null) return DEFAULT_RETAIN_LEVEL;
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
-        return data != null && data.hasKey("capacityLevels") ? data.getInteger("capacityLevels") : 1;  // 默认1级
+        return data != null && data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;  // 默认1级
     }
 
     public static int getMaxXpFromNBT(ItemStack stack) {
+        if (stack == null) return DEFAULT_RETAIN_LEVEL * IExperiencePumpCapability.XP_PER_LEVEL;
         return getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
     }
 
@@ -83,10 +103,10 @@ public class ItemExperiencePump extends Item implements IBauble {
             return;
         }
 
-        int xp = data.getInteger("xp");
-        int capacityLevels = data.hasKey("capacityLevels") ? data.getInteger("capacityLevels") : 1;  // 默认1级
+        int xp = data.getInteger(XP_KEY);
+        int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;  // 默认1级
         int max = capacityLevels * IExperiencePumpCapability.XP_PER_LEVEL;
-        boolean mendingEnabled = data.hasKey("mending") ? data.getBoolean("mending") : false;
+        boolean mendingEnabled = data.hasKey(MENDING_KEY) ? data.getBoolean(MENDING_KEY) : false;
         
         // 基础信息显示
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
@@ -138,15 +158,33 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
-        int max = getMaxXpFromNBT(stack);
+        // 直接检查NBT标签是否存在，避免不必要的计算
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return false;
+        }
+        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
+        if (data == null) {
+            return false;
+        }
+
+        int max = getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
         return max > 0;
     }
 
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
-        int max = getMaxXpFromNBT(stack);
+        // 直接检查NBT标签是否存在，避免不必要的计算
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return 1.0;
+        }
+        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
+        if (data == null) {
+            return 1.0;
+        }
+
+        int max = getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
         if (max <= 0) return 1.0;
-        int xp = getXpStoredFromNBT(stack);
+        int xp = data.getInteger(XP_KEY); // 直接从已获取的数据中读取，避免重复NBT查询
         return 1.0 - (double) xp / (double) max;
     }
 
@@ -212,48 +250,50 @@ public class ItemExperiencePump extends Item implements IBauble {
         return provider;
     }
 
-    /** 
+    /**
      * 手持/佩戴时每 tick 调用：统一的经验储罐工作流程
      * 参考精妙背包设计：前置校验 → 抽取经验 → 存储经验 → 自动修补
      */
     public void onWornTick(ItemStack stack, EntityLivingBase entity) {
-        if (entity.world.isRemote || !(entity instanceof EntityPlayer)) return;
-        
+        if (entity == null || entity.world == null || entity.world.isRemote || !(entity instanceof EntityPlayer)) return;
+
         EntityPlayer player = (EntityPlayer) entity;
+        if (player.world == null) return; // 额外安全检查
+
         IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
         if (cap == null) return;
-        
+
         // 前置校验：储罐激活、配置有效、抽取速率>0
         if (!isUpgradeActive(stack, cap) || getExtractionRate() <= 0) {
             return;
         }
-        
+
         // 工作流程：1. 抽取周围经验 → 2. 存储抽取的经验 → 3. 若开启修补，自动修补装备
         int extractedXp = 0;
-        
+
         // 步骤1：抽取周围经验（使用配置的间隔）
         if (player.ticksExisted % com.moremod.config.ExperienceTankConfig.extractionInterval == 0) {
             extractedXp = extractXpFromSurroundings(player, stack, cap);
         }
-        
+
         // 步骤2：存储抽取的经验（含溢出处理）
         if (extractedXp > 0) {
             storeExtractedXp(player, stack, cap, extractedXp);
         }
-        
+
         // 步骤3：经验泵送（使用配置的间隔，仅当储罐不在控制器管理下时才启用）
-        if (com.moremod.config.ExperienceTankConfig.enableAutoPumping && 
-            player.ticksExisted % com.moremod.config.ExperienceTankConfig.pumpingInterval == 0 && 
+        if (com.moremod.config.ExperienceTankConfig.enableAutoPumping &&
+            player.ticksExisted % com.moremod.config.ExperienceTankConfig.pumpingInterval == 0 &&
             cap.getMode() != IExperiencePumpCapability.MODE_OFF) {
             pumpExperienceBetweenPlayerAndTank(player, stack, cap);
         }
-        
+
         // 步骤4：自动修补（使用配置的间隔）
-        if (com.moremod.config.ExperienceTankConfig.mendingOn && cap.isUseForMending() && 
+        if (com.moremod.config.ExperienceTankConfig.mendingOn && cap.isUseForMending() &&
             cap.getXpStored() > 0 && player.ticksExisted % com.moremod.config.ExperienceTankConfig.mendingInterval == 0) {
             tryRepairMending(player, stack, cap);
         }
-        
+
         // 同步状态到NBT（确保持久化）
         syncCapabilityToStack(stack, cap);
     }
@@ -276,8 +316,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         // 处理溢出：超过最大存储则计算溢出量，生成经验瓶
         if (newXp > maxXp) {
             int overflowXp = newXp - maxXp;
-            int xpPerBottle = 36; // MC原版：1瓶=36经验
-            int overflowBottles = overflowXp / xpPerBottle;
+            int overflowBottles = overflowXp / XP_PER_BOTTLE;
             
             if (overflowBottles > 0 && com.moremod.config.ExperienceTankConfig.enableOverflowBottles) {
                 // 生成经验瓶物品实体，掉落至玩家位置
@@ -323,8 +362,7 @@ public class ItemExperiencePump extends Item implements IBauble {
             if (playerTotal > targetXp && cap.getXpStored() < cap.getMaxXp()) {
                 // 计算可抽取量：玩家超过保留等级的经验
                 int excess = playerTotal - targetXp;
-                int maxExtract = 100; // 每次最多抽取100 XP
-                int take = Math.min(maxExtract, Math.min(excess, cap.getMaxXp() - cap.getXpStored()));
+                int take = Math.min(MAX_EXTRACT_PER_CYCLE, Math.min(excess, cap.getMaxXp() - cap.getXpStored()));
                 if (take > 0) {
                     addPlayerXp(player, -take);
                     cap.addXp(take);
@@ -378,17 +416,46 @@ public class ItemExperiencePump extends Item implements IBauble {
         int maxExtract = getExtractionRate();
         int extractedTotal = 0;
         double range = com.moremod.config.ExperienceTankConfig.xpExtractionRange;
-        
+
         // 构建抽取范围AABB（玩家为中心，向四周延伸指定格数）
         net.minecraft.util.math.AxisAlignedBB extractArea = player.getEntityBoundingBox().grow(range);
 
         // 第一步：抽取经验球（MC原版核心经验源，优先处理）
-        java.util.List<net.minecraft.entity.item.EntityXPOrb> xpOrbs = player.world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityXPOrb.class, extractArea);
+        extractedTotal = extractXpFromOrbs(player, extractArea, maxExtract, cap);
+
+        // 第二步：抽取经验瓶物品（可选，兼容玩家掉落的经验瓶）
+        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.extractXpBottles) {
+            extractedTotal += extractXpFromBottleItems(player, extractArea, maxExtract, extractedTotal, cap);
+        }
+
+        // 第三步：吸收投掷中的经验瓶实体（EntityExpBottle），将其视为一个完整的经验瓶
+        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.extractXpBottles) {
+            extractedTotal += extractXpFromThrownBottles(player, extractArea, maxExtract, extractedTotal, cap);
+        }
+
+        return extractedTotal;
+    }
+
+    /**
+     * 从经验球实体中抽取经验
+     * @param player 玩家
+     * @param extractArea 抽取区域
+     * @param maxExtract 最大抽取量
+     * @param cap 经验储罐能力
+     * @return 抽取的经验值
+     */
+    private int extractXpFromOrbs(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
+                                  int maxExtract, IExperiencePumpCapability cap) {
+        int extractedTotal = 0;
+
+        java.util.List<net.minecraft.entity.item.EntityXPOrb> xpOrbs =
+            player.world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityXPOrb.class, extractArea);
+
         for (net.minecraft.entity.item.EntityXPOrb orb : xpOrbs) {
             if (orb.isDead || orb.xpValue <= 0 || extractedTotal >= maxExtract) {
                 break;
             }
-            
+
             // 计算单次抽取量：不超过剩余可抽、不超过经验球总经验、不超过储罐剩余容量
             int currentStored = cap.getXpStored();
             int maxCanStore = cap.getMaxXp() - currentStored;
@@ -404,49 +471,92 @@ public class ItemExperiencePump extends Item implements IBauble {
             }
         }
 
-        // 第二步：抽取经验瓶物品（可选，兼容玩家掉落的经验瓶）
-        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.extractXpBottles) {
-            java.util.List<net.minecraft.entity.item.EntityItem> xpBottleItems = player.world.getEntitiesWithinAABB(
-                net.minecraft.entity.item.EntityItem.class, 
-                extractArea,
-                entity -> {
-                    if (entity == null || entity.isDead) return false;
-                    net.minecraft.item.ItemStack itemStack = entity.getItem();
-                    return !itemStack.isEmpty() && itemStack.getItem() == net.minecraft.init.Items.EXPERIENCE_BOTTLE;
-                });
+        return extractedTotal;
+    }
 
-            for (net.minecraft.entity.item.EntityItem itemEntity : xpBottleItems) {
-                if (extractedTotal >= maxExtract) {
-                    break;
-                }
-                
-                net.minecraft.item.ItemStack bottleStack = itemEntity.getItem();
-                if (bottleStack.isEmpty()) continue;
+    /**
+     * 从经验瓶物品实体中抽取经验
+     * @param player 玩家
+     * @param extractArea 抽取区域
+     * @param maxExtract 最大抽取量
+     * @param currentExtracted 当前已抽取量
+     * @param cap 经验储罐能力
+     * @return 额外抽取的经验值
+     */
+    private int extractXpFromBottleItems(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
+                                         int maxExtract, int currentExtracted, IExperiencePumpCapability cap) {
+        int extractedTotal = currentExtracted;
 
-                int bottleCount = bottleStack.getCount();
-                int xpPerBottle = 36; // MC原版：1瓶=36经验
-                int currentStored = cap.getXpStored();
-                int maxCanStore = cap.getMaxXp() - currentStored;
-                
-                // 计算可转换的经验瓶数量：不超过剩余可抽、不超过物品数量、不超过储罐剩余容量
-                int maxBottlesFromExtract = (maxExtract - extractedTotal) / xpPerBottle;
-                int maxBottlesFromCapacity = maxCanStore / xpPerBottle;
-                int convertBottles = Math.min(maxBottlesFromExtract, Math.min(maxBottlesFromCapacity, bottleCount));
-                
-                if (convertBottles > 0) {
-                    // 转换为经验，扣除物品
-                    extractedTotal += convertBottles * xpPerBottle;
-                    bottleStack.shrink(convertBottles);
-                    if (bottleStack.isEmpty() || bottleStack.getCount() <= 0) {
-                        itemEntity.setDead();
-                    } else {
-                        itemEntity.setItem(bottleStack);
-                    }
+        java.util.List<net.minecraft.entity.item.EntityItem> xpBottleItems = player.world.getEntitiesWithinAABB(
+            net.minecraft.entity.item.EntityItem.class,
+            extractArea,
+            entity -> {
+                if (entity == null || entity.isDead) return false;
+                net.minecraft.item.ItemStack itemStack = entity.getItem();
+                return !itemStack.isEmpty() && itemStack.getItem() == net.minecraft.init.Items.EXPERIENCE_BOTTLE;
+            });
+
+        for (net.minecraft.entity.item.EntityItem itemEntity : xpBottleItems) {
+            if (extractedTotal >= maxExtract) {
+                break;
+            }
+
+            net.minecraft.item.ItemStack bottleStack = itemEntity.getItem();
+            if (bottleStack.isEmpty()) continue;
+
+            int bottleCount = bottleStack.getCount();
+            int currentStored = cap.getXpStored();
+            int maxCanStore = cap.getMaxXp() - currentStored;
+
+            // 计算可转换的经验瓶数量：不超过剩余可抽、不超过物品数量、不超过储罐剩余容量
+            int maxBottlesFromExtract = (maxExtract - extractedTotal) / XP_PER_BOTTLE;
+            int maxBottlesFromCapacity = maxCanStore / XP_PER_BOTTLE;
+            int convertBottles = Math.min(maxBottlesFromExtract, Math.min(maxBottlesFromCapacity, bottleCount));
+
+            if (convertBottles > 0) {
+                // 转换为经验，扣除物品
+                extractedTotal += convertBottles * XP_PER_BOTTLE;
+                bottleStack.shrink(convertBottles);
+                if (bottleStack.isEmpty() || bottleStack.getCount() <= 0) {
+                    itemEntity.setDead();
+                } else {
+                    itemEntity.setItem(bottleStack);
                 }
             }
         }
 
-        return extractedTotal;
+        return extractedTotal - currentExtracted;
+    }
+
+    /**
+     * 从投掷的经验瓶实体中抽取经验
+     * @param player 玩家
+     * @param extractArea 抽取区域
+     * @param maxExtract 最大抽取量
+     * @param currentExtracted 当前已抽取量
+     * @param cap 经验储罐能力
+     * @return 额外抽取的经验值
+     */
+    private int extractXpFromThrownBottles(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
+                                           int maxExtract, int currentExtracted, IExperiencePumpCapability cap) {
+        int extractedTotal = currentExtracted;
+
+        java.util.List<EntityExpBottle> thrownBottles = player.world.getEntitiesWithinAABB(EntityExpBottle.class, extractArea);
+        for (EntityExpBottle thrown : thrownBottles) {
+            if (extractedTotal >= maxExtract) break;
+            if (thrown.isDead) continue;
+
+            int currentStored = cap.getXpStored();
+            int maxCanStore = cap.getMaxXp() - currentStored;
+            int canTakeForThis = Math.min(XP_PER_BOTTLE, Math.min(maxExtract - extractedTotal, maxCanStore));
+            if (canTakeForThis > 0) {
+                extractedTotal += canTakeForThis;
+                // 标记为已处理，防止其继续存在并在破碎时产生经验球
+                thrown.setDead();
+            }
+        }
+
+        return extractedTotal - currentExtracted;
     }
 
 
@@ -455,7 +565,7 @@ public class ItemExperiencePump extends Item implements IBauble {
      * 参考精妙背包设计：修补规则：1经验=2耐久，优先修补耐久损失比例最高的装备
      */
     private void tryRepairMending(EntityPlayer player, ItemStack pump, IExperiencePumpCapability cap) {
-        if (!com.moremod.config.ExperienceTankConfig.mendPlayerItems) return;
+        if (player == null || pump == null || cap == null || !com.moremod.config.ExperienceTankConfig.mendPlayerItems) return;
 
         int availableXp = cap.getXpStored();
         if (availableXp <= 0) return;
@@ -466,9 +576,9 @@ public class ItemExperiencePump extends Item implements IBauble {
         }
 
         // 第二步：修补玩家背包中的受损装备（按损失比例从高到低）
-        if (availableXp > 0) {
+        if (availableXp > 0 && player.inventory != null && player.inventory.mainInventory != null) {
             for (ItemStack stack : player.inventory.mainInventory) {
-                if (availableXp <= 0) break;
+                if (stack == null || availableXp <= 0) break;
                 if (stack.isItemDamaged() && net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, stack) > 0) {
                     availableXp = mendSingleItem(stack, availableXp, cap);
                 }
@@ -476,7 +586,7 @@ public class ItemExperiencePump extends Item implements IBauble {
 
             // 修补副手装备
             ItemStack off = player.getHeldItemOffhand();
-            if (availableXp > 0 && !off.isEmpty() && off.isItemDamaged() && 
+            if (availableXp > 0 && off != null && !off.isEmpty() && off.isItemDamaged() &&
                 net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, off) > 0) {
                 mendSingleItem(off, availableXp, cap);
             }
@@ -491,8 +601,23 @@ public class ItemExperiencePump extends Item implements IBauble {
      * @return 修补后剩余的经验值
      */
     private int mendSingleItem(ItemStack stack, int availableXp, IExperiencePumpCapability cap) {
+        if (stack == null || cap == null || availableXp <= 0) {
+            return availableXp; // 返回原始可用经验
+        }
+
+        // 检查物品是否可修复
+        if (!stack.isItemDamaged()) {
+            return availableXp; // 物品未损坏，返回所有可用经验
+        }
+
         int damage = stack.getItemDamage();
         int maxDurability = stack.getMaxDamage();
+
+        // 安全检查：确保maxDurability大于0
+        if (maxDurability <= 0) {
+            return availableXp; // 无法修复，返回所有可用经验
+        }
+
         int needRepair = damage; // 需修复的耐久值
         int needXp = (int) Math.ceil((double) needRepair / 2); // 需消耗的经验值（1经验=2耐久）
 
@@ -555,17 +680,29 @@ public class ItemExperiencePump extends Item implements IBauble {
      * 4 = 76-100% (满)
      */
     public static int getXpFillLevel(ItemStack stack) {
-        int stored = getXpStoredFromNBT(stack);
-        int max = getMaxXpFromNBT(stack);
-        
-        if (stored <= 0 || max <= 0) return 0;
-        if (stored >= max) return 4;
-        
-        double percentage = (double) stored / (double) max * 100.0;
-        
-        if (percentage <= 25.0) return 1;
-        if (percentage <= 50.0) return 2;
-        if (percentage <= 75.0) return 3;
-        return 4;
+        // 避免重复的NBT查询，直接从NBT获取所需数据
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return FILL_LEVEL_EMPTY;
+        }
+
+        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
+        if (data == null) {
+            return FILL_LEVEL_EMPTY;
+        }
+
+        int stored = data.getInteger(XP_KEY);
+        int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
+        int max = capacityLevels * IExperiencePumpCapability.XP_PER_LEVEL;
+
+        if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
+        if (stored >= max) return FILL_LEVEL_FULL;
+
+        // 使用整数运算替代浮点运算以提高性能
+        int percentage = (stored * 100) / max;
+
+        if (percentage <= (int)XP_FILL_LEVEL_25) return FILL_LEVEL_QUARTER;
+        if (percentage <= (int)XP_FILL_LEVEL_50) return FILL_LEVEL_HALF;
+        if (percentage <= (int)XP_FILL_LEVEL_75) return FILL_LEVEL_THREE_QUARTERS;
+        return FILL_LEVEL_FULL;
     }
 }

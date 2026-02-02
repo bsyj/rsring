@@ -78,110 +78,179 @@ public class PacketPumpAction implements IMessage {
             player.getServerWorld().addScheduledTask(() -> {
                 ItemStack controllerStack = player.getHeldItem(hand);
 
-                // 验证手中确实是经验泵控制器
                 if (controllerStack.isEmpty() || !(controllerStack.getItem() instanceof com.moremod.item.ItemExperiencePumpController)) {
-                    return; // 手中不是控制器，无法操作
+                    return;
                 }
 
-                // 查找所有经验储罐
                 java.util.List<ItemStack> tankStacks = findAllExperienceTanks(player);
                 if (tankStacks.isEmpty()) {
-                    // 如果是设置经验修补，即使没有储罐也可以发送反馈信息
                     if (msg.action == ACTION_MENDING) {
-                        // 发送反馈信息告知玩家没有找到经验储罐
                         player.sendMessage(new net.minecraft.util.text.TextComponentString(
                             net.minecraft.util.text.TextFormatting.RED + "未找到经验储罐！"));
                     }
-                    return; // 没有经验储罐，无法操作
+                    return;
                 }
 
-                // 对所有储罐执行操作
-                for (ItemStack tankStack : tankStacks) {
-                    IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-                    if (cap == null) continue;
-
-                    switch (msg.action) {
-                        case ACTION_MODE:
-                            cap.setMode((cap.getMode() + 1) % 3);
-                            break;
-                        case ACTION_RETAIN_UP:
-                            cap.setRetainLevel(cap.getRetainLevel() + (msg.value > 0 ? msg.value : 1));
-                            break;
-                        case ACTION_RETAIN_DOWN:
-                            cap.setRetainLevel(Math.max(0, cap.getRetainLevel() - (msg.value > 0 ? msg.value : 1)));
-                            break;
-                        case ACTION_TAKE_ALL:
-                            int takeAll = cap.takeXp(cap.getXpStored());
-                            if (takeAll > 0) player.addExperience(takeAll);
-                            break;
-                        case ACTION_TAKE_ONE:
-                            // 取出N级经验：value参数表示要取出的等级数
-                            int levelsToTake = msg.value > 0 ? msg.value : 1;
-                            for (int i = 0; i < levelsToTake; i++) {
-                                int playerLevel = player.experienceLevel;
-                                // 计算1级的经验值（使用Minecraft的经验公式）
-                                int oneLevelXP = xpForOneLevel(playerLevel);
-                                
-                                // 从储罐取出1级的经验
-                                int xpToTake = Math.min(oneLevelXP, cap.getXpStored());
-                                if (xpToTake > 0) {
-                                    int taken = cap.takeXp(xpToTake);
-                                    if (taken > 0) {
-                                        player.addExperience(taken);
-                                    }
-                                } else {
-                                    break; // 储罐没有足够的经验，停止
-                                }
-                            }
-                            break;
-                        case ACTION_STORE_ONE:
-                            // 存入N级经验：value参数表示要存入的等级数
-                            int levelsToStore = msg.value > 0 ? msg.value : 1;
-                            for (int i = 0; i < levelsToStore; i++) {
-                                int currentLevel = player.experienceLevel;
-                                if (currentLevel > 0) {
-                                    // 计算当前等级的1级经验值
-                                    int oneLevelXPStore = xpForOneLevel(currentLevel - 1);
-                                    
-                                    // 确保不超过储罐剩余容量
-                                    int availableSpace = cap.getMaxXp() - cap.getXpStored();
-                                    int xpToStore = Math.min(oneLevelXPStore, availableSpace);
-                                    
-                                    // 确保玩家有足够的经验
-                                    int playerTotalXp = getPlayerTotalXp(player);
-                                    xpToStore = Math.min(xpToStore, playerTotalXp);
-                                    
-                                    if (xpToStore > 0) {
-                                        addPlayerXp(player, -xpToStore);
-                                        cap.addXp(xpToStore);
-                                    } else {
-                                        break; // 玩家没有足够的经验或储罐已满，停止
-                                    }
-                                } else {
-                                    break; // 玩家等级为0，停止
-                                }
-                            }
-                            break;
-                        case ACTION_STORE_ALL:
-                            int all = getPlayerTotalXp(player);
-                            int stored = cap.addXp(Math.min(all, cap.getMaxXp() - cap.getXpStored()));
-                            if (stored > 0) addPlayerXp(player, -stored);
-                            break;
-                        case ACTION_MENDING:
-                            cap.setUseForMending(!cap.isUseForMending());
-                            break;
+                // 构建优先级列表：存入优先空罐，取出优先非空罐
+                java.util.List<ItemStack> prioritized = new java.util.ArrayList<>();
+                if (msg.action == ACTION_STORE_ONE || msg.action == ACTION_STORE_ALL) {
+                    for (ItemStack t : tankStacks) {
+                        int stored = ItemExperiencePump.getXpStoredFromNBT(t);
+                        if (stored == 0) prioritized.add(t);
                     }
-
-                    // 如果当前模式是泵入或泵出，则执行相应的操作
-                    if (cap.getMode() != IExperiencePumpCapability.MODE_OFF) {
-                        pumpExperienceBetweenPlayerAndTank(player, cap);
+                    for (ItemStack t : tankStacks) {
+                        int stored = ItemExperiencePump.getXpStoredFromNBT(t);
+                        if (stored > 0) prioritized.add(t);
                     }
-
-                    // 同步能力到物品堆栈
-                    ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                } else if (msg.action == ACTION_TAKE_ONE || msg.action == ACTION_TAKE_ALL) {
+                    for (ItemStack t : tankStacks) {
+                        int stored = ItemExperiencePump.getXpStoredFromNBT(t);
+                        if (stored > 0) prioritized.add(t);
+                    }
+                    for (ItemStack t : tankStacks) {
+                        int stored = ItemExperiencePump.getXpStoredFromNBT(t);
+                        if (stored == 0) prioritized.add(t);
+                    }
+                } else {
+                    prioritized.addAll(tankStacks);
                 }
 
-                // 发送数据包更新客户端（使用第一个储罐的数据作为代表）
+                java.util.function.Function<Integer, Integer> levelToTotalXp = (lvl) -> {
+                    int level = lvl;
+                    if (level <= 0) return 0;
+                    if (level < 16) return level * (6 + level);
+                    if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
+                    return (int) (level * (4.5 * level - 162.5) + 2220);
+                };
+
+                java.util.function.Supplier<Integer> getPlayerTotalXp = () -> {
+                    return (int) (player.experience * (float) player.xpBarCap()) + levelToTotalXp.apply(player.experienceLevel);
+                };
+
+                switch (msg.action) {
+                    case ACTION_MODE:
+                    case ACTION_RETAIN_UP:
+                    case ACTION_RETAIN_DOWN:
+                    case ACTION_MENDING:
+                        for (ItemStack tankStack : prioritized) {
+                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                            if (cap == null) continue;
+                            switch (msg.action) {
+                                case ACTION_MODE:
+                                    cap.setMode((cap.getMode() + 1) % 3);
+                                    break;
+                                case ACTION_RETAIN_UP:
+                                    cap.setRetainLevel(cap.getRetainLevel() + (msg.value > 0 ? msg.value : 1));
+                                    break;
+                                case ACTION_RETAIN_DOWN:
+                                    cap.setRetainLevel(Math.max(0, cap.getRetainLevel() - (msg.value > 0 ? msg.value : 1)));
+                                    break;
+                                case ACTION_MENDING:
+                                    cap.setUseForMending(!cap.isUseForMending());
+                                    break;
+                            }
+                            ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                        }
+                        break;
+
+                    case ACTION_TAKE_ALL: {
+                        int totalTaken = 0;
+                        for (ItemStack tankStack : prioritized) {
+                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                            if (cap == null) continue;
+                            int take = cap.takeXp(cap.getXpStored());
+                            if (take > 0) {
+                                totalTaken += take;
+                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            }
+                        }
+                        if (totalTaken > 0) player.addExperience(totalTaken);
+                        break;
+                    }
+
+                    case ACTION_TAKE_ONE: {
+                        int levelsToTake = msg.value > 0 ? msg.value : 1;
+                        int currentTotal = getPlayerTotalXp.get();
+                        int targetTotal = levelToTotalXp.apply(player.experienceLevel + levelsToTake);
+                        int need = Math.max(0, targetTotal - currentTotal);
+                        if (need <= 0) break;
+
+                        int remaining = need;
+                        int totalGiven = 0;
+                        for (ItemStack tankStack : prioritized) {
+                            if (remaining <= 0) break;
+                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                            if (cap == null) continue;
+                            int available = cap.getXpStored();
+                            if (available <= 0) continue;
+                            int take = Math.min(available, remaining);
+                            int taken = cap.takeXp(take);
+                            if (taken > 0) {
+                                remaining -= taken;
+                                totalGiven += taken;
+                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            }
+                        }
+                        if (totalGiven > 0) player.addExperience(totalGiven);
+                        break;
+                    }
+
+                    case ACTION_STORE_ALL: {
+                        int playerTotal = getPlayerTotalXp.get();
+                        if (playerTotal <= 0) break;
+                        int remainingToStore = playerTotal;
+                        int totalStored = 0;
+                        for (ItemStack tankStack : prioritized) {
+                            if (remainingToStore <= 0) break;
+                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                            if (cap == null) continue;
+                            int space = cap.getMaxXp() - cap.getXpStored();
+                            if (space <= 0) continue;
+                            int store = Math.min(space, remainingToStore);
+                            int stored = cap.addXp(store);
+                            if (stored > 0) {
+                                remainingToStore -= stored;
+                                totalStored += stored;
+                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            }
+                        }
+                        if (totalStored > 0) addPlayerXp(player, -totalStored);
+                        break;
+                    }
+
+                    case ACTION_STORE_ONE: {
+                        int levelsToStore = msg.value > 0 ? msg.value : 1;
+                        if (levelsToStore <= 0) break;
+                        int currentTotal = getPlayerTotalXp.get();
+                        int targetLevel = Math.max(0, player.experienceLevel - levelsToStore);
+                        int targetTotal = levelToTotalXp.apply(targetLevel);
+                        int toStore = Math.max(0, currentTotal - targetTotal);
+                        if (toStore <= 0) break;
+
+                        int remainingToStore = toStore;
+                        int totalStored = 0;
+                        for (ItemStack tankStack : prioritized) {
+                            if (remainingToStore <= 0) break;
+                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                            if (cap == null) continue;
+                            int space = cap.getMaxXp() - cap.getXpStored();
+                            if (space <= 0) continue;
+                            int store = Math.min(space, remainingToStore);
+                            int stored = cap.addXp(store);
+                            if (stored > 0) {
+                                remainingToStore -= stored;
+                                totalStored += stored;
+                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            }
+                        }
+                        if (totalStored > 0) addPlayerXp(player, -totalStored);
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+
                 if (!tankStacks.isEmpty()) {
                     RsRingMod.network.sendTo(new PacketPumpData(tankStacks.get(0)), player);
                 }

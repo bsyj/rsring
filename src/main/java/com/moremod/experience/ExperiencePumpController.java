@@ -351,7 +351,7 @@ public class ExperiencePumpController {
     /**
      * Converts XP points to equivalent level using Minecraft's official formulas.
      * Implements Requirements 6.1, 6.2 for accurate XP calculation.
-     * 
+     *
      * @param xp The XP amount to convert
      * @return The equivalent level (can be fractional)
      */
@@ -359,50 +359,47 @@ public class ExperiencePumpController {
         if (xp <= 0) {
             return 0.0;
         }
-        
-        // Overflow protection: cap at reasonable maximum (level 21863 = Integer.MAX_VALUE XP)
-        if (xp >= Integer.MAX_VALUE - 1000) {
-            LOGGER.warn("XP value {} is near integer overflow, capping calculation", xp);
-            xp = Integer.MAX_VALUE - 1000;
-        }
-        
-        if (xp < 352) {
-            // Levels 0-15: Total XP = level * (6 + level)
-            // Solving: level^2 + 6*level - xp = 0
-            // level = (-6 + sqrt(36 + 4*xp)) / 2 = (-6 + sqrt(36 + 4*xp)) / 2
-            double discriminant = 36 + 4 * xp;
-            double level = (-6 + Math.sqrt(discriminant)) / 2;
+
+        // Minecraft XP formula:
+        // Levels 0-15: XP = 17 * level
+        // Levels 16-30: XP = 1.5 * level^2 - 29.5 * level + 360
+        // Levels 31+: XP = 3.5 * level^2 - 151.5 * level + 2220
+
+        // At level 15: XP = 17 * 15 = 255
+        // At level 16: XP = 1.5*16^2 - 29.5*16 + 360 = 384 - 472 + 360 = 272
+        // At level 30: XP = 1.5*30^2 - 29.5*30 + 360 = 1350 - 885 + 360 = 825
+        // At level 31: XP = 3.5*31^2 - 151.5*31 + 2220 = 3363.5 - 4696.5 + 2220 = 887
+
+        if (xp <= 255) { // Levels 0-15
+            // Solve: XP = 17 * level => level = XP / 17
+            double level = (double) xp / 17.0;
             return Math.max(0.0, Math.min(15.0, level));
-        } else if (xp < 1507) {
-            // Levels 16-30: Total XP = level * (2.5 * level - 40.5) + 360
-            // Solving: 2.5*level^2 - 40.5*level + 360 - xp = 0
-            // level = (40.5 + sqrt(40.5^2 - 4*2.5*(360-xp))) / (2*2.5)
-            double a = 2.5;
-            double b = -40.5;
+        } else if (xp <= 825) { // Levels 16-30
+            // Solve: 1.5*level^2 - 29.5*level + (360 - XP) = 0
+            double a = 1.5;
+            double b = -29.5;
             double c = 360 - xp;
             double discriminant = b * b - 4 * a * c;
-            
+
             if (discriminant < 0) {
                 LOGGER.warn("Negative discriminant in XP calculation, using boundary value");
                 return 15.0; // Fallback to boundary
             }
-            
+
             double level = (-b + Math.sqrt(discriminant)) / (2 * a);
             return Math.max(15.0, Math.min(30.0, level));
-        } else {
-            // Levels 31+: Total XP = level * (4.5 * level - 162.5) + 2220
-            // Solving: 4.5*level^2 - 162.5*level + 2220 - xp = 0
-            // level = (162.5 + sqrt(162.5^2 - 4*4.5*(2220-xp))) / (2*4.5)
-            double a = 4.5;
-            double b = -162.5;
+        } else { // Levels 31+
+            // Solve: 3.5*level^2 - 151.5*level + (2220 - XP) = 0
+            double a = 3.5;
+            double b = -151.5;
             double c = 2220 - xp;
             double discriminant = b * b - 4 * a * c;
-            
+
             if (discriminant < 0) {
                 LOGGER.warn("Negative discriminant in XP calculation, using boundary value");
                 return 30.0; // Fallback to boundary
             }
-            
+
             double level = (-b + Math.sqrt(discriminant)) / (2 * a);
             return Math.max(30.0, level);
         }
@@ -411,7 +408,7 @@ public class ExperiencePumpController {
     /**
      * Converts level to XP points using Minecraft's official formulas.
      * Implements Requirements 6.1, 6.2 for accurate XP calculation.
-     * 
+     *
      * @param level The level to convert
      * @return The equivalent XP amount
      */
@@ -419,24 +416,24 @@ public class ExperiencePumpController {
         if (level <= 0) {
             return 0;
         }
-        
+
         // Overflow protection: cap at reasonable maximum
         if (level > 21863) {
             LOGGER.warn("Level {} is extremely high, capping to prevent overflow", level);
             level = 21863; // This level corresponds to near Integer.MAX_VALUE XP
         }
-        
-        int intLevel = (int) level;
-        
-        if (intLevel < 16) {
-            // Levels 0-15: Total XP = level * (6 + level)
-            return intLevel * (6 + intLevel);
-        } else if (intLevel < 31) {
-            // Levels 16-30: Total XP = level * (2.5 * level - 40.5) + 360
-            return (int) (intLevel * (2.5 * intLevel - 40.5) + 360);
+
+        // Use the exact level value for calculation, not the floored value
+        // This ensures better round-trip accuracy
+        if (level <= 15) {
+            // Levels 0-15: XP = 17 * level
+            return (int) Math.floor(17 * level);
+        } else if (level <= 30) {
+            // Levels 16-30: XP = 1.5 * level^2 - 29.5 * level + 360
+            return (int) Math.floor(1.5 * level * level - 29.5 * level + 360);
         } else {
-            // Levels 31+: Total XP = level * (4.5 * level - 162.5) + 2220
-            return (int) (intLevel * (4.5 * intLevel - 162.5) + 2220);
+            // Levels 31+: XP = 3.5 * level^2 - 151.5 * level + 2220
+            return (int) Math.floor(3.5 * level * level - 151.5 * level + 2220);
         }
     }
     
@@ -460,17 +457,17 @@ public class ExperiencePumpController {
     
     /**
      * Gets the XP required to reach the next level from the current level.
-     * 
+     *
      * @param currentLevel The current level
      * @return XP required for next level
      */
     public int getXPToNextLevel(int currentLevel) {
-        if (currentLevel <= 14) {
-            return 17; // Static 17 XP for levels 0-14
-        } else if (currentLevel <= 29) {
-            return 17 + (currentLevel - 15) * 3; // 17 + 3 more per level for levels 15-29
+        if (currentLevel < 16) {
+            return 17; // Static 17 XP for levels 0-15
+        } else if (currentLevel < 31) {
+            return 17 + (currentLevel - 15) * 3; // 17 + 3 more per level for levels 16-30
         } else {
-            // For levels 30+, XP requirement is 62 + (currentLevel - 30) * 7
+            // For levels 31+, XP requirement is 62 + (currentLevel - 30) * 7
             return 62 + (currentLevel - 30) * 7;
         }
     }
@@ -681,7 +678,7 @@ public class ExperiencePumpController {
     /**
      * Calculates XP amount for level-based extraction operations.
      * Implements Requirement 6.4 for level-based extraction calculation.
-     * 
+     *
      * @param player The player performing the extraction
      * @param targetLevel The level to extract down to
      * @return The amount of XP that can be extracted
@@ -690,19 +687,20 @@ public class ExperiencePumpController {
         if (player == null || targetLevel < 0) {
             return 0;
         }
-        
+
         int currentXP = getPlayerTotalExperience(player);
         int targetXP = convertLevelToXP(targetLevel);
-        
+
+        // Ensure targetXP doesn't exceed currentXP to avoid negative extraction
         if (currentXP <= targetXP) {
             return 0; // Player doesn't have enough XP to extract
         }
-        
+
         int extractableXP = currentXP - targetXP;
-        
+
         LOGGER.debug("Level-based extraction calculation for player {}: current {} XP, target level {}, extractable {} XP",
                     player.getName(), currentXP, targetLevel, extractableXP);
-        
+
         return extractableXP;
     }
 }

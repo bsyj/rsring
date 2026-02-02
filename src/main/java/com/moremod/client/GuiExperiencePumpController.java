@@ -39,6 +39,11 @@ public class GuiExperiencePumpController extends GuiScreen {
     private static final int BG_COLOR = 0xFF8B7355;
     private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("textures/gui/container/generic_54.png");
 
+    // 操作按钮统一尺寸与间距
+    private static final int OP_BUTTON_WIDTH = 60;
+    private static final int OP_BUTTON_HEIGHT = 20;
+    private static final int OP_BUTTON_SPACING = 5;
+
     private final ItemStack controllerStack;
     private final EnumHand hand;
     

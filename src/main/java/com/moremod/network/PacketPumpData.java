@@ -70,7 +70,19 @@ public class PacketPumpData implements IMessage {
     public int getMode() { return mode; }
     public int getRetainLevel() { return retainLevel; }
     public boolean isUseForMending() { return useForMending; }
-    public int getMaxXp() { return capacityLevels * com.moremod.capability.IExperiencePumpCapability.XP_PER_LEVEL; }
+    public int getMaxXp() {
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        if (capacityLevels <= 0) return com.moremod.capability.IExperiencePumpCapability.BASE_XP_PER_LEVEL;
+        try {
+            long maxCapacity = (long) com.moremod.capability.IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
+            if (maxCapacity > Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
+            return (int) maxCapacity;
+        } catch (Exception e) {
+            return Integer.MAX_VALUE;
+        }
+    }
 
     public static class Handler implements IMessageHandler<PacketPumpData, IMessage> {
         @Override

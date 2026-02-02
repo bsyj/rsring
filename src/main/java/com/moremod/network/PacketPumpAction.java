@@ -138,6 +138,8 @@ public class PacketPumpAction implements IMessage {
                             switch (msg.action) {
                                 case ACTION_MODE:
                                     cap.setMode((cap.getMode() + 1) % 3);
+                                    // 模式切换后立即执行一次泵送操作
+                                    pumpExperienceBetweenPlayerAndTank(player, cap);
                                     break;
                                 case ACTION_RETAIN_UP:
                                     cap.setRetainLevel(cap.getRetainLevel() + (msg.value > 0 ? msg.value : 1));
@@ -297,7 +299,7 @@ public class PacketPumpAction implements IMessage {
         }
 
         private static int xpForOneLevel(int level) {
-            if (level <= 0) return IExperiencePumpCapability.XP_PER_LEVEL;
+            if (level <= 0) return IExperiencePumpCapability.BASE_XP_PER_LEVEL;
             return levelToTotalXp(level) - levelToTotalXp(level - 1);
         }
 
@@ -306,6 +308,13 @@ public class PacketPumpAction implements IMessage {
         }
 
         private static int levelToTotalXp(int level) {
+            if (level <= 0) return 0;
+            if (level < 16) return level * (6 + level);
+            if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
+            return (int) (level * (4.5 * level - 162.5) + 2220);
+        }
+
+        private static int getTotalXpForLevel(int level) {
             if (level <= 0) return 0;
             if (level < 16) return level * (6 + level);
             if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
@@ -332,7 +341,7 @@ public class PacketPumpAction implements IMessage {
         private void pumpExperienceBetweenPlayerAndTank(net.minecraft.entity.player.EntityPlayer player, IExperiencePumpCapability cap) {
             int retain = cap.getRetainLevel();
             int playerTotal = getPlayerTotalXp(player);
-            int targetXp = levelToTotalXp(retain);
+            int targetXp = getTotalXpForLevel(retain); // 使用精确的等级到经验转换
 
             if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
                 // 从玩家泵入：玩家高于保留等级时抽取
@@ -344,7 +353,7 @@ public class PacketPumpAction implements IMessage {
                     }
                 }
             } else if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-                // 向玩家泵出：维持玩家在保留等级
+                // 向玩家泵出：维持玩家达到保留等级，如果不足则从储罐泵送经验
                 if (playerTotal < targetXp && cap.getXpStored() > 0) {
                     int need = targetXp - playerTotal;
                     int give = cap.takeXp(Math.min(need, 100));

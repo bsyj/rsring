@@ -13,8 +13,8 @@ public interface IExperiencePumpCapability {
     /** 模式：取消泵送 */
     int MODE_OFF = 2;
 
-    /** 每级容量对应的经验点数（1级 = 1000 mB液体经验） */
-    int XP_PER_LEVEL = 1000;
+    /** 基础容量对应的经验点数（1级 = 1000 mB液体经验，后续每级翻倍） */
+    int BASE_XP_PER_LEVEL = 1000;
 
     /**
      * 获取当前存储的经验点数
@@ -42,7 +42,7 @@ public interface IExperiencePumpCapability {
 
     /**
      * 获取最大可存储经验点数
-     * @return 最大可存储经验点数 = capacityLevels * XP_PER_LEVEL
+     * @return 最大可存储经验点数 = BASE_XP_PER_LEVEL * 2^(capacityLevels-1)，即1级=1000, 2级=2000, 3级=4000...
      */
     int getMaxXp();
 

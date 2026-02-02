@@ -69,8 +69,21 @@ public class ItemExperiencePump extends Item implements IBauble {
     }
 
     public static int getMaxXpFromNBT(ItemStack stack) {
-        if (stack == null) return DEFAULT_RETAIN_LEVEL * IExperiencePumpCapability.XP_PER_LEVEL;
-        return getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
+        if (stack == null) {
+            // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+            return (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, DEFAULT_RETAIN_LEVEL - 1));
+        }
+        int capacityLevels = getCapacityLevelsFromNBT(stack);
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        try {
+            long maxCapacity = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
+            if (maxCapacity > Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
+            return (int) maxCapacity;
+        } catch (Exception e) {
+            return Integer.MAX_VALUE;
+        }
     }
 
     public ItemExperiencePump() {
@@ -87,8 +100,9 @@ public class ItemExperiencePump extends Item implements IBauble {
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         if (data == null) {
             // 即使没有NBT数据也要显示基础信息
-            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + (1 * IExperiencePumpCapability.XP_PER_LEVEL) + " mb");
-            tooltip.add(TextFormatting.GRAY + "等级: " + 1 + " 级");
+            int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL; // 1级容量 = 1000 mb
+            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + initialCapacity + " mb");
+            tooltip.add(TextFormatting.GRAY + "容量: " + initialCapacity + " mb");
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
                 tooltip.add(TextFormatting.GOLD + "功能介绍:");
@@ -105,12 +119,14 @@ public class ItemExperiencePump extends Item implements IBauble {
 
         int xp = data.getInteger(XP_KEY);
         int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;  // 默认1级
-        int max = capacityLevels * IExperiencePumpCapability.XP_PER_LEVEL;
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        int max = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1));
         boolean mendingEnabled = data.hasKey(MENDING_KEY) ? data.getBoolean(MENDING_KEY) : false;
-        
+
         // 基础信息显示
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
-        tooltip.add(TextFormatting.GRAY + "等级: " + capacityLevels + " 级");
+        int actualCapacity = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1)); // 实际容量
+        tooltip.add(TextFormatting.GRAY + "容量: " + actualCapacity + " mb");
         
         // 状态信息显示（参考精妙背包设计）
         boolean isActive = com.moremod.config.ExperienceTankConfig.enabled;
@@ -167,8 +183,17 @@ public class ItemExperiencePump extends Item implements IBauble {
             return false;
         }
 
-        int max = getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
-        return max > 0;
+        int capacityLevels = getCapacityLevelsFromNBT(stack);
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        try {
+            long max = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
+            if (max > Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE > 0;
+            }
+            return (int) max > 0;
+        } catch (Exception e) {
+            return Integer.MAX_VALUE > 0;
+        }
     }
 
     @Override
@@ -182,10 +207,19 @@ public class ItemExperiencePump extends Item implements IBauble {
             return 1.0;
         }
 
-        int max = getCapacityLevelsFromNBT(stack) * IExperiencePumpCapability.XP_PER_LEVEL;
-        if (max <= 0) return 1.0;
-        int xp = data.getInteger(XP_KEY); // 直接从已获取的数据中读取，避免重复NBT查询
-        return 1.0 - (double) xp / (double) max;
+        int capacityLevels = getCapacityLevelsFromNBT(stack);
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        try {
+            long max = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
+            if (max > Integer.MAX_VALUE) {
+                return 1.0 - (double) data.getInteger(XP_KEY) / (double) Integer.MAX_VALUE;
+            }
+            int maxInt = (int) max;
+            if (maxInt <= 0) return 1.0;
+            return 1.0 - (double) data.getInteger(XP_KEY) / (double) maxInt;
+        } catch (Exception e) {
+            return 1.0 - (double) data.getInteger(XP_KEY) / (double) Integer.MAX_VALUE;
+        }
     }
 
     @Override
@@ -355,7 +389,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         
         int retain = cap.getRetainLevel();
         int playerTotal = getPlayerTotalXp(player);
-        int targetXp = levelToTotalXp(retain);
+        int targetXp = getTotalXpForLevel(retain); // 使用精确的等级到经验转换
 
         if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
             // 从玩家泵入：主动抽取超过保留等级的经验
@@ -370,11 +404,14 @@ public class ItemExperiencePump extends Item implements IBauble {
                 }
             }
         } else if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-            // 向玩家泵出：维持玩家在保留等级
+            // 向玩家泵出：维持玩家达到保留等级，如果不足则从储罐泵送经验
             if (playerTotal < targetXp && cap.getXpStored() > 0) {
                 int need = targetXp - playerTotal;
                 int give = cap.takeXp(Math.min(need, 100));
-                if (give > 0) addPlayerXp(player, give);
+                if (give > 0) {
+                    addPlayerXp(player, give);
+                    syncCapabilityToStack(stack, cap);
+                }
             }
         }
     }
@@ -692,17 +729,28 @@ public class ItemExperiencePump extends Item implements IBauble {
 
         int stored = data.getInteger(XP_KEY);
         int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
-        int max = capacityLevels * IExperiencePumpCapability.XP_PER_LEVEL;
+        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+        try {
+            long maxLong = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
+            if (maxLong > Integer.MAX_VALUE) {
+                maxLong = Integer.MAX_VALUE;
+            }
+            int max = (int) maxLong;
 
-        if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
-        if (stored >= max) return FILL_LEVEL_FULL;
+            if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
+            if (stored >= max) return FILL_LEVEL_FULL;
 
-        // 使用整数运算替代浮点运算以提高性能
-        int percentage = (stored * 100) / max;
+            // 使用整数运算替代浮点运算以提高性能
+            int percentage = (stored * 100) / max;
 
-        if (percentage <= (int)XP_FILL_LEVEL_25) return FILL_LEVEL_QUARTER;
-        if (percentage <= (int)XP_FILL_LEVEL_50) return FILL_LEVEL_HALF;
-        if (percentage <= (int)XP_FILL_LEVEL_75) return FILL_LEVEL_THREE_QUARTERS;
-        return FILL_LEVEL_FULL;
+            if (percentage <= 0) return FILL_LEVEL_EMPTY;       // 0% 空
+            if (percentage <= (int)XP_FILL_LEVEL_25) return FILL_LEVEL_QUARTER;   // 1-25%
+            if (percentage <= (int)XP_FILL_LEVEL_50) return FILL_LEVEL_HALF;      // 26-50%
+            if (percentage <= (int)XP_FILL_LEVEL_75) return FILL_LEVEL_THREE_QUARTERS; // 51-75%
+            return FILL_LEVEL_FULL; // 76-100%
+        } catch (Exception e) {
+            // 异常情况下返回空状态
+            return FILL_LEVEL_EMPTY;
+        }
     }
 }

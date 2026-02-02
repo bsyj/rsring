@@ -171,6 +171,43 @@ public class CommonEventHandler {
         return ItemStack.EMPTY;
     }
 
+    /**
+     * 查找经验泵控制器
+     */
+    private ItemStack findExperiencePumpController(EntityPlayer player) {
+        // 检查主手和副手
+        for (EnumHand hand : EnumHand.values()) {
+            ItemStack heldStack = player.getHeldItem(hand);
+            if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePumpController) {
+                return heldStack;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /**
+     * 将控制器配置同步到储罐
+     */
+    private void syncControllerToTank(EntityPlayer player, ItemStack controllerStack, ItemStack tankStack) {
+        if (controllerStack.isEmpty() || tankStack.isEmpty()) return;
+
+        // 从控制器获取配置
+        com.moremod.item.ItemExperiencePumpController controllerItem = (com.moremod.item.ItemExperiencePumpController) controllerStack.getItem();
+        int mode = controllerItem.getMode(controllerStack);
+        int retainLevel = controllerItem.getRetainLevel(controllerStack);
+        boolean useForMending = controllerItem.isUseForMending(controllerStack);
+
+        // 应用到储罐
+        com.moremod.capability.IExperiencePumpCapability cap = tankStack.getCapability(
+            com.moremod.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap != null) {
+            cap.setMode(mode);
+            cap.setRetainLevel(retainLevel);
+            cap.setUseForMending(useForMending);
+            com.moremod.item.ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+        }
+    }
+
     // 每tick执行戒指功能（吸收物品）
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -182,11 +219,20 @@ public class CommonEventHandler {
         if (!chestRingStack.isEmpty()) {
             ((ItemChestRing) chestRingStack.getItem()).onWornTick(chestRingStack, player);
         }
+
+        // 查找经验泵控制器和储罐
+        ItemStack controllerStack = findExperiencePumpController(player);
         ItemStack pumpStack = findExperiencePump(player);
+
+        // 如果同时持有控制器和储罐，则立即同步配置
+        if (!controllerStack.isEmpty() && !pumpStack.isEmpty()) {
+            syncControllerToTank(player, controllerStack, pumpStack);
+        }
+
         if (!pumpStack.isEmpty()) {
             ((ItemExperiencePump) pumpStack.getItem()).onWornTick(pumpStack, player);
         }
-        
+
         // 检查玩家经验变化，触发保留等级机制
         checkPlayerExperienceChange(player, pumpStack);
     }
@@ -248,7 +294,7 @@ public class CommonEventHandler {
     private static int getPlayerTotalXp(EntityPlayer player) {
         return (int) (player.experience * (float) player.xpBarCap()) + getTotalXpForLevel(player.experienceLevel);
     }
-    
+
     /**
      * 获取指定等级所需的总经验值
      */
@@ -258,7 +304,7 @@ public class CommonEventHandler {
         if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
         return (int) (level * (4.5 * level - 162.5) + 2220);
     }
-    
+
     /**
      * 等级转换为总经验值
      */

@@ -47,21 +47,21 @@ public class GuiExperiencePumpController extends GuiScreen {
     private final ItemStack controllerStack;
     private final EnumHand hand;
     
-    // Experience pump controller for comprehensive tank management
+    // Experience pump controller for comprehensive storage management
     private final ExperiencePumpController pumpController;
 
     private int guiLeft;
     private int guiTop;
 
-    // Tank data - updated from comprehensive scanning
+    // Storage data - updated from comprehensive scanning
     private int xpStored;
     private int capacityLevels;
     private int mode;
     private int retainLevel;
     private boolean useForMending;
     private int maxXp;
-    
-    // Comprehensive tank information
+
+    // Comprehensive storage information
     private int totalTanks;
     private int totalCapacity;
     private int totalStored;
@@ -78,7 +78,7 @@ public class GuiExperiencePumpController extends GuiScreen {
         // 从控制器加载配置
         loadControllerConfiguration();
         
-        // Initialize with comprehensive tank scanning
+        // Initialize with comprehensive storage scanning
         refreshTankData();
         
         // 将控制器配置同步到所有储罐
@@ -93,7 +93,7 @@ public class GuiExperiencePumpController extends GuiScreen {
         useForMending = msg.isUseForMending();
         maxXp = msg.getMaxXp();
         
-        // Refresh comprehensive tank data
+        // Refresh comprehensive storage data
         refreshTankData();
     }
     
@@ -131,22 +131,22 @@ public class GuiExperiencePumpController extends GuiScreen {
     }
     
     /**
-     * Refreshes tank data using comprehensive scanning from ExperiencePumpController.
-     * Implements comprehensive tank detection across all inventory types.
+     * Refreshes storage data using comprehensive scanning from ExperiencePumpController.
+     * Implements comprehensive storage detection across all inventory types.
      */
     private void refreshTankData() {
         net.minecraft.entity.player.EntityPlayer player = Minecraft.getMinecraft().player;
         if (player == null) {
             return;
         }
-        
-        // Use comprehensive tank scanning
+
+        // Use comprehensive storage scanning
         TankScanResult scanResult = pumpController.scanAllInventories(player);
         totalTanks = scanResult.getTankCount();
         totalCapacity = scanResult.getTotalCapacity();
         totalStored = scanResult.getTotalStored();
-        
-        // Update individual tank data from first available tank for compatibility
+
+        // Update individual storage data from first available storage for compatibility
         List<ItemStack> tanks = scanResult.getAllTanks();
         if (!tanks.isEmpty()) {
             ItemStack firstTank = tanks.get(0);
@@ -160,7 +160,7 @@ public class GuiExperiencePumpController extends GuiScreen {
                 maxXp = ItemExperiencePump.getMaxXpFromNBT(firstTank);
             }
         } else {
-            // No tanks found - reset to defaults
+            // No storages found - reset to defaults
             totalTanks = 0;
             totalCapacity = 0;
             totalStored = 0;
@@ -184,15 +184,17 @@ public class GuiExperiencePumpController extends GuiScreen {
         // 保留等级按钮（默认0级，鼠标悬停滚轮调整）
         buttonList.add(new GuiButton(2, guiLeft + 65, guiTop + 45, 50, 20, "保留: " + retainLevel));
 
-        // 操作按钮区域
+        // 操作按钮区域 - 四个按钮平均分布
+        int opButtonStartX = guiLeft + 8;  // 起始X坐标
+        int opButtonWidth = (GUI_WIDTH - 8 * 2 - 3 * OP_BUTTON_SPACING) / 4; // 平均分配宽度，考虑间距
         // 全部取出按钮
-        buttonList.add(new GuiButton(3, guiLeft + 8, guiTop + 70, 40, 20, "全取"));
+        buttonList.add(new GuiButton(3, opButtonStartX, guiTop + 70, opButtonWidth, 20, "全取"));
         // 取出N级按钮（默认取1级，鼠标悬停滚轮调整）
-        buttonList.add(new GuiButton(4, guiLeft + 53, guiTop + 70, 60, 20, "取 " + extractLevels + " 级"));
+        buttonList.add(new GuiButton(4, opButtonStartX + opButtonWidth + OP_BUTTON_SPACING, guiTop + 70, opButtonWidth, 20, "取 " + extractLevels + " 级"));
         // 存入N级按钮（默认存1级，鼠标悬停滚轮调整）
-        buttonList.add(new GuiButton(5, guiLeft + 118, guiTop + 70, 60, 20, "存 " + storeLevels + " 级"));
+        buttonList.add(new GuiButton(5, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 2, guiTop + 70, opButtonWidth, 20, "存 " + storeLevels + " 级"));
         // 全部存入按钮
-        buttonList.add(new GuiButton(6, guiLeft + 128, guiTop + 70, 40, 20, "全存"));
+        buttonList.add(new GuiButton(6, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 3, guiTop + 70, opButtonWidth, 20, "全存"));
     }
 
     @Override
@@ -256,7 +258,7 @@ public class GuiExperiencePumpController extends GuiScreen {
         fontRenderer.drawStringWithShadow("总容: " + totalCapacityInfo, guiLeft + 8, guiTop + 145, 0xE0E0E0);
         
         // Tank count information
-        String tankCountInfo = "坦克数: " + totalTanks;
+        String tankCountInfo = "储罐数: " + totalTanks;
         fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 155, 0xE0E0E0);
     }
 
@@ -309,7 +311,7 @@ public class GuiExperiencePumpController extends GuiScreen {
         int fillWidth = (int) (barWidth * progress);
 
         // 绘制进度条填充
-        int fillColor = 0xFF3366AA; // 蓝色
+        int fillColor = 0xFF7EFF05; // 绿色 #7EFF05
         drawRect(barX, barY, barX + fillWidth, barY + barHeight, fillColor);
 
         // 绘制边框

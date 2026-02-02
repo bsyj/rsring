@@ -28,21 +28,34 @@ public class RsRingCapability implements IRsRingCapability {
 
     // 黑白名单相关
     private java.util.List<String> blacklistItems = new java.util.ArrayList<>();
-    // 修复Bug 8: 不要从配置初始化whitelistMode，应该从NBT读取或使用默认值false（白名单模式）
-    // 配置值仅用于参考，实际模式应该由玩家通过GUI控制并持久化到NBT
-    private boolean whitelistMode = false; // 默认白名单模式
+    // 默认使用配置中的模式设置
+    private boolean whitelistMode = com.moremod.config.RsRingConfig.chestRing.useBlacklistModeByDefault ? false : true;
 
     // 构造函数
     public RsRingCapability() {
-        // 从配置加载默认黑名单
-        for (String item : com.moremod.config.RsRingConfig.blacklist.itemBlacklist) {
-            if (!item.trim().isEmpty()) {
+        // 从配置加载默认过滤列表
+        loadDefaultFilterList();
+    }
+    
+    /**
+     * 从配置加载默认过滤列表
+     */
+    private void loadDefaultFilterList() {
+        blacklistItems.clear();
+        
+        // 根据配置的模式加载对应的列表
+        String[] items = com.moremod.config.RsRingConfig.chestRing.useBlacklistModeByDefault 
+            ? com.moremod.config.RsRingConfig.chestRing.defaultBlacklistItems
+            : com.moremod.config.RsRingConfig.chestRing.defaultWhitelistItems;
+        
+        for (String item : items) {
+            if (item != null && !item.trim().isEmpty()) {
                 // 确保使用完整的资源位置格式
-                if (!item.contains(":")) {
-                    blacklistItems.add("minecraft:" + item);
-                } else {
-                    blacklistItems.add(item);
+                String formattedItem = item.trim();
+                if (!formattedItem.contains(":")) {
+                    formattedItem = "minecraft:" + formattedItem;
                 }
+                blacklistItems.add(formattedItem);
             }
         }
     }

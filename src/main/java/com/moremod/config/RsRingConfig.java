@@ -7,22 +7,77 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.moremod.rsring.RsRingMod;
 
-@Config(modid = RsRingMod.MODID, name = "rsring/config")
+@Config(modid = RsRingMod.MODID, name = "rsring/ring_config")
 public class RsRingConfig {
 
-    @Config.Comment("吸收戒指黑名单配置")
-    public static BlacklistConfig blacklist = new BlacklistConfig();
+    @Config.Comment({
+        "箱子戒指（物品吸收戒指）配置",
+        "Chest Ring (Item Absorb Ring) Configuration"
+    })
+    @Config.Name("Chest Ring Settings")
+    public static ChestRingConfig chestRing = new ChestRingConfig();
 
-    public static class BlacklistConfig {
-        @Config.Comment("黑名单物品的资源位置列表，例如：diamond, iron_ingot")
-        @Config.RequiresMcRestart
-        @Config.Name("item_blacklist")
-        public String[] itemBlacklist = new String[]{"xp_orb"};
+    public static class ChestRingConfig {
+        
+        @Config.Comment({
+            "默认黑名单物品列表（使用物品注册名）",
+            "格式：modid:item_name",
+            "例如：minecraft:dirt, minecraft:cobblestone",
+            "Default blacklist items (use registry names)",
+            "Format: modid:item_name",
+            "Example: minecraft:dirt, minecraft:cobblestone"
+        })
+        @Config.Name("Default Blacklist Items")
+        public String[] defaultBlacklistItems = new String[]{};
 
-        @Config.Comment("是否启用黑名单模式（true）还是白名单模式（false）")
-        @Config.RequiresMcRestart
-        @Config.Name("use_blacklist_mode")
-        public boolean useBlacklistMode = true;
+        @Config.Comment({
+            "默认白名单物品列表（使用物品注册名）",
+            "格式：modid:item_name",
+            "例如：minecraft:diamond, minecraft:gold_ingot",
+            "Default whitelist items (use registry names)",
+            "Format: modid:item_name",
+            "Example: minecraft:diamond, minecraft:gold_ingot"
+        })
+        @Config.Name("Default Whitelist Items")
+        public String[] defaultWhitelistItems = new String[]{};
+
+        @Config.Comment({
+            "是否启用默认黑名单（true=黑名单模式，false=白名单模式）",
+            "Enable default blacklist mode (true=blacklist, false=whitelist)"
+        })
+        @Config.Name("Use Blacklist Mode By Default")
+        public boolean useBlacklistModeByDefault = true;
+
+        @Config.Comment({
+            "吸收范围（格）",
+            "Absorption range in blocks"
+        })
+        @Config.Name("Absorption Range")
+        @Config.RangeInt(min = 1, max = 32)
+        public int absorptionRange = 8;
+
+        @Config.Comment({
+            "每个物品消耗的能量（FE）",
+            "Energy cost per item (FE)"
+        })
+        @Config.Name("Energy Cost Per Item")
+        @Config.RangeInt(min = 0, max = 1000)
+        public int energyCostPerItem = 1;
+
+        @Config.Comment({
+            "最大能量容量（FE）",
+            "Maximum energy capacity (FE)"
+        })
+        @Config.Name("Max Energy Capacity")
+        @Config.RangeInt(min = 1000, max = 100000000)
+        public int maxEnergyCapacity = 10000000;
+
+        @Config.Comment({
+            "是否允许玩家自定义过滤列表",
+            "Allow players to customize filter lists"
+        })
+        @Config.Name("Allow Custom Filters")
+        public boolean allowCustomFilters = true;
     }
 
     @Mod.EventBusSubscriber(modid = RsRingMod.MODID)

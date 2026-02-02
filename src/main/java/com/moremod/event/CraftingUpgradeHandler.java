@@ -67,26 +67,23 @@ public class CraftingUpgradeHandler {
             LOGGER.info("=== Experience Tank Upgrade Start ===");
             LOGGER.info("Original - Levels: {}, XP: {}", originalLevels, originalXP);
 
-            // Set all properties in one go to avoid multiple syncs
+            // 创建结果的capability并设置所有属性
             IExperiencePumpCapability resultCapability = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
             if (resultCapability != null) {
-                // 1. Set new capacity level (original + 1)
+                // 关键修复：先设置新容量等级，再设置XP
+                // setCapacityLevels内部会正确处理XP的限制
                 int newLevels = originalLevels + 1;
                 resultCapability.setCapacityLevels(newLevels);
                 
-                // 2. Get the new capacity after level increase
-                int newCapacity = resultCapability.getMaxXp();
+                // 设置存储的XP（setCapacityLevels已经处理了容量限制）
+                resultCapability.setXpStored(originalXP);
                 
-                // 3. Set stored XP (capped at new capacity)
-                int preservedXP = Math.min(originalXP, newCapacity);
-                resultCapability.setXpStored(preservedXP);
-                
-                // 4. Preserve other properties
+                // 保留其他属性
                 resultCapability.setMode(originalMode);
                 resultCapability.setRetainLevel(originalRetainLevel);
                 resultCapability.setUseForMending(originalMending);
                 
-                // 5. Single sync at the end
+                // 同步到NBT
                 ItemExperiencePump.syncCapabilityToStack(result, resultCapability);
                 
                 LOGGER.info("Final - Levels: {}, XP: {}, Capacity: {}", 

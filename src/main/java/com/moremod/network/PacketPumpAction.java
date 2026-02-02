@@ -554,12 +554,16 @@ public class PacketPumpAction implements IMessage {
         
         /** 同步储罐回原位置 */
         private void syncTankBack(ItemStack tank, TankLocationInfo location) {
-            if (location == null) return;
+            if (location == null) {
+                return;
+            }
             
             if ("baubles".equals(location.locationType) && location.inventory != null) {
                 location.inventory.setInventorySlotContents(location.slotIndex, tank);
+                location.inventory.markDirty(); // 关键：标记为脏，确保Baubles同步
             } else if ("inventory".equals(location.locationType) && location.inventory != null) {
                 location.inventory.setInventorySlotContents(location.slotIndex, tank);
+                location.inventory.markDirty(); // 标记为脏，确保背包同步
             }
             // 手持物品会自动同步，无需特殊处理
         }

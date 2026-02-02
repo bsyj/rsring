@@ -48,8 +48,14 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
 
     @Override
     public void setCapacityLevels(int levels) {
+        // 先保存当前XP（避免被旧容量限制）
+        int currentXp = this.xpStored;
+        
+        // 更新容量等级
         this.capacityLevels = Math.max(MIN_CAPACITY_LEVELS, Math.min(levels, MAX_CAPACITY_LEVELS));
-        setXpStored(xpStored); // clamp stored to new max
+        
+        // 使用新容量限制XP（确保使用更新后的getMaxXp()）
+        this.xpStored = Math.max(0, Math.min(currentXp, getMaxXp()));
     }
 
     @Override

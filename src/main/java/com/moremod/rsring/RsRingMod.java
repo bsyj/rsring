@@ -61,10 +61,7 @@ public class RsRingMod
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
 
-        // 添加默认黑名单项（经验球）如果配置为空
-        if (RsRingConfig.blacklist.itemBlacklist.length == 0) {
-            // 这里不需要手动添加，因为已经在配置类中设置了默认值
-        }
+        // 配置已经在 RsRingConfig 类中设置了默认值，不需要手动添加
 
         if (config.hasChanged()) config.save();
 

@@ -413,9 +413,7 @@ public class CommonEventHandler {
                 if (capability != null) {
                     capability.bindTerminal(world, pos);
                     RsRingCapability.syncCapabilityToStack(ringStack, capability);
-                    if (!world.isRemote) {
-                        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "箱子戒指已绑定 " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
-                    }
+                    // 消息已在 ItemAbsorbRing.onItemUse() 中显示，这里不重复
                     event.setCanceled(true);
                 }
             }

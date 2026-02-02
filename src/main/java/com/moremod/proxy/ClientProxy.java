@@ -48,19 +48,50 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void handleToggleRsRing(EntityPlayerMP player) {
-        // 在服务器上处理切换逻辑
-        ItemStack ringStack = CommonEventHandler.findAnyRingForToggle(player);
-        if (!ringStack.isEmpty() && ringStack.getItem() instanceof ItemAbsorbRing) {
-            IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        // 在服务器线程上处理切换逻辑
+        player.getServerWorld().addScheduledTask(() -> {
+            // 使用ItemLocationTracker查找戒指并追踪其位置
+            com.moremod.util.ItemLocationTracker tracker = 
+                com.moremod.util.ItemLocationTracker.findItem(player, ItemAbsorbRing.class);
+            
+            if (tracker == null) {
+                player.sendMessage(new net.minecraft.util.text.TextComponentString(
+                    net.minecraft.util.text.TextFormatting.RED + "未找到箱子戒指！"));
+                return;
+            }
+            
+            ItemStack ringStack = tracker.getItem();
+            IRsRingCapability capability = ringStack.getCapability(
+                RsRingCapability.RS_RING_CAPABILITY, null);
+            
             if (capability != null) {
+                // 切换状态
                 capability.setEnabled(!capability.isEnabled());
                 RsRingCapability.syncCapabilityToStack(ringStack, capability);
-
+                
+                // 关键：将修改后的ItemStack写回原位置（解决Baubles副本问题）
+                tracker.syncBack(player);
+                
                 // 发送反馈消息给玩家
                 String status = capability.isEnabled() ? "启用" : "禁用";
+                String location = getLocationDisplayName(tracker.getLocationType());
                 player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                    net.minecraft.util.text.TextFormatting.GREEN + "箱子戒指已" + status));
+                    net.minecraft.util.text.TextFormatting.GREEN + "箱子戒指已" + status + 
+                    net.minecraft.util.text.TextFormatting.GRAY + " (位置: " + location + ")"));
             }
+        });
+    }
+    
+    /**
+     * 获取位置的显示名称
+     */
+    private String getLocationDisplayName(com.moremod.util.ItemLocationTracker.LocationType locationType) {
+        switch (locationType) {
+            case MAIN_HAND: return "主手";
+            case OFF_HAND: return "副手";
+            case BAUBLES: return "饰品栏";
+            case PLAYER_INVENTORY: return "背包";
+            default: return "未知";
         }
     }
 

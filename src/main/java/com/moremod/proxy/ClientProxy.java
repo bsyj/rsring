@@ -1,9 +1,12 @@
 package com.moremod.proxy;
 
 import com.moremod.capability.ExperiencePumpCapability;
+import com.moremod.client.ContainerRingFilter;
+import com.moremod.client.GuiRingFilterContainer;
 import com.moremod.item.ItemAbsorbRing;
 import com.moremod.item.ItemExperiencePump;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -35,7 +38,12 @@ public class ClientProxy extends CommonProxy {
     // 打开箱子戒指的黑白名单GUI
     @Override
     public void openChestRingGui(ItemStack stack) {
-        Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "物品吸收戒指 - 黑白名单"));
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        if (player != null) {
+            ContainerRingFilter container = new ContainerRingFilter(player.inventory, stack);
+            Minecraft.getMinecraft().displayGuiScreen(
+                new GuiRingFilterContainer(container, stack, "物品吸收戒指 - 黑白名单"));
+        }
     }
 
     @Override

@@ -250,31 +250,51 @@ public class GuiRingFilter extends GuiScreen {
         int invStartX = guiLeft + PAD;
         int invStartY = guiTop + 84;
         
+        // 先绘制槽位背景纹理
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        mc.getTextureManager().bindTexture(SLOT_TEXTURE);
+        
+        // 绘制主背包槽位背景（3行9列）
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                int x = invStartX + col * SQ;
+                int y = invStartY + row * SQ;
+                drawTexturedModalRect(x, y, 0, 0, SQ, SQ);
+            }
+        }
+        
+        // 绘制快捷栏槽位背景（1行9列）
+        int hotbarY = invStartY + 58;
+        for (int i = 0; i < 9; i++) {
+            int x = invStartX + i * SQ;
+            drawTexturedModalRect(x, hotbarY, 0, 0, SQ, SQ);
+        }
+        
+        // 然后绘制物品
         GlStateManager.pushMatrix();
         RenderHelper.enableGUIStandardItemLighting();
         
-        // 绘制主背包（3行9列）
+        // 绘制主背包物品（3行9列）
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 int slotIndex = 9 + row * 9 + col;
                 ItemStack stack = mc.player.inventory.getStackInSlot(slotIndex);
                 if (!stack.isEmpty()) {
-                    int x = invStartX + col * SQ;
-                    int y = invStartY + row * SQ;
+                    int x = invStartX + col * SQ + 1;
+                    int y = invStartY + row * SQ + 1;
                     mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, y);
                     mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, y, "");
                 }
             }
         }
         
-        // 绘制快捷栏（参考 Cyclic：主背包下方 +58 偏移）
-        int hotbarY = invStartY + 58;
+        // 绘制快捷栏物品（参考 Cyclic：主背包下方 +58 偏移）
         for (int i = 0; i < 9; i++) {
             ItemStack stack = mc.player.inventory.getStackInSlot(i);
             if (!stack.isEmpty()) {
-                int x = invStartX + i * SQ;
-                mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, hotbarY);
-                mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, hotbarY, "");
+                int x = invStartX + i * SQ + 1;
+                mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, hotbarY + 1);
+                mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, hotbarY + 1, "");
             }
         }
         

@@ -83,6 +83,9 @@ public class PacketPumpAction implements IMessage {
                 }
 
                 java.util.List<ItemStack> tankStacks = findAllExperienceTanks(player);
+                // 记录储罐位置信息，用于后续同步
+                java.util.Map<ItemStack, TankLocationInfo> tankLocations = new java.util.HashMap<>();
+                recordTankLocations(player, tankStacks, tankLocations);
                 if (tankStacks.isEmpty()) {
                     if (msg.action == ACTION_MENDING) {
                         player.sendMessage(new net.minecraft.util.text.TextComponentString(
@@ -181,6 +184,7 @@ public class PacketPumpAction implements IMessage {
                                     break;
                             }
                             ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            syncTankBack(tankStack, tankLocations.get(tankStack));
                         }
                         break;
 
@@ -193,6 +197,7 @@ public class PacketPumpAction implements IMessage {
                             if (take > 0) {
                                 totalTaken += take;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                                syncTankBack(tankStack, tankLocations.get(tankStack));
                             }
                         }
                         if (totalTaken > 0) player.addExperience(totalTaken);
@@ -225,6 +230,7 @@ public class PacketPumpAction implements IMessage {
                                 remaining -= taken;
                                 totalGiven += taken;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                                syncTankBack(tankStack, tankLocations.get(tankStack));
                             }
                         }
                         if (totalGiven > 0) player.addExperience(totalGiven);
@@ -248,6 +254,7 @@ public class PacketPumpAction implements IMessage {
                                 remainingToStore -= stored;
                                 totalStored += stored;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                                syncTankBack(tankStack, tankLocations.get(tankStack));
                             }
                         }
                         if (totalStored > 0) addPlayerXp(player, -totalStored);
@@ -281,6 +288,7 @@ public class PacketPumpAction implements IMessage {
                                 remainingToStore -= stored;
                                 totalStored += stored;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                                syncTankBack(tankStack, tankLocations.get(tankStack));
                             }
                         }
                         if (totalStored > 0) addPlayerXp(player, -totalStored);
@@ -409,7 +417,51 @@ public class PacketPumpAction implements IMessage {
             }
         }
 
-        /** 查找玩家身上的所有经验储罐 */
+        /** 
+         * 查找玩家身上的所有经验储罐
+         * 返回 TankLocation 对象，包含储罐和位置信息，以便修改后能正确同步回去
+         */
+        private java.util.List<TankLocation> findAllExperienceTanksWithLocation(net.minecraft.entity.player.EntityPlayer player) {
+            java.util.List<TankLocation> tanks = new java.util.ArrayList<>();
+            if (player == null) return tanks;
+            
+            // 优先检查饰品栏（Baubles）
+            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
+                try {
+                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
+                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
+                    if (handler instanceof net.minecraft.inventory.IInventory) {
+                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
+                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
+                            ItemStack stack = baubles.getStackInSlot(i);
+                            if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                                tanks.add(new TankLocation(stack, TankLocation.LocationType.BAUBLES, i, baubles));
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            // 然后检查背包，从前到后（index 0 开始）以保证优先使用背包前面的槽位
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                ItemStack stack = player.inventory.getStackInSlot(i);
+                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    tanks.add(new TankLocation(stack, TankLocation.LocationType.PLAYER_INVENTORY, i, player.inventory));
+                }
+            }
+
+            // 最后检查主手和副手
+            for (EnumHand h : EnumHand.values()) {
+                ItemStack heldStack = player.getHeldItem(h);
+                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    tanks.add(new TankLocation(heldStack, TankLocation.LocationType.HAND, h.ordinal(), null));
+                }
+            }
+
+            return tanks;
+        }
+        
+        /** 查找玩家身上的所有经验储罐（简化版，返回ItemStack列表） */
         private java.util.List<ItemStack> findAllExperienceTanks(net.minecraft.entity.player.EntityPlayer player) {
             java.util.List<ItemStack> tanks = new java.util.ArrayList<>();
             if (player == null) return tanks;
@@ -447,6 +499,107 @@ public class PacketPumpAction implements IMessage {
             }
 
             return tanks;
+        }
+        
+        /** 储罐位置信息 */
+        private static class TankLocationInfo {
+            final String locationType; // "baubles", "inventory", "hand"
+            final int slotIndex;
+            final net.minecraft.inventory.IInventory inventory;
+            
+            TankLocationInfo(String locationType, int slotIndex, net.minecraft.inventory.IInventory inventory) {
+                this.locationType = locationType;
+                this.slotIndex = slotIndex;
+                this.inventory = inventory;
+            }
+        }
+        
+        /** 记录储罐位置信息 */
+        private void recordTankLocations(net.minecraft.entity.player.EntityPlayer player, java.util.List<ItemStack> tanks, java.util.Map<ItemStack, TankLocationInfo> locations) {
+            // 检查饰品栏
+            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
+                try {
+                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
+                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
+                    if (handler instanceof net.minecraft.inventory.IInventory) {
+                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
+                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
+                            ItemStack stack = baubles.getStackInSlot(i);
+                            if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                                for (ItemStack tank : tanks) {
+                                    if (tank == stack) { // 引用相等
+                                        locations.put(tank, new TankLocationInfo("baubles", i, baubles));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+            }
+            
+            // 检查背包
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                ItemStack stack = player.inventory.getStackInSlot(i);
+                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    for (ItemStack tank : tanks) {
+                        if (tank == stack) {
+                            locations.put(tank, new TankLocationInfo("inventory", i, player.inventory));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        /** 同步储罐回原位置 */
+        private void syncTankBack(ItemStack tank, TankLocationInfo location) {
+            if (location == null) return;
+            
+            if ("baubles".equals(location.locationType) && location.inventory != null) {
+                location.inventory.setInventorySlotContents(location.slotIndex, tank);
+            } else if ("inventory".equals(location.locationType) && location.inventory != null) {
+                location.inventory.setInventorySlotContents(location.slotIndex, tank);
+            }
+            // 手持物品会自动同步，无需特殊处理
+        }
+        
+        /** 储罐位置信息，用于修改后同步回原位置 */
+        private static class TankLocation {
+            enum LocationType {
+                BAUBLES,
+                PLAYER_INVENTORY,
+                HAND
+            }
+            
+            final ItemStack tank;
+            final LocationType locationType;
+            final int slotIndex;
+            final net.minecraft.inventory.IInventory inventory; // 用于 Baubles
+            
+            TankLocation(ItemStack tank, LocationType locationType, int slotIndex, net.minecraft.inventory.IInventory inventory) {
+                this.tank = tank;
+                this.locationType = locationType;
+                this.slotIndex = slotIndex;
+                this.inventory = inventory;
+            }
+            
+            /** 将修改后的储罐同步回原位置 */
+            void syncBack(net.minecraft.entity.player.EntityPlayer player) {
+                switch (locationType) {
+                    case BAUBLES:
+                        if (inventory != null) {
+                            inventory.setInventorySlotContents(slotIndex, tank);
+                        }
+                        break;
+                    case PLAYER_INVENTORY:
+                        player.inventory.setInventorySlotContents(slotIndex, tank);
+                        break;
+                    case HAND:
+                        // 手持物品会自动同步，无需特殊处理
+                        break;
+                }
+            }
         }
     }
 }

@@ -90,10 +90,6 @@ public class ItemExperiencePumpController extends Item {
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(TextFormatting.GRAY + "经验泵控制器");
-        tooltip.add(TextFormatting.GRAY + "配合经验储罐使用");
-        tooltip.add(TextFormatting.AQUA + "放在背包即可生效");
-        
         // 显示控制器当前配置
         NBTTagCompound data = getControllerData(stack);
         if (data != null) {
@@ -101,7 +97,6 @@ public class ItemExperiencePumpController extends Item {
             int retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : 10;
             boolean mending = data.getBoolean("mending");
             
-            tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "当前配置:");
             tooltip.add(TextFormatting.GRAY + "  · 模式: " + getModeText(mode));
             tooltip.add(TextFormatting.GRAY + "  · 保留等级: " + TextFormatting.AQUA + retainLevel);
@@ -109,6 +104,10 @@ public class ItemExperiencePumpController extends Item {
         }
 
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+            tooltip.add("");
+            tooltip.add(TextFormatting.GRAY + "经验泵控制器");
+            tooltip.add(TextFormatting.AQUA + "配合经验储罐使用");
+            tooltip.add(TextFormatting.AQUA + "放在背包即可生效");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "功能介绍:");
             tooltip.add(TextFormatting.GRAY + "  · 控制经验储罐泵入/泵出");

@@ -300,6 +300,14 @@ public class GuiExperiencePumpController extends GuiScreen {
         String tankCountInfo = "储罐数: " + totalTanks;
         // 使用动画颜色显示储罐数，形成跑马灯效果
         fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 135, animatedTankCountColor);
+        
+        // 无储罐警告 - 显示在右下角
+        if (totalTanks == 0) {
+            String warningText = "无储罐";
+            int warningX = guiLeft + GUI_WIDTH - fontRenderer.getStringWidth(warningText) - 8;
+            int warningY = guiTop + GUI_HEIGHT - 16;
+            fontRenderer.drawStringWithShadow(warningText, warningX, warningY, 0xFFFF0000); // 红色警告
+        }
     }
 
     /**
@@ -533,6 +541,17 @@ public class GuiExperiencePumpController extends GuiScreen {
             }
             return;
         }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        // 检查是否按下了背包键（通常是E键）
+        if (keyCode == this.mc.gameSettings.keyBindInventory.getKeyCode()) {
+            this.mc.player.closeScreen();
+            return;
+        }
+        // 调用父类处理其他按键（包括ESC）
+        super.keyTyped(typedChar, keyCode);
     }
 
     @Override

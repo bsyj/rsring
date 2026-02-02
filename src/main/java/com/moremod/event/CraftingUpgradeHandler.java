@@ -56,41 +56,37 @@ public class CraftingUpgradeHandler {
             // Create the upgraded tank result
             ItemStack result = new ItemStack(RsRingMod.experiencePump);
 
-            // Use ExperienceTankManager to handle the upgrade with experience preservation
-            ExperienceTankManager manager = ExperienceTankManager.getInstance();
-
-            // First, copy original capacity level (if any) then increase by 1 so upgrades stack
+            // Get original tank data
             IExperiencePumpCapability originalCap = pumpStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
             int originalLevels = originalCap != null ? originalCap.getCapacityLevels() : ItemExperiencePump.getCapacityLevelsFromNBT(pumpStack);
             int originalXP = originalCap != null ? originalCap.getXpStored() : ItemExperiencePump.getXpStoredFromNBT(pumpStack);
-            int originalCapacity = originalCap != null ? originalCap.getMaxXp() : ItemExperiencePump.getMaxXpFromNBT(pumpStack);
+            int originalMode = originalCap != null ? originalCap.getMode() : 0;
+            int originalRetainLevel = originalCap != null ? originalCap.getRetainLevel() : 10;
+            boolean originalMending = originalCap != null ? originalCap.isUseForMending() : false;
 
             LOGGER.info("=== Experience Tank Upgrade Start ===");
-            LOGGER.info("Original - Levels: {}, XP: {}, Capacity: {}", originalLevels, originalXP, originalCapacity);
+            LOGGER.info("Original - Levels: {}, XP: {}", originalLevels, originalXP);
 
+            // Set all properties in one go to avoid multiple syncs
             IExperiencePumpCapability resultCapability = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
             if (resultCapability != null) {
-                // Set to original level + 1 (ExperiencePumpCapability will clamp to allowed range)
-                resultCapability.setCapacityLevels(originalLevels + 1);
-                // 先同步一次，确保容量更新到NBT
-                ItemExperiencePump.syncCapabilityToStack(result, resultCapability);
+                // 1. Set new capacity level (original + 1)
+                int newLevels = originalLevels + 1;
+                resultCapability.setCapacityLevels(newLevels);
                 
-                LOGGER.info("After capacity set - Levels: {}, Capacity: {}", 
-                    resultCapability.getCapacityLevels(), resultCapability.getMaxXp());
-            }
-
-            // Then preserve experience and properties from the original tank
-            result = manager.preserveExperienceOnUpgrade(pumpStack, result);
-            
-            resultCapability = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-            if (resultCapability != null) {
-                LOGGER.info("After preserve - XP: {}, Capacity: {}", 
-                    resultCapability.getXpStored(), resultCapability.getMaxXp());
-            }
-            
-            // 最后再次同步，确保所有数据都正确写入NBT（包括容量和经验）
-            resultCapability = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-            if (resultCapability != null) {
+                // 2. Get the new capacity after level increase
+                int newCapacity = resultCapability.getMaxXp();
+                
+                // 3. Set stored XP (capped at new capacity)
+                int preservedXP = Math.min(originalXP, newCapacity);
+                resultCapability.setXpStored(preservedXP);
+                
+                // 4. Preserve other properties
+                resultCapability.setMode(originalMode);
+                resultCapability.setRetainLevel(originalRetainLevel);
+                resultCapability.setUseForMending(originalMending);
+                
+                // 5. Single sync at the end
                 ItemExperiencePump.syncCapabilityToStack(result, resultCapability);
                 
                 LOGGER.info("Final - Levels: {}, XP: {}, Capacity: {}", 

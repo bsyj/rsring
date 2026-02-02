@@ -218,10 +218,27 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        // 右键交互已被移除：经验储罐统一由经验泵控制器管理，
-        // 直接返回 PASS 以避免本地或服务器端进行任何模式/保留等级更改。
         ItemStack stack = player.getHeldItem(hand);
-        return new ActionResult<>(EnumActionResult.PASS, stack);
+        
+        // 服务器端：显示储罐容量信息到聊天栏
+        if (!world.isRemote) {
+            // 从NBT读取数据（确保准确性）
+            int xpStored = getXpStoredFromNBT(stack);
+            int capacityLevels = getCapacityLevelsFromNBT(stack);
+            int maxXp = getMaxXpFromNBT(stack);
+            
+            // 构造消息：等级 X - Y / Z mb
+            String message = TextFormatting.AQUA + "等级 " + capacityLevels + 
+                           TextFormatting.GRAY + " - " +
+                           TextFormatting.GREEN + xpStored + 
+                           TextFormatting.GRAY + " / " + 
+                           TextFormatting.YELLOW + maxXp + 
+                           TextFormatting.GRAY + " mb";
+            
+            player.sendMessage(new TextComponentString(message));
+        }
+        
+        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
     public static void syncCapabilityToStack(ItemStack stack, IExperiencePumpCapability cap) {

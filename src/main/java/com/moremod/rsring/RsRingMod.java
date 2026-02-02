@@ -35,7 +35,7 @@ import com.moremod.config.ExperiencePumpConfig;
 import com.moremod.experience.InventoryChangeHandler;
 import com.moremod.experience.ExperienceTankManager;
 
-@Mod(modid = RsRingMod.MODID, name = RsRingMod.NAME, version = RsRingMod.VERSION)
+@Mod(modid = RsRingMod.MODID, name = RsRingMod.NAME, version = RsRingMod.VERSION, guiFactory = "com.moremod.client.GuiFactory")
 public class RsRingMod
 {
     public static final String MODID = "rsring";

@@ -31,9 +31,12 @@ public class GuiRingFilter extends GuiScreen {
     private static final int GUI_WIDTH = 176; // 标准GUI宽度
     private static final int GUI_HEIGHT = 166; // 标准GUI高度
 
-    // 纹理资源
+    // 纹理资源（已放置于 assets/rsring/textures/gui/ ）
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/slot_large_plain.png");
-    private static final ResourceLocation BG_TEXTURE = new ResourceLocation("rsring", "textures/gui/table.png");
+    private static final ResourceLocation BG_TEXTURE = new ResourceLocation("rsring", "textures/gui/pipe_gui.png");
+    private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/button_machine_field.png");
+    private static final ResourceLocation ICON_FILTER = new ResourceLocation("rsring", "textures/gui/icon_filter.png");
+    private static final ResourceLocation ICON_EXTRACT = new ResourceLocation("rsring", "textures/gui/icon_extract.png");
 
     private final ItemStack ringStack;
     private final String title;
@@ -41,7 +44,6 @@ public class GuiRingFilter extends GuiScreen {
 
     private int guiLeft;
     private int guiTop;
-    private GuiButton toggleButton;
 
     public GuiRingFilter(ItemStack ringStack, String title) {
         this.ringStack = ringStack;
@@ -55,12 +57,6 @@ public class GuiRingFilter extends GuiScreen {
         guiLeft = (width - GUI_WIDTH) / 2;
         guiTop = (height - GUI_HEIGHT) / 2;
         buttonList.clear();
-
-        // 黑白名单切换按钮（参考Cyclic的ButtonMachineField设计）
-        int x = guiLeft + 10;
-        int y = guiTop + 10;
-        toggleButton = new GuiButton(0, x, y, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT, getToggleButtonText());
-        buttonList.add(toggleButton);
     }
 
     private void refreshCapability() {
@@ -89,6 +85,8 @@ public class GuiRingFilter extends GuiScreen {
         drawPlayerInventory();
         
         // 5. 绘制按钮和其他组件（参考Cyclic的render）
+        // 绘制自定义按钮
+        drawCustomButtons(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
         
         // 6. 绘制标题和标签（参考Cyclic的renderLabels）
@@ -105,8 +103,47 @@ public class GuiRingFilter extends GuiScreen {
      * 更新按钮状态（参考Cyclic的onValueUpdate）
      */
     private void updateButtonState() {
-        if (toggleButton != null && capability != null) {
-            toggleButton.displayString = getToggleButtonText();
+        // no-op: custom button rendered directly
+    }
+
+    private void drawCustomButtons(int mouseX, int mouseY) {
+        if (capability == null) return;
+        int x = guiLeft + 10;
+        int y = guiTop + 10;
+
+        // 绘制按钮背景
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
+        // 假设按钮贴图为单帧
+        drawTexturedModalRect(x, y, 0, 0, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT);
+
+        // 绘制图标
+        ResourceLocation icon = capability.isWhitelistMode() ? ICON_FILTER : ICON_FILTER;
+        mc.getTextureManager().bindTexture(icon);
+        drawTexturedModalRect(x + 4, y + 2, 0, 0, 16, 16);
+
+        // 绘制文本
+        String txt = getToggleButtonText();
+        int txtX = x + 24;
+        int txtY = y + (TOGGLE_BTN_HEIGHT - 8) / 2;
+        fontRenderer.drawString(txt, txtX, txtY, 0xE0E0E0);
+    }
+
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        super.mouseReleased(mouseX, mouseY, state);
+        // 检测自定义按钮点击（切换黑白名单）
+        if (capability == null) return;
+        int x = guiLeft + 10;
+        int y = guiTop + 10;
+        if (mouseX >= x && mouseX < x + TOGGLE_BTN_WIDTH && mouseY >= y && mouseY < y + TOGGLE_BTN_HEIGHT) {
+            // 切换并发送到服务器
+            capability.setWhitelistMode(!capability.isWhitelistMode());
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            // 发送同步包到服务器
+            String[] slots = new String[9];
+            for (int i = 0; i < 9; i++) slots[i] = capability.getFilterSlot(i);
+            com.moremod.rsring.RsRingMod.network.sendToServer(new com.moremod.network.PacketSyncRingFilter(capability.isWhitelistMode(), slots));
         }
     }
     
@@ -238,10 +275,7 @@ public class GuiRingFilter extends GuiScreen {
             }
         }
         
-        // 显示底部提示（参考Cyclic的提示信息）
-        String hint = TextFormatting.GRAY + "点击背包物品添加到过滤槽 | 点击过滤槽清空";
-        int hintX = guiLeft + (GUI_WIDTH - fontRenderer.getStringWidth(hint)) / 2;
-        fontRenderer.drawString(hint, hintX, guiTop + GUI_HEIGHT - 10, 0x808080);
+        // 底部提示已移除以简化界面
     }
 
     @Override

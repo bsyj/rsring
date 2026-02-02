@@ -224,9 +224,26 @@ public class CommonEventHandler {
         ItemStack controllerStack = findExperiencePumpController(player);
         ItemStack pumpStack = findExperiencePump(player);
 
-        // 如果同时持有控制器和储罐，则立即同步配置
-        if (!controllerStack.isEmpty() && !pumpStack.isEmpty()) {
-            syncControllerToTank(player, controllerStack, pumpStack);
+        // 如果持有控制器，则将控制器配置应用到玩家所有检测到的储罐（饰品栏/背包/手持）
+        if (!controllerStack.isEmpty()) {
+            // 从控制器获取配置并应用到所有储罐
+            com.moremod.item.ItemExperiencePumpController controllerItem = (com.moremod.item.ItemExperiencePumpController) controllerStack.getItem();
+            int mode = controllerItem.getMode(controllerStack);
+            int retainLevel = controllerItem.getRetainLevel(controllerStack);
+            boolean useForMending = controllerItem.isUseForMending(controllerStack);
+
+            // 扫描并应用到每个储罐
+            com.moremod.experience.ExperiencePumpController pumpController = com.moremod.experience.ExperiencePumpController.getInstance();
+            com.moremod.experience.TankScanResult scan = pumpController.scanAllInventories(player);
+            java.util.List<ItemStack> tanks = scan.getAllTanks();
+            for (ItemStack tank : tanks) {
+                com.moremod.capability.IExperiencePumpCapability cap = tank.getCapability(com.moremod.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                if (cap == null) continue;
+                cap.setMode(mode);
+                cap.setRetainLevel(retainLevel);
+                cap.setUseForMending(useForMending);
+                com.moremod.item.ItemExperiencePump.syncCapabilityToStack(tank, cap);
+            }
         }
 
         if (!pumpStack.isEmpty()) {

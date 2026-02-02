@@ -14,7 +14,7 @@ public class CommonProxy {
     public void openExperiencePumpControllerGui(ItemStack stack, EnumHand hand) {}
     /** 仅客户端：打开箱子戒指 GUI */
     public void openChestRingGui(ItemStack stack) {
-        net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "箱子戒指"));
+        net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiRingFilter(stack, "物品吸收戒指"));
     }
 
     public void handleToggleRsRing(EntityPlayerMP player) {

@@ -82,6 +82,8 @@ public class RsRingMod
         network.registerMessage(PacketPumpAction.Handler.class, PacketPumpAction.class, 1, Side.SERVER);
         network.registerMessage(PacketPumpData.Handler.class, PacketPumpData.class, 2, Side.CLIENT);
         network.registerMessage(com.moremod.network.PacketToggleRsRing.Handler.class, com.moremod.network.PacketToggleRsRing.class, 3, Side.SERVER);
+        // Register packet for syncing ring filter from client -> server
+        network.registerMessage(com.moremod.network.PacketSyncRingFilter.Handler.class, com.moremod.network.PacketSyncRingFilter.class, 4, Side.SERVER);
     }
 
     @EventHandler

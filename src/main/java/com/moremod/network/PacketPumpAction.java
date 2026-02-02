@@ -114,6 +114,18 @@ public class PacketPumpAction implements IMessage {
                 } else {
                     prioritized.addAll(tankStacks);
                 }
+                // 过滤出由控制器管理的储罐并移至优先/次序中，以使控制器管理下的储罐按控制器逻辑工作
+                java.util.List<ItemStack> controllerManaged = new java.util.ArrayList<>();
+                java.util.List<ItemStack> unmanaged = new java.util.ArrayList<>();
+                com.moremod.experience.ExperiencePumpController pumpController = com.moremod.experience.ExperiencePumpController.getInstance();
+                for (ItemStack t : prioritized) {
+                    if (pumpController.isTankManagedByController(t)) controllerManaged.add(t);
+                    else unmanaged.add(t);
+                }
+                // 将控制器管理的储罐放在前面，确保它们优先按控制器策略处理
+                prioritized.clear();
+                prioritized.addAll(controllerManaged);
+                prioritized.addAll(unmanaged);
 
                 java.util.function.Function<Integer, Integer> levelToTotalXp = (lvl) -> {
                     int level = lvl;
@@ -132,6 +144,31 @@ public class PacketPumpAction implements IMessage {
                     case ACTION_RETAIN_UP:
                     case ACTION_RETAIN_DOWN:
                     case ACTION_MENDING:
+                        // Update controller item NBT on server so changes persist
+                        if (!controllerStack.isEmpty() && controllerStack.getItem() instanceof com.moremod.item.ItemExperiencePumpController) {
+                            int ctrlMode = com.moremod.item.ItemExperiencePumpController.getMode(controllerStack);
+                            int ctrlRetain = com.moremod.item.ItemExperiencePumpController.getRetainLevel(controllerStack);
+                            boolean ctrlMend = com.moremod.item.ItemExperiencePumpController.isUseForMending(controllerStack);
+
+                            switch (msg.action) {
+                                case ACTION_MODE:
+                                    ctrlMode = (ctrlMode + 1) % 3;
+                                    break;
+                                case ACTION_RETAIN_UP:
+                                    ctrlRetain = ctrlRetain + (msg.value > 0 ? msg.value : 1);
+                                    break;
+                                case ACTION_RETAIN_DOWN:
+                                    ctrlRetain = Math.max(0, ctrlRetain - (msg.value > 0 ? msg.value : 1));
+                                    break;
+                                case ACTION_MENDING:
+                                    ctrlMend = !ctrlMend;
+                                    break;
+                            }
+
+                            // Persist updated controller data to the held controller item
+                            com.moremod.item.ItemExperiencePumpController.setControllerData(controllerStack, ctrlMode, ctrlRetain, ctrlMend);
+                        }
+
                         for (ItemStack tankStack : prioritized) {
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
@@ -263,24 +300,7 @@ public class PacketPumpAction implements IMessage {
         /** 查找玩家身上的经验储罐 */
         private ItemStack findExperienceTank(net.minecraft.entity.player.EntityPlayer player) {
             if (player == null) return net.minecraft.item.ItemStack.EMPTY;
-
-            // 检查主手和副手
-            for (EnumHand h : EnumHand.values()) {
-                ItemStack heldStack = player.getHeldItem(h);
-                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    return heldStack;
-                }
-            }
-
-            // 检查背包
-            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-                ItemStack stack = player.inventory.getStackInSlot(i);
-                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    return stack;
-                }
-            }
-
-            // 检查饰品栏
+            // 优先检查饰品栏（Baubles），再检查主手/副手，最后检查背包
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
                     Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
@@ -293,6 +313,22 @@ public class PacketPumpAction implements IMessage {
                         }
                     }
                 } catch (Throwable ignored) {}
+            }
+
+            // 检查主手和副手（其次）
+            for (EnumHand h : EnumHand.values()) {
+                ItemStack heldStack = player.getHeldItem(h);
+                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    return heldStack;
+                }
+            }
+
+            // 最后检查背包
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                ItemStack stack = player.inventory.getStackInSlot(i);
+                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    return stack;
+                }
             }
 
             return net.minecraft.item.ItemStack.EMPTY;
@@ -366,24 +402,7 @@ public class PacketPumpAction implements IMessage {
         private java.util.List<ItemStack> findAllExperienceTanks(net.minecraft.entity.player.EntityPlayer player) {
             java.util.List<ItemStack> tanks = new java.util.ArrayList<>();
             if (player == null) return tanks;
-
-            // 检查主手和副手
-            for (EnumHand h : EnumHand.values()) {
-                ItemStack heldStack = player.getHeldItem(h);
-                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    tanks.add(heldStack);
-                }
-            }
-
-            // 检查背包
-            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-                ItemStack stack = player.inventory.getStackInSlot(i);
-                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    tanks.add(stack);
-                }
-            }
-
-            // 检查饰品栏
+            // 优先检查饰品栏（Baubles）
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
                     Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
@@ -398,6 +417,22 @@ public class PacketPumpAction implements IMessage {
                         }
                     }
                 } catch (Throwable ignored) {}
+            }
+
+            // 然后检查背包，从前到后（index 0 开始）以保证优先使用背包前面的槽位
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                ItemStack stack = player.inventory.getStackInSlot(i);
+                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    tanks.add(stack);
+                }
+            }
+
+            // 最后检查主手和副手
+            for (EnumHand h : EnumHand.values()) {
+                ItemStack heldStack = player.getHeldItem(h);
+                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
+                    tanks.add(heldStack);
+                }
             }
 
             return tanks;

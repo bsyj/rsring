@@ -25,6 +25,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -41,8 +42,8 @@ public class ItemChestRing extends Item implements IBauble {
 
     public ItemChestRing() {
         super();
-        this.setTranslationKey("rsring.chestring");
-        this.setRegistryName(new ResourceLocation("rsring", "chestring"));
+        this.setTranslationKey("rsring.item_absorb_ring");
+        this.setRegistryName(new ResourceLocation("rsring", "item_absorb_ring"));
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabs.MISC);
     }
@@ -67,16 +68,16 @@ public class ItemChestRing extends Item implements IBauble {
             tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看功能介绍");
         } else {
             tooltip.add("");
-            tooltip.add(TextFormatting.GOLD + "功能介绍:");
-            tooltip.add(TextFormatting.GRAY + "  · 吸收8格内掉落物到绑定箱子");
-            tooltip.add(TextFormatting.GRAY + "  · 支持跨维度传输");
-            tooltip.add(TextFormatting.GRAY + "  · 1 FE/每个物品");
+        tooltip.add(TextFormatting.GOLD + "功能介绍:");
+        tooltip.add(TextFormatting.GRAY + "  · 吸收8格内掉落物到戒指储存/转发");
+        tooltip.add(TextFormatting.GRAY + "  · 可选择黑/白名单过滤");
+        tooltip.add(TextFormatting.GRAY + "  · 每个物品消耗能源");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "使用方法:");
-            tooltip.add(TextFormatting.GRAY + "  1. 蹲下+右键箱子/容器绑定");
-            tooltip.add(TextFormatting.GRAY + "  2. 用FE充能器充电 (最大10M FE)");
-            tooltip.add(TextFormatting.GRAY + "  3. 按K键开启/关闭吸收功能");
-            tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/饰品栏/手持均可生效");
+        tooltip.add(TextFormatting.GRAY + "  1. 右键打开过滤设置界面");
+        tooltip.add(TextFormatting.GRAY + "  2. 用FE充能器充电 (最大10M FE)");
+        tooltip.add(TextFormatting.GRAY + "  3. 按K键开启/关闭吸收功能");
+        tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/饰品栏/手持均可生效");
         }
     }
 
@@ -123,24 +124,21 @@ public class ItemChestRing extends Item implements IBauble {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
-        
-        // 修复：蹲下时不打开GUI（可能是在准备绑定箱子）
+        // 蹲下右键由 onItemUse 处理绑定箱子
         if (player.isSneaking()) {
             return new ActionResult<>(EnumActionResult.PASS, stack);
         }
-        
-        // 只有在右键空气时才打开GUI，避免与绑定功能冲突
-        // onItemRightClick只在右键空气时调用
+
+        // 只有手持戒指右键空气才打开GUI
         if (world.isRemote) {
-            // 使用proxy打开黑白名单GUI
             com.moremod.rsring.RsRingMod.proxy.openChestRingGui(stack);
         } else {
             IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
                 String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
-                String msg = capability.isBound()
-                    ? "已绑定 | 当前模式: " + mode + " | 能量: " + capability.getEnergyStorage().getEnergyStored() + "/" + capability.getEnergyStorage().getMaxEnergyStored() + " FE | " + (capability.isEnabled() ? "已开启" : "已关闭")
-                    : "蹲下 + 右键箱子绑定 | 当前模式: " + mode + " | 按K切换功能";
+                String status = capability.isEnabled() ? "已开启" : "已关闭";
+                String bindInfo = capability.isBound() ? ("已绑定 | 能量: " + capability.getEnergyStorage().getEnergyStored() + "/" + capability.getEnergyStorage().getMaxEnergyStored() + " FE") : "未绑定";
+                String msg = String.format("%s | 模式: %s | %s", bindInfo, mode, status);
                 player.sendMessage(new TextComponentString(msg));
             }
         }
@@ -150,25 +148,20 @@ public class ItemChestRing extends Item implements IBauble {
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, 
                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
-        // 修复Bug 7: 蹲下右键绑定箱子时不打开GUI
+        // 蹲下右键箱子用于绑定箱子位置（仅在服务端执行）
         ItemStack stack = player.getHeldItem(hand);
-        
-        // 如果玩家蹲下，执行绑定逻辑（不打开GUI）
         if (player.isSneaking()) {
             if (!world.isRemote) {
                 IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
                 if (capability != null) {
-                    // 绑定箱子
                     capability.bindTerminal(world, pos);
                     RsRingCapability.syncCapabilityToStack(stack, capability);
-                    player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                        net.minecraft.util.text.TextFormatting.GREEN + "已绑定箱子位置: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
+                    player.sendMessage(new TextComponentString(
+                        TextFormatting.GREEN + "已绑定箱子位置: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
                 }
             }
-            return EnumActionResult.SUCCESS; // 成功绑定，不打开GUI
+            return EnumActionResult.SUCCESS; // 成功绑定
         }
-        
-        // 如果玩家没有蹲下，返回PASS让其他处理器处理
         return EnumActionResult.PASS;
     }
     
@@ -324,7 +317,6 @@ public class ItemChestRing extends Item implements IBauble {
 
         EntityPlayer entityPlayer = (EntityPlayer) player;
         IRsRingCapability capability = itemstack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
-
         if (capability != null && capability.isBound()) {
             com.moremod.capability.RsRingCapability.syncCapabilityToStack(itemstack, capability);
         }
@@ -383,22 +375,20 @@ public class ItemChestRing extends Item implements IBauble {
      * 吸收物品到绑定的箱子
      * 修复Bug 6: 支持跨维度吸取功能
      */
+    /** 吸收玩家周围物品并传送到已绑定的箱子（支持跨维度） */
     private void absorbItemsToChest(EntityPlayer player, IRsRingCapability capability) {
-        if (!capability.isBound()) return;
+        if (capability == null || !capability.isBound()) return;
 
-        // 修复Bug 6: 支持跨维度传输
-        World targetWorld = capability.getTerminalWorld();
+        // 获取目标箱子世界与位置（支持跨维度）
+        net.minecraft.world.World targetWorld = capability.getTerminalWorld();
         BlockPos targetPos = capability.getTerminalPos();
-        
-        // 如果目标世界为null，尝试通过维度ID获取
         if (targetWorld == null) {
-            int targetDim = capability.getTerminalDimension();
-            targetWorld = net.minecraftforge.common.DimensionManager.getWorld(targetDim);
+            int dim = capability.getTerminalDimension();
+            targetWorld = DimensionManager.getWorld(dim);
         }
-        
         if (targetWorld == null || targetPos == null) return;
-        
-        // 确保目标区块已加载（跨维度时尤其重要）
+
+        // 确保区块已加载
         if (!targetWorld.isBlockLoaded(targetPos)) {
             targetWorld.getChunk(targetPos);
             if (!targetWorld.isBlockLoaded(targetPos)) return;
@@ -415,13 +405,21 @@ public class ItemChestRing extends Item implements IBauble {
             ItemStack itemStack = item.getItem();
             if (itemStack.isEmpty() || energyStorage.getEnergyStored() < 1) continue;
 
-            // 检查黑白名单（修复Bug 6）
+            // 黑白名单过滤
             if (shouldFilterItem(capability, itemStack)) continue;
 
+            // 尝试将整个堆或部分插入目标箱子
             int inserted = insertIntoChest(targetWorld, targetPos, itemStack);
-            if (inserted > 0 && energyStorage.getEnergyStored() >= inserted) {
-                energyStorage.extractEnergy(inserted, false);
-                if (itemStack.isEmpty()) item.setDead();
+            if (inserted > 0) {
+                int energyNeeded = Math.max(1, inserted); // 每个物品至少1 FE
+                int energyAvailable = energyStorage.getEnergyStored();
+                int energyToUse = Math.min(energyAvailable, energyNeeded);
+                energyStorage.extractEnergy(energyToUse, false);
+                if (itemStack.isEmpty()) {
+                    item.setDead();
+                } else {
+                    item.setItem(itemStack);
+                }
             }
         }
     }

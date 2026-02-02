@@ -51,19 +51,22 @@ public class CraftingUpgradeHandler {
 
             // Create the upgraded tank result
             ItemStack result = new ItemStack(RsRingMod.experiencePump);
-            
+
             // Use ExperienceTankManager to handle the upgrade with experience preservation
             ExperienceTankManager manager = ExperienceTankManager.getInstance();
-            
-            // First, upgrade the capacity - 每次升级增加1级容量（1000mb）
+
+            // First, copy original capacity level (if any) then increase by 1 so upgrades stack
+            IExperiencePumpCapability originalCap = pumpStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            int originalLevels = originalCap != null ? originalCap.getCapacityLevels() : ItemExperiencePump.getCapacityLevelsFromNBT(pumpStack);
+
             IExperiencePumpCapability resultCapability = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
             if (resultCapability != null) {
-                // 每次升级增加1级容量（1000mb）
-                resultCapability.addCapacityLevels(1);
+                // Set to original level + 1 (ExperiencePumpCapability will clamp to allowed range)
+                resultCapability.setCapacityLevels(originalLevels + 1);
                 // 先同步一次，确保容量更新到NBT
                 ItemExperiencePump.syncCapabilityToStack(result, resultCapability);
             }
-            
+
             // Then preserve experience and properties from the original tank
             result = manager.preserveExperienceOnUpgrade(pumpStack, result);
             

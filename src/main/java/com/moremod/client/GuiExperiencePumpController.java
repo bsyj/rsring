@@ -65,6 +65,8 @@ public class GuiExperiencePumpController extends GuiScreen {
     private int totalTanks;
     private int totalCapacity;
     private int totalStored;
+    // animated color for tank count
+    private int animatedTankCountColor = 0xE0E0E0;
     
     // 简化的等级控制
     private int extractLevels = 1;  // 取出等级数，默认1级
@@ -233,33 +235,46 @@ public class GuiExperiencePumpController extends GuiScreen {
         if (player == null) {
             return;
         }
-        
-        // Individual tank XP info with level formatting
-        String individualXpInfo = pumpController.formatExperienceDisplay(xpStored) + " / " + 
-                                 pumpController.formatExperienceDisplay(maxXp);
-        fontRenderer.drawStringWithShadow("单罐: " + individualXpInfo, guiLeft + 8, guiTop + 115, 0xE0E0E0);
-        
-        // Total stored XP across all tanks with level formatting
-        String totalStoredInfo = pumpController.formatExperienceDisplay(totalStored);
-        fontRenderer.drawStringWithShadow("总存: " + totalStoredInfo, guiLeft + 8, guiTop + 125, 0xE0E0E0);
-        
+        // Total capacity used / total (显示为 XP 格式：已用 / 总容量)
+        String totalCapInfo = String.format("%d / %d XP", totalStored, totalCapacity);
+        // RGB 跑马灯颜色，根据时间变化
+        long t = System.currentTimeMillis();
+        int period = 4000; // 周期 ms
+
+        // 三行分别有相位偏移，形成跑马灯效果
+        int colorLine1 = hsvToRgbInt(((t % period) / (float) period + 0.0f) % 1.0f, 1.0f, 1.0f);
+        int colorLine2 = hsvToRgbInt(((t % period) / (float) period + 0.33f) % 1.0f, 1.0f, 1.0f);
+        int colorLine3 = hsvToRgbInt(((t % period) / (float) period + 0.66f) % 1.0f, 1.0f, 1.0f);
+
+        fontRenderer.drawStringWithShadow("总容: " + totalCapInfo, guiLeft + 8, guiTop + 115, colorLine1);
+
         // Player current XP with level formatting
         int playerXP = pumpController.getPlayerTotalExperience(player);
         String playerXpInfo = pumpController.formatExperienceDisplay(playerXP);
-        fontRenderer.drawStringWithShadow("玩家: " + playerXpInfo, guiLeft + 8, guiTop + 135, 0xE0E0E0);
+        fontRenderer.drawStringWithShadow("玩家: " + playerXpInfo, guiLeft + 8, guiTop + 125, colorLine2);
+
+        // 储罐数在 drawComprehensiveTankInfo 中绘制，使用 colorLine3
+        // 把颜色保存到字段，供 drawComprehensiveTankInfo 使用
+        animatedTankCountColor = colorLine3;
     }
     
     /**
      * Draws comprehensive tank information.
      */
     private void drawComprehensiveTankInfo() {
-        // Total capacity across all tanks with level formatting
-        String totalCapacityInfo = pumpController.formatExperienceDisplay(totalCapacity);
-        fontRenderer.drawStringWithShadow("总容: " + totalCapacityInfo, guiLeft + 8, guiTop + 145, 0xE0E0E0);
-        
-        // Tank count information
+        // Tank count information (total capacity display removed)
         String tankCountInfo = "储罐数: " + totalTanks;
-        fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 155, 0xE0E0E0);
+        fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 145, animatedTankCountColor);
+    }
+
+    // HSV [0..1] to RGB int (0xRRGGBB)
+    private static int hsvToRgbInt(float h, float s, float v) {
+        int rgb = java.awt.Color.HSBtoRGB(h, s, v);
+        // HSBtoRGB returns 0xAARRGGBB? Actually returns 0xFFRRGGBB, so mask
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        return (r << 16) | (g << 8) | b;
     }
 
     private void updateButtonTexts() {

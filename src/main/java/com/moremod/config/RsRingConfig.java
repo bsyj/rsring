@@ -11,13 +11,13 @@ import com.moremod.rsring.RsRingMod;
 public class RsRingConfig {
 
     @Config.Comment({
-        "箱子戒指（物品吸收戒指）配置",
-        "Chest Ring (Item Absorb Ring) Configuration"
+        "物品吸收戒指配置",
+        "Item Absorb Ring Configuration"
     })
-    @Config.Name("Chest Ring Settings")
-    public static ChestRingConfig chestRing = new ChestRingConfig();
+    @Config.Name("Absorb Ring Settings")
+    public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
 
-    public static class ChestRingConfig {
+    public static class AbsorbRingConfig {
         
         @Config.Comment({
             "默认黑名单物品列表（使用物品注册名）",

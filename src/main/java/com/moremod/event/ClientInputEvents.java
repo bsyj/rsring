@@ -27,7 +27,7 @@ public class ClientInputEvents {
     
     /**
      * 处理GUI界面中的鼠标点击事件
-     * 当玩家在背包界面右键点击箱子戒指时，打开黑白名单GUI
+     * 当玩家在背包界面右键点击物品吸收戒指时，打开黑白名单GUI
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onMouseEvent(GuiScreenEvent.MouseInputEvent.Pre event) {
@@ -56,10 +56,10 @@ public class ClientInputEvents {
             
             ItemStack stackInSlot = slotUnderMouse.getStack();
             
-            // 检查是否是箱子戒指
+            // 检查是否是物品吸收戒指
             if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof ItemAbsorbRing) {
                 // 直接在客户端打开GUI，不需要发送数据包
-                com.moremod.rsring.RsRingMod.proxy.openChestRingGui(stackInSlot);
+                com.moremod.rsring.RsRingMod.proxy.openAbsorbRingGui(stackInSlot);
                 event.setCanceled(true);
             }
         } catch (Exception e) {

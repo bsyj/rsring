@@ -8,8 +8,6 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,8 +37,7 @@ public class ExperienceTankManager {
      * Private constructor for singleton pattern.
      */
     private ExperienceTankManager() {
-        // Register this manager with the event bus for crafting events
-        MinecraftForge.EVENT_BUS.register(this);
+        // No event registration needed as crafting is handled by CraftingUpgradeHandler
     }
     
     /**
@@ -466,78 +463,6 @@ public class ExperienceTankManager {
                    .sum();
     }
     
-    /**
-     * Event handler for player crafting events.
-     * Integrates with the crafting system to handle tank upgrades.
-     */
-    @SubscribeEvent
-    public void onPlayerCrafting(PlayerEvent.ItemCraftedEvent event) {
-        ItemStack result = event.crafting;
-        net.minecraft.inventory.IInventory craftMatrix = event.craftMatrix;
-        
-        // Check if this is an experience tank upgrade
-        if (result.getItem() instanceof ItemExperiencePump && isUpgradeCrafting(craftMatrix)) {
-            handleTankUpgradeCrafting(result, craftMatrix, event.player);
-        }
-    }
-    
-    /**
-     * Checks if the crafting matrix represents a tank upgrade.
-     * 
-     * @param craftMatrix The crafting matrix
-     * @return True if this is a tank upgrade
-     */
-    private boolean isUpgradeCrafting(net.minecraft.inventory.IInventory craftMatrix) {
-        int tankCount = 0;
-        boolean hasUpgradeItems = false;
-        
-        for (int i = 0; i < craftMatrix.getSizeInventory(); i++) {
-            ItemStack stack = craftMatrix.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
-            
-            if (stack.getItem() instanceof ItemExperiencePump) {
-                tankCount++;
-            } else if (stack.getItem() == net.minecraft.init.Items.ENDER_PEARL ||
-                      stack.getItem() == net.minecraft.init.Items.EXPERIENCE_BOTTLE) {
-                hasUpgradeItems = true;
-            }
-        }
-        
-        // Tank upgrade requires exactly one tank and upgrade items
-        return tankCount == 1 && hasUpgradeItems;
-    }
-    
-    /**
-     * Handles tank upgrade crafting by preserving experience.
-     * 
-     * @param result The crafted result
-     * @param craftMatrix The crafting matrix
-     * @param player The player crafting
-     */
-    private void handleTankUpgradeCrafting(ItemStack result, net.minecraft.inventory.IInventory craftMatrix, EntityPlayer player) {
-        // Find the original tank in the crafting matrix
-        ItemStack originalTank = ItemStack.EMPTY;
-        
-        for (int i = 0; i < craftMatrix.getSizeInventory(); i++) {
-            ItemStack stack = craftMatrix.getStackInSlot(i);
-            if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
-                originalTank = stack;
-                break;
-            }
-        }
-        
-        if (!originalTank.isEmpty()) {
-            // Preserve experience from original to result
-            preserveExperienceOnUpgrade(originalTank, result);
-            
-            LOGGER.debug("Tank upgrade crafting handled for player: {}", player.getName());
-            
-            // Fire an inventory change event
-            InventoryChangeEvent event = InventoryChangeEvent.tankModified(
-                player, InventoryChangeEvent.InventoryLocation.PLAYER_INVENTORY, result, -1);
-            MinecraftForge.EVENT_BUS.post(event);
-        }
-    }
     
     /**
      * Creates a new ExperienceTankData from an ItemStack.

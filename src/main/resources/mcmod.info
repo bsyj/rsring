@@ -1,44 +1,17 @@
 [
 {
   "modid": "rsring",
-  "name": "RS Ring",
-  "description": "A bauble ring that binds to RS terminal and absorbs items across dimensions.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
+  "name": "RS Rings and Tanks",
+  "description": "添加强大的饰品戒指和经验储罐。主要功能包括：物品吸收戒指（可绑定RS终端并跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。\n\nAdds powerful Baubles rings and experience tanks. Features include: Item Absorb Ring that binds to RS terminals and collects items across dimensions, Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system.",
+  "version": "1.0",
+  "mcversion": "1.12.2",
+  "logoFile": "",
   "url": "",
   "updateUrl": "",
-  "authorList": ["MoreMod Team"],
-  "credits": "Based on Baubles framework for Minecraft 1.12.2",
-  "logoFile": "",
+  "authorList": ["bsyj"],
+  "credits": "基于Baubles框架开发。特别感谢 Azanor (Baubles)、Lothrazar (Cyclic) 以及 Minecraft Forge 团队。\n\nBased on Baubles framework. Special thanks to Azanor (Baubles), Lothrazar (Cyclic), and the Minecraft Forge team.",
+  "parent": "",
   "screenshots": [],
-  "dependencies": [
-    {
-      "modId": "forge",
-      "mandatory": true,
-      "versionRange": "[14.23.5.2847,)",
-      "ordering": "NONE",
-      "side": "BOTH"
-    },
-    {
-      "modId": "minecraft",
-      "mandatory": true,
-      "versionRange": "[1.12.2,1.13)",
-      "ordering": "NONE",
-      "side": "BOTH"
-    },
-    {
-      "modId": "refinedstorage",
-      "mandatory": false,
-      "versionRange": "[1.6,)",
-      "ordering": "NONE",
-      "side": "BOTH"
-    },
-    {
-      "modId": "baubles",
-      "mandatory": true,
-      "versionRange": "[1.5.2,)",
-      "ordering": "NONE",
-      "side": "BOTH"
-    }
-  ]
+  "dependencies": []
 }
+]

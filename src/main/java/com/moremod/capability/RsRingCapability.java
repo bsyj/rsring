@@ -29,7 +29,7 @@ public class RsRingCapability implements IRsRingCapability {
     // 黑白名单相关
     private java.util.List<String> blacklistItems = new java.util.ArrayList<>();
     // 默认使用配置中的模式设置
-    private boolean whitelistMode = com.moremod.config.RsRingConfig.chestRing.useBlacklistModeByDefault ? false : true;
+    private boolean whitelistMode = com.moremod.config.RsRingConfig.absorbRing.useBlacklistModeByDefault ? false : true;
 
     // 构造函数
     public RsRingCapability() {
@@ -44,9 +44,9 @@ public class RsRingCapability implements IRsRingCapability {
         blacklistItems.clear();
         
         // 根据配置的模式加载对应的列表
-        String[] items = com.moremod.config.RsRingConfig.chestRing.useBlacklistModeByDefault 
-            ? com.moremod.config.RsRingConfig.chestRing.defaultBlacklistItems
-            : com.moremod.config.RsRingConfig.chestRing.defaultWhitelistItems;
+        String[] items = com.moremod.config.RsRingConfig.absorbRing.useBlacklistModeByDefault 
+            ? com.moremod.config.RsRingConfig.absorbRing.defaultBlacklistItems
+            : com.moremod.config.RsRingConfig.absorbRing.defaultWhitelistItems;
         
         for (String item : items) {
             if (item != null && !item.trim().isEmpty()) {

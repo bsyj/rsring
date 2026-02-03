@@ -42,6 +42,9 @@ public class RsRingMod
     public static final String NAME = "RS Rings and Tanks";
     public static final String VERSION = "1.0";
 
+    @Mod.Instance(MODID)
+    public static RsRingMod instance;
+
     private static Logger logger;
 
     @SidedProxy(serverSide = "com.moremod.proxy.CommonProxy", clientSide = "com.moremod.proxy.ClientProxy")
@@ -82,12 +85,19 @@ public class RsRingMod
         network.registerMessage(com.moremod.network.PacketToggleRsRing.Handler.class, com.moremod.network.PacketToggleRsRing.class, 3, Side.SERVER);
         // Register packet for syncing ring filter from client -> server
         network.registerMessage(com.moremod.network.PacketSyncRingFilter.Handler.class, com.moremod.network.PacketSyncRingFilter.class, 4, Side.SERVER);
+        // Register packet for syncing modified tanks to client (Baubles/inventory)
+        network.registerMessage(com.moremod.network.PacketSyncTankSlots.Handler.class, com.moremod.network.PacketSyncTankSlots.class, 5, Side.CLIENT);
+        // Register packet for opening ring filter GUI
+        network.registerMessage(com.moremod.network.PacketOpenRingGui.Handler.class, com.moremod.network.PacketOpenRingGui.class, 6, Side.SERVER);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
         // 注册事件处理器
         MinecraftForge.EVENT_BUS.register(new CommonEventHandler());
+
+        // 注册 GUI 处理器
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, new com.moremod.client.GuiHandler());
 
         // 初始化经验系统基础设施
         InventoryChangeHandler.initialize();

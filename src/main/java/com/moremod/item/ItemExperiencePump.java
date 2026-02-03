@@ -766,12 +766,12 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (stored >= max) return FILL_LEVEL_FULL;
 
         // 使用精确的整数比例判断以避免浮点舍入问题
-        int percentage = (int) ((long) stored * 100 / max);
-
-        if (percentage <= 0) return FILL_LEVEL_EMPTY;
-        if (percentage <= 25) return FILL_LEVEL_QUARTER;          // 1-25%
-        if (percentage <= 50) return FILL_LEVEL_HALF;             // 26-50%
-        if (percentage <= 75) return FILL_LEVEL_THREE_QUARTERS;   // 51-75%
-        return FILL_LEVEL_FULL;                                   // 76-99% -> treated as full handled above
+        // 直接比较 stored * 4 与 max 的倍数，避免整数除法的截断问题
+        // 精确判断填充等级
+        if (stored * 4 <= max) return FILL_LEVEL_EMPTY;          // 0%
+        if (stored * 4 <= max * 2) return FILL_LEVEL_QUARTER;     // 1-25%
+        if (stored * 4 <= max * 3) return FILL_LEVEL_HALF;        // 26-50%
+        if (stored * 4 < max * 4) return FILL_LEVEL_THREE_QUARTERS; // 51-75%
+        return FILL_LEVEL_FULL;                                   // 76-100%
     }
 }

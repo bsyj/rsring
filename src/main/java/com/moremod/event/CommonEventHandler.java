@@ -50,12 +50,12 @@ public class CommonEventHandler {
     @SideOnly(Side.CLIENT)
     public void onKeyInput(InputEvent.KeyInputEvent event) {
         if (toggleKeyBinding != null && toggleKeyBinding.isPressed()) {
-            toggleChestRingFunction();
+            toggleAbsorbRingFunction();
         }
     }
 
     @SideOnly(Side.CLIENT)
-    private void toggleChestRingFunction() {
+    private void toggleAbsorbRingFunction() {
         EntityPlayer player = Minecraft.getMinecraft().player;
         if (player == null) return;
         // 发送数据包到服务器处理切换（服务器端修改capability并同步回客户端）
@@ -405,7 +405,7 @@ public class CommonEventHandler {
 
         if (!player.isSneaking()) return;
 
-        // 箱子戒指 + 箱子/容器（仅手持时绑定）
+        // 物品吸收戒指 + 箱子/容器（仅手持时绑定）
         if (isChestOrContainer(world, pos)) {
             ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
             if (!ringStack.isEmpty()) {
@@ -413,7 +413,9 @@ public class CommonEventHandler {
                 if (capability != null) {
                     capability.bindTerminal(world, pos);
                     RsRingCapability.syncCapabilityToStack(ringStack, capability);
-                    // 消息已在 ItemAbsorbRing.onItemUse() 中显示，这里不重复
+                    int dim = world.provider.getDimension();
+                    player.sendMessage(new net.minecraft.util.text.TextComponentString(
+                        net.minecraft.util.text.TextFormatting.GREEN + "已绑定坐标：" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " 维度：" + dim));
                     event.setCanceled(true);
                 }
             }

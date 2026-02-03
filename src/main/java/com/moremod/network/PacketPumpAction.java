@@ -3,6 +3,7 @@ package com.moremod.network;
 import com.moremod.capability.IExperiencePumpCapability;
 import com.moremod.capability.ExperiencePumpCapability;
 import com.moremod.item.ItemExperiencePump;
+import com.moremod.network.PacketSyncTankSlots;
 import com.moremod.rsring.RsRingMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -184,11 +185,12 @@ public class PacketPumpAction implements IMessage {
                                     break;
                             }
                             ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
-                            syncTankBack(tankStack, tankLocations.get(tankStack));
+                            syncTankBack(tankStack, tankLocations.get(tankStack), player);
                         }
                         break;
 
                     case ACTION_TAKE_ALL: {
+                        int currentTotal = getPlayerTotalXp.get();
                         int totalTaken = 0;
                         for (ItemStack tankStack : prioritized) {
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
@@ -197,22 +199,27 @@ public class PacketPumpAction implements IMessage {
                             if (take > 0) {
                                 totalTaken += take;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
-                                syncTankBack(tankStack, tankLocations.get(tankStack));
+                                syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
                         }
-                        if (totalTaken > 0) player.addExperience(totalTaken);
+                        if (totalTaken > 0) {
+                            // 精确设置玩家经验，避免浮点误差
+                            int newTotal = currentTotal + totalTaken;
+                            player.experienceLevel = 0;
+                            player.experienceTotal = 0;
+                            player.experience = 0;
+                            if (newTotal > 0) player.addExperience(newTotal);
+                        }
                         break;
                     }
 
                     case ACTION_TAKE_ONE: {
+                        // 取出N级：玩家从当前等级升N级，最终等级为 currentLevel + N，经验条为0
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
+                        int currentLevel = player.experienceLevel;
+                        int targetLevel = currentLevel + levelsToTake;
                         int currentTotal = getPlayerTotalXp.get();
-                        // Preserve player's fractional progress when calculating target total
-                        float frac = player.experience; // 0.0 .. 1.0
-                        int targetLevelInt = player.experienceLevel + levelsToTake;
-                        int baseTarget = levelToTotalXp.apply(targetLevelInt);
-                        int xpToNextTarget = getXPToNextLevel(targetLevelInt);
-                        int targetTotal = baseTarget + Math.round(frac * xpToNextTarget);
+                        int targetTotal = levelToTotalXp.apply(targetLevel); // 目标等级0经验时的总XP
                         int need = Math.max(0, targetTotal - currentTotal);
                         if (need <= 0) break;
 
@@ -230,17 +237,24 @@ public class PacketPumpAction implements IMessage {
                                 remaining -= taken;
                                 totalGiven += taken;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
-                                syncTankBack(tankStack, tankLocations.get(tankStack));
+                                syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
                         }
-                        if (totalGiven > 0) player.addExperience(totalGiven);
+                        if (totalGiven > 0) {
+                            // 精确设置玩家到目标等级0经验，避免浮点误差
+                            int newTotal = currentTotal + totalGiven;
+                            player.experienceLevel = 0;
+                            player.experienceTotal = 0;
+                            player.experience = 0;
+                            if (newTotal > 0) player.addExperience(newTotal);
+                        }
                         break;
                     }
 
                     case ACTION_STORE_ALL: {
-                        int playerTotal = getPlayerTotalXp.get();
-                        if (playerTotal <= 0) break;
-                        int remainingToStore = playerTotal;
+                        int currentTotal = getPlayerTotalXp.get();
+                        if (currentTotal <= 0) break;
+                        int remainingToStore = currentTotal;
                         int totalStored = 0;
                         for (ItemStack tankStack : prioritized) {
                             if (remainingToStore <= 0) break;
@@ -254,23 +268,28 @@ public class PacketPumpAction implements IMessage {
                                 remainingToStore -= stored;
                                 totalStored += stored;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
-                                syncTankBack(tankStack, tankLocations.get(tankStack));
+                                syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
                         }
-                        if (totalStored > 0) addPlayerXp(player, -totalStored);
+                        if (totalStored > 0) {
+                            // 精确设置玩家经验，避免浮点误差
+                            int newTotal = currentTotal - totalStored;
+                            player.experienceLevel = 0;
+                            player.experienceTotal = 0;
+                            player.experience = 0;
+                            if (newTotal > 0) player.addExperience(newTotal);
+                        }
                         break;
                     }
 
                     case ACTION_STORE_ONE: {
+                        // 存入N级：玩家从当前等级降N级，最终等级为 currentLevel - N，经验条为0
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
+                        int currentLevel = player.experienceLevel;
+                        int targetLevel = Math.max(0, currentLevel - levelsToStore);
                         int currentTotal = getPlayerTotalXp.get();
-                        // Preserve player's fractional progress when calculating target total
-                        float frac = player.experience; // 0.0 .. 1.0
-                        int targetLevel = Math.max(0, player.experienceLevel - levelsToStore);
-                        int baseTarget = levelToTotalXp.apply(targetLevel);
-                        int xpToNextTarget = getXPToNextLevel(targetLevel);
-                        int targetTotal = baseTarget + Math.round(frac * xpToNextTarget);
+                        int targetTotal = levelToTotalXp.apply(targetLevel); // 目标等级0经验时的总XP
                         int toStore = Math.max(0, currentTotal - targetTotal);
                         if (toStore <= 0) break;
 
@@ -288,10 +307,17 @@ public class PacketPumpAction implements IMessage {
                                 remainingToStore -= stored;
                                 totalStored += stored;
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
-                                syncTankBack(tankStack, tankLocations.get(tankStack));
+                                syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
                         }
-                        if (totalStored > 0) addPlayerXp(player, -totalStored);
+                        if (totalStored > 0) {
+                            // 精确设置玩家到目标等级0经验，避免浮点误差
+                            int newTotal = currentTotal - totalStored;
+                            player.experienceLevel = 0;
+                            player.experienceTotal = 0;
+                            player.experience = 0;
+                            if (newTotal > 0) player.addExperience(newTotal);
+                        }
                         break;
                     }
 
@@ -552,8 +578,8 @@ public class PacketPumpAction implements IMessage {
             }
         }
         
-        /** 同步储罐回原位置 */
-        private void syncTankBack(ItemStack tank, TankLocationInfo location) {
+        /** 同步储罐回原位置，并发送客户端同步包（解决饰品栏/背包储罐存取后客户端不同步） */
+        private void syncTankBack(ItemStack tank, TankLocationInfo location, EntityPlayerMP player) {
             if (location == null) {
                 return;
             }
@@ -561,9 +587,11 @@ public class PacketPumpAction implements IMessage {
             if ("baubles".equals(location.locationType) && location.inventory != null) {
                 location.inventory.setInventorySlotContents(location.slotIndex, tank);
                 location.inventory.markDirty(); // 关键：标记为脏，确保Baubles同步
+                RsRingMod.network.sendTo(new PacketSyncTankSlots("baubles", location.slotIndex, tank), player);
             } else if ("inventory".equals(location.locationType) && location.inventory != null) {
                 location.inventory.setInventorySlotContents(location.slotIndex, tank);
                 location.inventory.markDirty(); // 标记为脏，确保背包同步
+                RsRingMod.network.sendTo(new PacketSyncTankSlots("inventory", location.slotIndex, tank), player);
             }
             // 手持物品会自动同步，无需特殊处理
         }

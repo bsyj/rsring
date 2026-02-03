@@ -42,15 +42,11 @@ public class ClientProxy extends CommonProxy {
         Minecraft.getMinecraft().displayGuiScreen(new com.moremod.client.GuiExperiencePumpController(stack, hand));
     }
 
-    // 打开箱子戒指的黑白名单GUI
+    // 打开物品吸收戒指的黑白名单GUI - 通过发送数据包到服务器来正确同步Container
     @Override
-    public void openChestRingGui(ItemStack stack) {
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        if (player != null) {
-            ContainerRingFilter container = new ContainerRingFilter(player.inventory, stack);
-            Minecraft.getMinecraft().displayGuiScreen(
-                new GuiRingFilterContainer(container, stack, "物品吸收戒指 - 黑白名单"));
-        }
+    public void openAbsorbRingGui(ItemStack stack) {
+        // 发送数据包到服务器，由服务器调用 player.openGui() 来确保 Container 同步
+        RsRingMod.network.sendToServer(new com.moremod.network.PacketOpenRingGui());
     }
 
     @Override
@@ -63,7 +59,7 @@ public class ClientProxy extends CommonProxy {
             
             if (tracker == null) {
                 player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                    net.minecraft.util.text.TextFormatting.RED + "未找到箱子戒指！"));
+                    net.minecraft.util.text.TextFormatting.RED + "未找到物品吸收戒指！"));
                 return;
             }
             
@@ -83,7 +79,7 @@ public class ClientProxy extends CommonProxy {
                 String status = capability.isEnabled() ? "启用" : "禁用";
                 String location = getLocationDisplayName(tracker.getLocationType());
                 player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                    net.minecraft.util.text.TextFormatting.GREEN + "箱子戒指已" + status + 
+                    net.minecraft.util.text.TextFormatting.GREEN + "物品吸收戒指已" + status + 
                     net.minecraft.util.text.TextFormatting.GRAY + " (位置: " + location + ")"));
             }
         });

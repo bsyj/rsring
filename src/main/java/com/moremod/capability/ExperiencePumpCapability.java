@@ -158,8 +158,9 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             if (instance == null || nbt == null) return;
 
             NBTTagCompound tag = (NBTTagCompound) nbt;
-            instance.setXpStored(tag.hasKey(XP_NBT_KEY) ? tag.getInteger(XP_NBT_KEY) : 0);
+            // 必须先设置容量等级再设置XP，否则 setXpStored 会在默认1级(max=1000)下截断，导致2级及以上储罐从NBT加载时经验丢失
             instance.setCapacityLevels(tag.hasKey(CAPACITY_LEVELS_NBT_KEY) ? tag.getInteger(CAPACITY_LEVELS_NBT_KEY) : DEFAULT_CAPACITY_LEVELS);
+            instance.setXpStored(tag.hasKey(XP_NBT_KEY) ? tag.getInteger(XP_NBT_KEY) : 0);
             instance.setMode(tag.hasKey(MODE_NBT_KEY) ? tag.getInteger(MODE_NBT_KEY) : MODE_OFF);
             instance.setRetainLevel(tag.hasKey(RETAIN_LEVEL_NBT_KEY) ? tag.getInteger(RETAIN_LEVEL_NBT_KEY) : 10);
             instance.setUseForMending(tag.hasKey(MENDING_NBT_KEY) ? tag.getBoolean(MENDING_NBT_KEY) : false);

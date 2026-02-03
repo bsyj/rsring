@@ -53,11 +53,9 @@ public class CraftingUpgradeHandler {
                 return ItemStack.EMPTY;
             }
 
-            // 从原储罐读取所有数据（优先从NBT读取，确保数据准确）
-            int originalLevels = ItemExperiencePump.getCapacityLevelsFromNBT(pumpStack);
+            // 从原储罐读取：等级与经验必须从NBT读（capability反序列化顺序曾导致>1000经验被截断）
+            int originalLevels = Math.max(1, ItemExperiencePump.getCapacityLevelsFromNBT(pumpStack));
             int originalXP = ItemExperiencePump.getXpStoredFromNBT(pumpStack);
-            
-            // 从capability读取其他属性（如果有的话）
             IExperiencePumpCapability originalCap = pumpStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
             int originalMode = originalCap != null ? originalCap.getMode() : 0;
             int originalRetainLevel = originalCap != null ? originalCap.getRetainLevel() : 10;
@@ -66,34 +64,37 @@ public class CraftingUpgradeHandler {
             LOGGER.info("=== Experience Tank Upgrade Start ===");
             LOGGER.info("Original - Levels: {}, XP: {}", originalLevels, originalXP);
 
-            // 创建新的储罐并直接写入NBT数据（绕过capability初始化问题）
+            // 创建新的储罐并更新其能力（直接操作能力而非仅修改NBT）
             ItemStack result = new ItemStack(RsRingMod.experiencePump);
             int newLevels = originalLevels + 1;
             
-            // 直接构造NBT数据
-            net.minecraft.nbt.NBTTagCompound stackTag = new net.minecraft.nbt.NBTTagCompound();
-            net.minecraft.nbt.NBTTagCompound dataTag = new net.minecraft.nbt.NBTTagCompound();
+            // 获取新储罐的能力并直接更新其值
+            IExperiencePumpCapability newCap = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            if (newCap != null) {
+                // 必须先设置容量等级，再设置XP，否则 setXpStored 会被默认1级容量(1000)截断导致经验丢失
+                newCap.setCapacityLevels(newLevels);
+                newCap.setXpStored(originalXP);
+                newCap.setMode(originalMode);
+                newCap.setRetainLevel(originalRetainLevel);
+                newCap.setUseForMending(originalMending);
+                
+                // 将能力同步到NBT（确保持久化）
+                ItemExperiencePump.syncCapabilityToStack(result, newCap);
+                
+                LOGGER.info("After capability update - Levels: {}, XP: {}", newCap.getCapacityLevels(), newCap.getXpStored());
+            } else {
+                LOGGER.error("ERROR: Could not get capability for new experience tank!");
+            }
             
-            dataTag.setInteger("xp", originalXP);
-            dataTag.setInteger("capacityLevels", newLevels);
-            dataTag.setInteger("mode", originalMode);
-            dataTag.setInteger("retainLevel", originalRetainLevel);
-            dataTag.setBoolean("mending", originalMending);
+            // 验证最终结果
+            int finalLevels = ItemExperiencePump.getCapacityLevelsFromNBT(result);
+            int finalXP = ItemExperiencePump.getXpStoredFromNBT(result);
+            int finalMaxXP = ItemExperiencePump.getMaxXpFromNBT(result);
+            LOGGER.info("Final verification - Levels: {}, XP: {}, MaxXP: {}", finalLevels, finalXP, finalMaxXP);
             
-            stackTag.setTag(ItemExperiencePump.XP_TAG, dataTag);
-            result.setTagCompound(stackTag);
-            
-            LOGGER.info("After NBT write - Levels: {}, XP: {}", newLevels, originalXP);
-            
-            // 验证NBT数据
-            int nbtLevels = ItemExperiencePump.getCapacityLevelsFromNBT(result);
-            int nbtXP = ItemExperiencePump.getXpStoredFromNBT(result);
-            int nbtMaxXP = ItemExperiencePump.getMaxXpFromNBT(result);
-            LOGGER.info("NBT verification - Levels: {}, XP: {}, MaxXP: {}", nbtLevels, nbtXP, nbtMaxXP);
-            
-            if (nbtXP != originalXP || nbtLevels != newLevels) {
-                LOGGER.error("ERROR: NBT data mismatch! Expected Levels={}, XP={}, but got Levels={}, XP={}", 
-                    newLevels, originalXP, nbtLevels, nbtXP);
+            if (finalXP != originalXP || finalLevels != newLevels) {
+                LOGGER.error("ERROR: Final data mismatch! Expected Levels={}, XP={}, but got Levels={}, XP={}", 
+                    newLevels, originalXP, finalLevels, finalXP);
             }
             LOGGER.info("=== Experience Tank Upgrade End ===");
 

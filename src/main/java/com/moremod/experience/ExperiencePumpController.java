@@ -175,6 +175,9 @@ public class ExperiencePumpController {
     /**
      * Performs an experience operation (extraction or injection).
      * 
+     * 参考 XP-Tome 项目的实现，确保经验操作的精度
+     * 避免出现 10.99999 级这样的精度问题
+     *
      * @param player The player to perform the operation on
      * @param amount The amount of XP to transfer
      * @param isExtraction True for extraction (tank to player), false for injection (player to tank)
@@ -340,7 +343,8 @@ public class ExperiencePumpController {
      * Converts level to XP points using Minecraft's official formulas.
      * Implements Requirements 6.1, 6.2 for accurate XP calculation.
      * 
-     * 现在委托给 XpHelper 工具类，使用精确的 Minecraft 官方公式
+     * 参考 XP-Tome 项目的实现，使用精确的 Minecraft 官方公式
+     * 确保等级到经验的转换是准确的，避免小数部分的精度问题
      *
      * @param level The level to convert
      * @return The equivalent XP amount
@@ -356,8 +360,20 @@ public class ExperiencePumpController {
             level = 21863; // This level corresponds to near Integer.MAX_VALUE XP
         }
 
-        // 使用 XpHelper 的精确计算
-        return com.moremod.util.XpHelper.getExperienceForLevel((int) Math.floor(level));
+        // 计算整数部分和小数部分
+        int integerLevel = (int) Math.floor(level);
+        double fractionalLevel = level - integerLevel;
+        
+        // 获取整数部分对应的经验
+        int baseXP = com.moremod.util.XpHelper.getExperienceForLevel(integerLevel);
+        
+        // 如果有小数部分，计算小数部分对应的经验
+        if (fractionalLevel > 0) {
+            int levelUpXP = com.moremod.util.XpHelper.getExperienceLimitOnLevel(integerLevel);
+            baseXP += (int) Math.round(fractionalLevel * levelUpXP);
+        }
+        
+        return baseXP;
     }
     
     /**
@@ -579,6 +595,9 @@ public class ExperiencePumpController {
     /**
      * Calculates XP amount for level-based extraction operations.
      * Implements Requirement 6.4 for level-based extraction calculation.
+     * 
+     * 参考 XP-Tome 项目的实现，确保等级基础的经验抽取计算准确
+     * 避免出现 10.99999 级这样的精度问题
      *
      * @param player The player performing the extraction
      * @param targetLevel The level to extract down to
@@ -590,6 +609,7 @@ public class ExperiencePumpController {
         }
 
         int currentXP = getPlayerTotalExperience(player);
+        // 计算目标等级的精确经验值，包括小数部分
         int targetXP = convertLevelToXP(targetLevel);
 
         // Ensure targetXP doesn't exceed currentXP to avoid negative extraction

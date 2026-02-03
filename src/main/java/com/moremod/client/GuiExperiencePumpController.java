@@ -36,7 +36,7 @@ public class GuiExperiencePumpController extends GuiScreen {
     private static final int GUI_WIDTH = 176;
     private static final int GUI_HEIGHT = 166;
     private static final int GOLD = 0xFFD700;
-    private static final int BG_COLOR = 0xFF8B7355;
+    private static final int BG_COLOR = 0xFFC6C6C6; // #C6C6C6
     // Use custom texture placed under resources: assets/rsring/textures/gui/kzq.png
     private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("rsring", "textures/gui/kzq.png");
 
@@ -208,26 +208,33 @@ public class GuiExperiencePumpController extends GuiScreen {
         guiTop = (height - GUI_HEIGHT) / 2;
         buttonList.clear();
 
-        // 经验修补开关按钮
-        buttonList.add(new GuiButton(0, guiLeft + 8, guiTop + 20, 20, 20, getMendingButtonText()));
-
+        // 第一行：模式切换、保留等级、经验修补开关 - 三个按钮平均并列排列
+        int topRowY = guiTop + 20;
+        int topRowButtonSpacing = 5;
+        int topRowButtonWidth = (GUI_WIDTH - 8 * 2 - 2 * topRowButtonSpacing) / 3; // 三个按钮平均分配宽度
+        
         // 模式切换按钮
-        buttonList.add(new GuiButton(1, guiLeft + 8, guiTop + 45, 50, 20, getModeButtonText()));
-
+        buttonList.add(new GuiButton(1, guiLeft + 8, topRowY, topRowButtonWidth, 20, getModeButtonText()));
+        
         // 保留等级按钮（默认0级，鼠标悬停滚轮调整）
-        buttonList.add(new GuiButton(2, guiLeft + 65, guiTop + 45, 50, 20, "保留: " + retainLevel));
+        buttonList.add(new GuiButton(2, guiLeft + 8 + topRowButtonWidth + topRowButtonSpacing, topRowY, topRowButtonWidth, 20, "保留: " + retainLevel));
+        
+        // 经验修补开关按钮
+        buttonList.add(new GuiButton(0, guiLeft + 8 + (topRowButtonWidth + topRowButtonSpacing) * 2, topRowY, topRowButtonWidth, 20, getMendingButtonText()));
 
         // 操作按钮区域 - 四个按钮平均分布
         int opButtonStartX = guiLeft + 8;  // 起始X坐标
         int opButtonWidth = (GUI_WIDTH - 8 * 2 - 3 * OP_BUTTON_SPACING) / 4; // 平均分配宽度，考虑间距
+        int opButtonY = guiTop + 45; // 操作按钮Y坐标
+        
         // 全部取出按钮
-        buttonList.add(new GuiButton(3, opButtonStartX, guiTop + 70, opButtonWidth, 20, "全取"));
+        buttonList.add(new GuiButton(3, opButtonStartX, opButtonY, opButtonWidth, 20, "全取"));
         // 取出N级按钮（默认取1级，鼠标悬停滚轮调整）
-        buttonList.add(new GuiButton(4, opButtonStartX + opButtonWidth + OP_BUTTON_SPACING, guiTop + 70, opButtonWidth, 20, "取 " + extractLevels + " 级"));
+        buttonList.add(new GuiButton(4, opButtonStartX + opButtonWidth + OP_BUTTON_SPACING, opButtonY, opButtonWidth, 20, "取 " + extractLevels + " 级"));
         // 存入N级按钮（默认存1级，鼠标悬停滚轮调整）
-        buttonList.add(new GuiButton(5, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 2, guiTop + 70, opButtonWidth, 20, "存 " + storeLevels + " 级"));
+        buttonList.add(new GuiButton(5, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 2, opButtonY, opButtonWidth, 20, "存 " + storeLevels + " 级"));
         // 全部存入按钮
-        buttonList.add(new GuiButton(6, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 3, guiTop + 70, opButtonWidth, 20, "全存"));
+        buttonList.add(new GuiButton(6, opButtonStartX + (opButtonWidth + OP_BUTTON_SPACING) * 3, opButtonY, opButtonWidth, 20, "全存"));
     }
 
     @Override
@@ -238,9 +245,15 @@ public class GuiExperiencePumpController extends GuiScreen {
         drawDefaultBackground();
         drawRect(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, BG_COLOR);
 
-        // 绘制标题
+        // 绘制标题 - RGB 跑马灯效果（更加炫酷：更快速度 + 双重色彩叠加效果）
         String title = "经验泵控制器";
-        fontRenderer.drawStringWithShadow(title, guiLeft + (GUI_WIDTH - fontRenderer.getStringWidth(title)) / 2, guiTop + 6, GOLD);
+        long t = System.currentTimeMillis();
+        int titlePeriod = 2000; // 2秒一个周期，比下面的更快
+        float titleHue = ((t % titlePeriod) / (float) titlePeriod) % 1.0f;
+        // 添加额外的色相偏移，产生更炫酷的双重彩虹效果
+        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 额外的波动
+        int titleColor = hsvToRgbInt((titleHue + hueOffset) % 1.0f, 1.0f, 1.0f); // 饱和度和明度都是最大，色彩鲜艳
+        fontRenderer.drawStringWithShadow(title, guiLeft + (GUI_WIDTH - fontRenderer.getStringWidth(title)) / 2, guiTop + 6, titleColor);
 
         // 更新按钮文本
         updateButtonTexts();
@@ -273,12 +286,12 @@ public class GuiExperiencePumpController extends GuiScreen {
         String totalCapInfo = String.format("%d / %d XP", totalStored, totalCapacity);
         // RGB 跑马灯颜色，根据时间变化
         long t = System.currentTimeMillis();
-        int period = 4000; // 周期 ms
+        int period = 5000; // 周期 ms，比标题慢一点
 
         // 三行分别有相位偏移，形成跑马灯效果
-        int colorLine1 = hsvToRgbInt(((t % period) / (float) period + 0.0f) % 1.0f, 1.0f, 1.0f);
-        int colorLine2 = hsvToRgbInt(((t % period) / (float) period + 0.33f) % 1.0f, 1.0f, 1.0f);
-        int colorLine3 = hsvToRgbInt(((t % period) / (float) period + 0.66f) % 1.0f, 1.0f, 1.0f);
+        int colorLine1 = hsvToRgbInt(((t % period) / (float) period + 0.0f) % 1.0f, 0.9f, 1.0f);
+        int colorLine2 = hsvToRgbInt(((t % period) / (float) period + 0.33f) % 1.0f, 0.9f, 1.0f);
+        int colorLine3 = hsvToRgbInt(((t % period) / (float) period + 0.66f) % 1.0f, 0.9f, 1.0f);
 
         fontRenderer.drawStringWithShadow("总容: " + totalCapInfo, guiLeft + 8, guiTop + 115, colorLine1);
 
@@ -301,12 +314,22 @@ public class GuiExperiencePumpController extends GuiScreen {
         // 使用动画颜色显示储罐数，形成跑马灯效果
         fontRenderer.drawStringWithShadow(tankCountInfo, guiLeft + 8, guiTop + 135, animatedTankCountColor);
         
-        // 无储罐警告 - 显示在右下角
+        // 无储罐警告 - 显示在右下角，使用红色基础的RGB跑马灯效果
         if (totalTanks == 0) {
             String warningText = "无储罐";
             int warningX = guiLeft + GUI_WIDTH - fontRenderer.getStringWidth(warningText) - 8;
             int warningY = guiTop + GUI_HEIGHT - 16;
-            fontRenderer.drawStringWithShadow(warningText, warningX, warningY, 0xFFFF0000); // 红色警告
+            
+            // 红色基础的RGB跑马灯：色相在红色范围内变化（0.0-0.1），高饱和度，明度变化
+            long t = System.currentTimeMillis();
+            int warningPeriod = 1000; // 1秒周期，快速闪烁警示
+            float phase = ((t % warningPeriod) / (float) warningPeriod);
+            // 色相在红色范围 (0.0-0.1)，饱和度固定为1.0，明度在0.6-1.0之间变化
+            float hue = phase * 0.1f; // 红色到橙红色
+            float brightness = 0.6f + 0.4f * (float)Math.sin(phase * Math.PI * 2); // 明度波动
+            int warningColor = hsvToRgbInt(hue, 1.0f, brightness);
+            
+            fontRenderer.drawStringWithShadow(warningText, warningX, warningY, warningColor);
         }
     }
 

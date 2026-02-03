@@ -89,7 +89,7 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     public ItemExperiencePump() {
         super();
-        setTranslationKey("rsring.experience_tank"); // 经验储罐
+        setUnlocalizedName("rsring.experience_tank"); // 经验储罐
         setRegistryName(new ResourceLocation("rsring", "experience_tank")); // 经验储罐
         setMaxStackSize(1);
         setCreativeTab(CreativeTabs.MISC);

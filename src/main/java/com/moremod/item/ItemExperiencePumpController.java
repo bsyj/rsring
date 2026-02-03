@@ -26,7 +26,7 @@ public class ItemExperiencePumpController extends Item {
 
     public ItemExperiencePumpController() {
         super();
-        setTranslationKey("rsring.experience_pump_controller");
+        setUnlocalizedName("rsring.experience_pump_controller");
         setRegistryName(new ResourceLocation("rsring", "experience_pump_controller"));
         setMaxStackSize(1);
         setCreativeTab(CreativeTabs.MISC);

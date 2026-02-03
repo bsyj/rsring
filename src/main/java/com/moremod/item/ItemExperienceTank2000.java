@@ -1,18 +1,12 @@
 package com.moremod.item;
 
-import com.moremod.capability.IExperiencePumpCapability;
 import com.moremod.capability.ExperiencePumpCapability;
-import com.moremod.rsring.RsRingMod;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.util.text.TextComponentString;
@@ -20,21 +14,22 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
+/**
+ * 2000级经验储罐 - 具有超大容量的经验存储设备
+ */
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 public class ItemExperienceTank2000 extends ItemExperiencePump implements IBauble {
 
+    // 2000级所需经验：17,677,220 XP
+    private static final int DEFAULT_CAPACITY = 17677220;
+
     public ItemExperienceTank2000() {
-        super();
-        setTranslationKey("rsring.experience_tank_2000"); // 2000级经验储罐
-        setRegistryName(new ResourceLocation("rsring", "experience_tank_2000")); // 2000级经验储罐
-        setMaxStackSize(1);
-        setCreativeTab(CreativeTabs.MISC);
+        super("experience_tank_2000", "rsring.experience_tank_2000");
     }
 
     @Override
@@ -43,9 +38,8 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         if (data == null) {
             // 即使没有NBT数据也要显示基础信息
-            long initialCapacity = 11670582120L; // 2000级玩家经验对应的容量
-            tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "2000级");
-            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + initialCapacity + " mb");
+            tooltip.add(TextFormatting.GRAY + "玩家等级: " + TextFormatting.AQUA + "2000级");
+            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + DEFAULT_CAPACITY + " mb");
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
                 tooltip.add("");
@@ -62,13 +56,12 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
         }
 
         int xp = data.getInteger("xp");
-        int capacityLevels = data.hasKey("capacityLevels") ? data.getInteger("capacityLevels") : 25;  // 默认25级
-        long max = 11670582120L; // 2000级玩家经验对应的容量
+        int max = DEFAULT_CAPACITY;
 
         // 基础信息显示
-        tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "2000级");
+        tooltip.add(TextFormatting.GRAY + "玩家等级: " + TextFormatting.AQUA + "2000级");
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
-        
+
         // 详细信息（Shift显示）
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
@@ -91,24 +84,24 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
-        
+
         // 服务器端：显示储罐容量信息到聊天栏
         if (!world.isRemote) {
             // 从NBT读取数据（确保准确性）
             int xpStored = getXpStoredFromNBT(stack);
-            long maxXp = 11670582120L; // 2000级玩家经验对应的容量
-            
+            int maxXp = DEFAULT_CAPACITY;
+
             // 构造消息：2000级储罐 - Y / Z mb
-            String message = TextFormatting.AQUA + "2000级储罐 " + 
+            String message = TextFormatting.AQUA + "2000级储罐 " +
                            TextFormatting.GRAY + "- " +
-                           TextFormatting.GREEN + xpStored + 
-                           TextFormatting.GRAY + " / " + 
-                           TextFormatting.YELLOW + maxXp + 
+                           TextFormatting.GREEN + xpStored +
+                           TextFormatting.GRAY + " / " +
+                           TextFormatting.YELLOW + maxXp +
                            TextFormatting.GRAY + " mb";
-            
+
             player.sendMessage(new TextComponentString(message));
         }
-        
+
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
@@ -118,7 +111,7 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
         net.minecraft.nbt.NBTTagCompound data = nbt;
         if ((data == null || data.getKeySet().isEmpty()) && stack.getTagCompound() != null && stack.getTagCompound().hasKey(XP_TAG))
             data = stack.getTagCompound().getCompoundTag(XP_TAG);
-        
+
         // 初始化默认值
         if (data == null) {
             data = new net.minecraft.nbt.NBTTagCompound();
@@ -128,15 +121,9 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
             data.setInteger("retainLevel", 1);
             data.setBoolean("mending", false);
         }
-        
+
         provider.initFromNBT(data);
         return provider;
     }
 
-    /**
-     * 获取2000级储罐的最大容量
-     */
-    public static long getMaxXp() {
-        return 11670582120L; // 2000级玩家经验对应的容量
-    }
 }

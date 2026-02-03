@@ -20,6 +20,10 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
+/**
+ * 经验泵控制器 - 用于统一管理和控制经验储罐的设备
+ * 可以设置经验泵送模式、保留等级和自动修补等功能
+ */
 public class ItemExperiencePumpController extends Item {
 
     public static final String CONTROLLER_TAG = "ControllerData";
@@ -34,6 +38,8 @@ public class ItemExperiencePumpController extends Item {
 
     /**
      * 获取控制器的配置数据
+     * @param stack 控制器物品栈
+     * @return 配置数据NBT标签，如果不存在则返回null
      */
     public static NBTTagCompound getControllerData(ItemStack stack) {
         if (stack.isEmpty() || !stack.hasTagCompound()) {
@@ -47,32 +53,39 @@ public class ItemExperiencePumpController extends Item {
 
     /**
      * 设置控制器的配置数据
+     * @param stack 控制器物品栈
+     * @param mode 工作模式
+     * @param retainLevel 保留等级
+     * @param useForMending 是否用于修补
      */
     public static void setControllerData(ItemStack stack, int mode, int retainLevel, boolean useForMending) {
         if (stack.isEmpty()) return;
-        
+
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
         }
-        
+
         NBTTagCompound data = new NBTTagCompound();
         data.setInteger("mode", mode);
         data.setInteger("retainLevel", retainLevel);
         data.setBoolean("mending", useForMending);
-        
+
         stack.getTagCompound().setTag(CONTROLLER_TAG, data);
     }
-    
+
     /**
      * 设置控制器的存取等级
+     * @param stack 控制器物品栈
+     * @param extractLevels 取出等级
+     * @param storeLevels 存入等级
      */
     public static void setExtractStoreLevels(ItemStack stack, int extractLevels, int storeLevels) {
         if (stack.isEmpty()) return;
-        
+
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
         }
-        
+
         NBTTagCompound data = getControllerData(stack);
         if (data == null) {
             data = new NBTTagCompound();
@@ -80,23 +93,27 @@ public class ItemExperiencePumpController extends Item {
             data.setInteger("retainLevel", 10);
             data.setBoolean("mending", false);
         }
-        
+
         data.setInteger("extractLevels", extractLevels);
         data.setInteger("storeLevels", storeLevels);
-        
+
         stack.getTagCompound().setTag(CONTROLLER_TAG, data);
     }
-    
+
     /**
      * 获取控制器的取出等级
+     * @param stack 控制器物品栈
+     * @return 取出等级，默认为1
      */
     public static int getExtractLevels(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
         return data != null && data.hasKey("extractLevels") ? data.getInteger("extractLevels") : 1;
     }
-    
+
     /**
      * 获取控制器的存入等级
+     * @param stack 控制器物品栈
+     * @return 存入等级，默认为1
      */
     public static int getStoreLevels(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
@@ -105,6 +122,8 @@ public class ItemExperiencePumpController extends Item {
 
     /**
      * 获取控制器的模式
+     * @param stack 控制器物品栈
+     * @return 工作模式，默认为关闭
      */
     public static int getMode(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
@@ -113,6 +132,8 @@ public class ItemExperiencePumpController extends Item {
 
     /**
      * 获取控制器的保留等级
+     * @param stack 控制器物品栈
+     * @return 保留等级，默认为10
      */
     public static int getRetainLevel(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
@@ -120,7 +141,9 @@ public class ItemExperiencePumpController extends Item {
     }
 
     /**
-     * 获取控制器的修补开关
+     * 获取控制器的修补开关状态
+     * @param stack 控制器物品栈
+     * @return 是否启用修补，默认为false
      */
     public static boolean isUseForMending(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
@@ -136,7 +159,7 @@ public class ItemExperiencePumpController extends Item {
             int mode = data.getInteger("mode");
             int retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : 10;
             boolean mending = data.getBoolean("mending");
-            
+
             tooltip.add(TextFormatting.GOLD + "当前配置:");
             tooltip.add(TextFormatting.GRAY + "  · 模式: " + getModeText(mode));
             tooltip.add(TextFormatting.GRAY + "  · 保留等级: " + TextFormatting.AQUA + retainLevel);
@@ -163,6 +186,11 @@ public class ItemExperiencePumpController extends Item {
         }
     }
 
+    /**
+     * 获取模式文本描述
+     * @param mode 模式值
+     * @return 对应的文本描述
+     */
     private String getModeText(int mode) {
         switch (mode) {
             case IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER: return TextFormatting.AQUA + "抽→罐";

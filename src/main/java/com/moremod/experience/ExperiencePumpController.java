@@ -276,8 +276,18 @@ public class ExperiencePumpController {
         TankScanResult scanResult = scanAllInventories(player);
         List<ItemStack> tanks = scanResult.getAllTanks();
 
-        // 按照原始顺序处理储罐，优先填满前面的储罐
-        // 不移除任何储罐，确保所有储罐都有机会接收经验
+        // 按照填充百分比排序，优先填满前面未填满的储罐
+        tanks.sort((tank1, tank2) -> {
+            int stored1 = ItemExperiencePump.getXpStoredFromNBT(tank1);
+            int capacity1 = ItemExperiencePump.getMaxXpFromNBT(tank1);
+            int stored2 = ItemExperiencePump.getXpStoredFromNBT(tank2);
+            int capacity2 = ItemExperiencePump.getMaxXpFromNBT(tank2);
+            
+            double fill1 = capacity1 > 0 ? (double) stored1 / capacity1 : 1.0;
+            double fill2 = capacity2 > 0 ? (double) stored2 / capacity2 : 1.0;
+            
+            return Double.compare(fill1, fill2); // 升序排序，填充少的优先
+        });
 
         int totalInjected = 0;
         int remainingToInject = amount;

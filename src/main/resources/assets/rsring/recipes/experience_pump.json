@@ -11,7 +11,7 @@
     "B": { "item": "minecraft:glass_bottle" }
   },
   "result": {
-    "item": "rsring:experience_tank",
+    "item": "rsring:experience_pump",
     "count": 1
   }
 }

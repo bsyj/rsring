@@ -130,5 +130,15 @@ public class ClientProxy extends CommonProxy {
         // 经验泵控制器（使用自定义材质）
         ModelLoader.setCustomModelResourceLocation(
             RsRingMod.experiencePumpController, 0, new ModelResourceLocation(RsRingMod.experiencePumpController.getRegistryName(), "inventory"));
+        
+        // 注册特殊经验储罐模型
+        ModelLoader.setCustomModelResourceLocation(
+            RsRingMod.experienceTank100, 0, new ModelResourceLocation(RsRingMod.experienceTank100.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(
+            RsRingMod.experienceTank500, 0, new ModelResourceLocation(RsRingMod.experienceTank500.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(
+            RsRingMod.experienceTank1000, 0, new ModelResourceLocation(RsRingMod.experienceTank1000.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(
+            RsRingMod.experienceTank2000, 0, new ModelResourceLocation(RsRingMod.experienceTank2000.getRegistryName(), "inventory"));
     }
 }

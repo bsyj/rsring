@@ -42,7 +42,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     public ItemAbsorbRing() {
         super();
-        this.setUnlocalizedName("rsring.item_absorb_ring");
+        this.setTranslationKey("rsring.item_absorb_ring");
         this.setRegistryName(new ResourceLocation("rsring", "item_absorb_ring"));
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabs.MISC);

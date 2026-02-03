@@ -5,3 +5,57 @@ item.rsring.experience_pump_controller.name=Experience Pump Controller
 key.rsring.toggle.desc=Toggle Ring
 key.categories.rsring=Rings
 message.rsring.ring_not_found=Ring not found
+
+# Configuration
+config.rsring.absorbRing=Absorb Ring Settings
+config.rsring.absorbRing.defaultBlacklistItems=Default Blacklist Items
+config.rsring.absorbRing.defaultWhitelistItems=Default Whitelist Items
+config.rsring.absorbRing.useBlacklistModeByDefault=Use Blacklist Mode By Default
+config.rsring.absorbRing.absorptionRange=Absorption Range
+config.rsring.absorbRing.energyCostPerItem=Energy Cost Per Item
+config.rsring.absorbRing.maxEnergyCapacity=Max Energy Capacity
+config.rsring.absorbRing.allowCustomFilters=Allow Custom Filters
+config.rsring.absorbRing.absorptionInterval=Absorption Interval
+
+
+config.rsring.absorbRing.initialEnergy=Initial Energy
+config.rsring.absorbRing.energyCostMultiplier=Energy Cost Multiplier
+
+# Experience Tank Configuration
+config.rsring.experienceTank=Experience Tank Settings
+config.rsring.experienceTank.enabled=Enabled
+config.rsring.experienceTank.xpExtractionRate=XP Extraction Rate
+config.rsring.experienceTank.xpExtractionRange=XP Extraction Range
+config.rsring.experienceTank.extractXpBottles=Extract XP Bottles
+config.rsring.experienceTank.mendingOn=Mending Enabled
+config.rsring.experienceTank.mendPlayerItems=Mend Player Items
+config.rsring.experienceTank.enableOverflowBottles=Enable Overflow Bottles
+config.rsring.experienceTank.enableAutoPumping=Enable Auto Pumping
+config.rsring.experienceTank.pumpingInterval=Pumping Interval
+config.rsring.experienceTank.mendingInterval=Mending Interval
+config.rsring.experienceTank.extractionInterval=Extraction Interval
+config.rsring.experienceTank.defaultPumpMode=Default Pump Mode
+config.rsring.experienceTank.defaultRetainLevel=Default Retain Level
+config.rsring.experienceTank.defaultMendingMode=Default Mending Mode
+config.rsring.experienceTank.maxTankLevelLimit=Max Tank Level Limit
+config.rsring.experienceTank.enableSpecialTanks=Enable Special Tanks
+config.rsring.experienceTank.xpToBottleEfficiency=XP to Bottle Efficiency
+config.rsring.experienceTank.xpMendingEfficiency=XP Mending Efficiency
+
+# Pump Controller Configuration
+config.rsring.controller=Pump Controller Settings
+config.rsring.controller.controllerRange=Controller Range
+
+# General Configuration
+config.rsring.general=General Settings
+config.rsring.general.enableBaublesIntegration=Enable Baubles Integration
+config.rsring.general.enableSoundEffects=Enable Sound Effects
+config.rsring.general.enableParticleEffects=Enable Particle Effects
+config.rsring.general.debugMode=Debug Mode
+config.rsring.general.autoSaveInterval=Auto-save Interval
+
+# Network Configuration
+config.rsring.network=Network Settings
+config.rsring.network.packetSendFrequency=Packet Send Frequency
+config.rsring.network.packetSizeLimit=Packet Size Limit
+config.rsring.network.enableNetworkCompression=Enable Network Compression

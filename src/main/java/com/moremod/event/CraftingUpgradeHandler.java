@@ -42,6 +42,13 @@ public class CraftingUpgradeHandler {
 
                 if (stack.getItem() instanceof ItemExperiencePump && pumpStack.isEmpty()) {
                     pumpStack = stack;
+                    // 检查是否为特殊储罐，如果是则禁止升级
+                    if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank100 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank500 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank1000 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank2000) {
+                        return ItemStack.EMPTY; // 特殊储罐不能应用合成升级
+                    }
                 } else if (stack.getItem() == net.minecraft.init.Items.ENDER_PEARL && pearlStack.isEmpty()) {
                     pearlStack = stack;
                 } else if (stack.getItem() == net.minecraft.init.Items.EXPERIENCE_BOTTLE && bottleStack.isEmpty()) {
@@ -64,9 +71,31 @@ public class CraftingUpgradeHandler {
             LOGGER.info("=== Experience Tank Upgrade Start ===");
             LOGGER.info("Original - Levels: {}, XP: {}", originalLevels, originalXP);
 
-            // 创建新的储罐并更新其能力（直接操作能力而非仅修改NBT）
-            ItemStack result = new ItemStack(RsRingMod.experiencePump);
-            int newLevels = originalLevels + 1;
+            // 创建新的储罐并保持原始物品类型
+            ItemStack result;
+            // 保持原始物品类型，而不是总是创建基础经验泵
+            if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank100) {
+                result = new ItemStack(RsRingMod.experienceTank100);
+            } else if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank500) {
+                result = new ItemStack(RsRingMod.experienceTank500);
+            } else if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank1000) {
+                result = new ItemStack(RsRingMod.experienceTank1000);
+            } else if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank2000) {
+                result = new ItemStack(RsRingMod.experienceTank2000);
+            } else {
+                // 基础经验泵
+                result = new ItemStack(RsRingMod.experiencePump);
+            }
+            
+            // 对于特殊储罐，保持其固定容量，不增加等级
+            // 对于基础经验泵，增加容量等级
+            int newLevels = originalLevels;
+            if (result.getItem() instanceof ItemExperiencePump && !(result.getItem() instanceof com.moremod.item.ItemExperienceTank100) && 
+                !(result.getItem() instanceof com.moremod.item.ItemExperienceTank500) && 
+                !(result.getItem() instanceof com.moremod.item.ItemExperienceTank1000) && 
+                !(result.getItem() instanceof com.moremod.item.ItemExperienceTank2000)) {
+                newLevels = originalLevels + 1;
+            }
             
             // 获取新储罐的能力并直接更新其值
             IExperiencePumpCapability newCap = result.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
@@ -113,6 +142,13 @@ public class CraftingUpgradeHandler {
 
                 if (stack.getItem() instanceof ItemExperiencePump && pumpStack.isEmpty()) {
                     pumpStack = stack;
+                    // 检查是否为特殊储罐，如果是则禁止升级
+                    if (pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank100 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank500 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank1000 ||
+                        pumpStack.getItem() instanceof com.moremod.item.ItemExperienceTank2000) {
+                        return false; // 特殊储罐不能应用合成升级
+                    }
                 } else if (stack.getItem() == net.minecraft.init.Items.ENDER_PEARL && !hasPearl) {
                     hasPearl = true;
                 } else if (stack.getItem() == net.minecraft.init.Items.EXPERIENCE_BOTTLE && !hasBottle) {

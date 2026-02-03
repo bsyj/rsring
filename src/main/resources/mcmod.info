@@ -2,8 +2,22 @@
 {
   "modid": "rsring",
   "name": "RS Rings and Tanks",
-  "description": "添加强大的饰品戒指和经验储罐。主要功能包括：物品吸收戒指（可绑定RS终端并跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。\n\nAdds powerful Baubles rings and experience tanks. Features include: Item Absorb Ring that binds to RS terminals and collects items across dimensions, Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system.",
-  "version": "1.1",
+  "description": "添加强大的饰品戒指和经验储罐（1.3版本）。主要功能包括：物品吸收戒指（当前版本暂不支持绑定RS终端，仅支持绑定普通箱子并跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。1.3版本统一了配置系统，使用Forge的@Config注解系统，优化了配置界面，修复了配置相关的问题，提升了模组的稳定性和可配置性。
+
+未来计划：
+- 实现RS终端绑定功能
+- 增加更多饰品栏装备
+- 优化经验系统性能
+- 添加更多配置选项
+
+Adds powerful Baubles rings and experience tanks (Version 1.3). Features include: Item Absorb Ring (currently does not support binding to RS terminals, only supports binding to regular chests and collecting items across dimensions), Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system. Version 1.3 unifies the configuration system using Forge's @Config annotation system, optimizes the configuration interface, fixes configuration-related issues, and improves mod stability and configurability.
+
+Future plans:
+- Implement RS terminal binding functionality
+- Add more bauble slot equipment
+- Optimize experience system performance
+- Add more configuration options",
+  "version": "1.3",
   "mcversion": "1.12.2",
   "logoFile": "assets/rsring/textures/items/mod_banner.png",
   "url": "",

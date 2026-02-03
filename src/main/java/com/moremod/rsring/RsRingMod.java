@@ -35,8 +35,10 @@ import com.moremod.network.PacketPumpAction;
 import com.moremod.network.PacketPumpData;
 import com.moremod.proxy.CommonProxy;
 import com.moremod.config.RsRingConfig;
+import com.moremod.config.ExperienceTankConfig;
+import com.moremod.config.GeneralConfig;
+import com.moremod.config.NetworkConfig;
 import net.minecraftforge.fml.common.SidedProxy;
-import com.moremod.config.ExperiencePumpConfig;
 import com.moremod.experience.InventoryChangeHandler;
 import com.moremod.experience.ExperienceTankManager;
 
@@ -45,7 +47,7 @@ public class RsRingMod
 {
     public static final String MODID = "rsring";
     public static final String NAME = "RS Rings and Tanks";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.3";
 
     @Mod.Instance(MODID)
     public static RsRingMod instance;

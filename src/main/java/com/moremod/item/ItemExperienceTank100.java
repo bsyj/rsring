@@ -75,9 +75,9 @@ public class ItemExperienceTank100 extends ItemExperiencePump implements IBauble
             tooltip.add(TextFormatting.GRAY + "  · 与经验泵控制器协同工作");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "配置信息:");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取速率: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.xpExtractionRate + " XP/刻");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.xpExtractionRange + " 格");
-            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.moremod.config.ExperienceTankConfig.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
+            tooltip.add(TextFormatting.GRAY + "  · 抽取速率: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/刻");
+            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
+            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.moremod.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
         }
     }
 

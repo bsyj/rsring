@@ -82,12 +82,26 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     /**
      * 获取储罐的最大容量
-     * 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
+     * 对于特殊储罐（100级、500级、1000级、2000级），使用其固定容量
+     * 对于普通储罐，使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
      */
     public static int getMaxXpFromNBT(ItemStack stack) {
         if (stack == null) {
             return (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, DEFAULT_RETAIN_LEVEL - 1));
         }
+        
+        // 检查是否为特殊储罐
+        if (stack.getItem() instanceof ItemExperienceTank100) {
+            return 30970; // 100级所需经验
+        } else if (stack.getItem() instanceof ItemExperienceTank500) {
+            return 1045970; // 500级所需经验
+        } else if (stack.getItem() instanceof ItemExperienceTank1000) {
+            return 4339720; // 1000级所需经验
+        } else if (stack.getItem() instanceof ItemExperienceTank2000) {
+            return 17677220; // 2000级所需经验
+        }
+        
+        // 普通储罐使用原来的计算方法
         int capacityLevels = getCapacityLevelsFromNBT(stack);
 
         try {
@@ -167,9 +181,9 @@ public class ItemExperiencePump extends Item implements IBauble {
             tooltip.add(TextFormatting.GRAY + "  · 与经验泵控制器协同工作");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "配置信息:");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取速率: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.xpExtractionRate + " XP/刻");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.xpExtractionRange + " 格");
-            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.moremod.config.ExperienceTankConfig.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
+            tooltip.add(TextFormatting.GRAY + "  · 抽取速率: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/刻");
+            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.moremod.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
+            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.moremod.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
         }
     }
 
@@ -195,14 +209,9 @@ public class ItemExperiencePump extends Item implements IBauble {
             return false;
         }
 
-        int capacityLevels = getCapacityLevelsFromNBT(stack);
-        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
-        try {
-            long max = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
-            return (int) max > 0;
-        } catch (Exception e) {
-            return Integer.MAX_VALUE > 0;
-        }
+        // 使用getMaxXpFromNBT方法获取容量，支持特殊储罐的固定容量
+        int maxCapacity = getMaxXpFromNBT(stack);
+        return maxCapacity > 0;
     }
 
     @Override
@@ -216,19 +225,13 @@ public class ItemExperiencePump extends Item implements IBauble {
             return 1.0;
         }
 
-        int capacityLevels = getCapacityLevelsFromNBT(stack);
-        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
-        try {
-            long max = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
-            if (max > Integer.MAX_VALUE) {
-                return 1.0 - (double) data.getInteger(XP_KEY) / (double) Integer.MAX_VALUE;
-            }
-            int maxInt = (int) max;
-            if (maxInt <= 0) return 1.0;
-            return 1.0 - (double) data.getInteger(XP_KEY) / (double) maxInt;
-        } catch (Exception e) {
-            return 1.0 - (double) data.getInteger(XP_KEY) / (double) Integer.MAX_VALUE;
+        // 使用getMaxXpFromNBT方法获取容量，支持特殊储罐的固定容量
+        int maxCapacity = getMaxXpFromNBT(stack);
+        if (maxCapacity <= 0) {
+            return 1.0;
         }
+        int stored = data.getInteger(XP_KEY);
+        return 1.0 - (double) stored / (double) maxCapacity;
     }
 
     @Override
@@ -452,7 +455,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         int extractedXp = 0;
 
         // 步骤1：抽取周围经验（使用配置的间隔）
-        if (player.ticksExisted % com.moremod.config.ExperienceTankConfig.extractionInterval == 0) {
+        if (player.ticksExisted % com.moremod.config.ExperienceTankConfig.tank.extractionInterval == 0) {
             extractedXp = extractXpFromSurroundings(player, stack, cap);
         }
 
@@ -462,7 +465,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         }
 
         // 步骤3：经验泵送（即时执行每 tick），仅当储罐不在控制器管理下且模式不是关闭时启用
-        if (com.moremod.config.ExperienceTankConfig.enableAutoPumping &&
+        if (com.moremod.config.ExperienceTankConfig.tank.enableAutoPumping &&
             cap.getMode() != IExperiencePumpCapability.MODE_OFF) {
             // 如果被控制器管理则跳过自动泵送
             com.moremod.experience.ExperiencePumpController controller = com.moremod.experience.ExperiencePumpController.getInstance();
@@ -472,8 +475,8 @@ public class ItemExperiencePump extends Item implements IBauble {
         }
 
         // 步骤4：自动修补（使用配置的间隔）
-        if (com.moremod.config.ExperienceTankConfig.mendingOn && cap.isUseForMending() &&
-            cap.getXpStored() > 0 && player.ticksExisted % com.moremod.config.ExperienceTankConfig.mendingInterval == 0) {
+        if (com.moremod.config.ExperienceTankConfig.tank.mendingOn && cap.isUseForMending() &&
+            cap.getXpStored() > 0 && player.ticksExisted % com.moremod.config.ExperienceTankConfig.tank.mendingInterval == 0) {
             tryRepairMending(player, stack, cap);
         }
 
@@ -500,7 +503,7 @@ public class ItemExperiencePump extends Item implements IBauble {
             int overflowXp = newXp - maxXp;
             int overflowBottles = overflowXp / XP_PER_BOTTLE;
 
-            if (overflowBottles > 0 && com.moremod.config.ExperienceTankConfig.enableOverflowBottles) {
+            if (overflowBottles > 0 && com.moremod.config.ExperienceTankConfig.tank.enableOverflowBottles) {
                 // 生成经验瓶物品实体，掉落至玩家位置
                 ItemStack overflowStack = new ItemStack(Items.EXPERIENCE_BOTTLE, overflowBottles);
                 net.minecraft.entity.item.EntityItem itemEntity = new net.minecraft.entity.item.EntityItem(
@@ -572,7 +575,7 @@ public class ItemExperiencePump extends Item implements IBauble {
      */
     private boolean isUpgradeActive(ItemStack stack, IExperiencePumpCapability cap) {
         return stack != null && !stack.isEmpty() &&
-               com.moremod.config.ExperienceTankConfig.enabled &&
+               com.moremod.config.ExperienceTankConfig.tank.enabled &&
                cap != null;
     }
 
@@ -580,7 +583,7 @@ public class ItemExperiencePump extends Item implements IBauble {
      * 获取当前配置的抽取速率
      */
     private int getExtractionRate() {
-        return com.moremod.config.ExperienceTankConfig.xpExtractionRate;
+        return com.moremod.config.ExperienceTankConfig.tank.xpExtractionRate;
     }
 
     /**
@@ -602,7 +605,7 @@ public class ItemExperiencePump extends Item implements IBauble {
 
         int maxExtract = getExtractionRate();
         int extractedTotal = 0;
-        double range = com.moremod.config.ExperienceTankConfig.xpExtractionRange;
+        double range = com.moremod.config.ExperienceTankConfig.tank.xpExtractionRange;
 
         // 构建抽取范围AABB（玩家为中心，向四周延伸指定格数）
         net.minecraft.util.math.AxisAlignedBB extractArea = player.getEntityBoundingBox().grow(range);
@@ -611,12 +614,12 @@ public class ItemExperiencePump extends Item implements IBauble {
         extractedTotal = extractXpFromOrbs(player, extractArea, maxExtract, cap);
 
         // 第二步：抽取经验瓶物品（可选，兼容玩家掉落的经验瓶）
-        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.extractXpBottles) {
+        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.tank.extractXpBottles) {
             extractedTotal += extractXpFromBottleItems(player, extractArea, maxExtract, extractedTotal, cap);
         }
 
         // 第三步：吸收投掷中的经验瓶实体（EntityExpBottle），将其视为一个完整的经验瓶
-        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.extractXpBottles) {
+        if (extractedTotal < maxExtract && com.moremod.config.ExperienceTankConfig.tank.extractXpBottles) {
             extractedTotal += extractXpFromThrownBottles(player, extractArea, maxExtract, extractedTotal, cap);
         }
 
@@ -764,7 +767,7 @@ public class ItemExperiencePump extends Item implements IBauble {
      * 修补规则：1经验=2耐久，优先修补耐久损失比例最高的装备
      */
     private void tryRepairMending(EntityPlayer player, ItemStack pump, IExperiencePumpCapability cap) {
-        if (player == null || pump == null || cap == null || !com.moremod.config.ExperienceTankConfig.mendPlayerItems) return;
+        if (player == null || pump == null || cap == null || !com.moremod.config.ExperienceTankConfig.tank.mendPlayerItems) return;
 
         int availableXp = cap.getXpStored();
         if (availableXp <= 0) return;
@@ -876,45 +879,46 @@ public class ItemExperiencePump extends Item implements IBauble {
             return FILL_LEVEL_EMPTY;
         }
 
-        // 首选 capability（如果可用），以确保升级后客户端能读取最新状态；否则回退到 NBT
+        // 首选 NBT 数据（确保基于持久化数据），只有当NBT不可用时才回退到 capability
         int stored = 0;
         int max = 0;
 
-        IExperiencePumpCapability cap = null;
-        try {
-            cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-        } catch (Throwable ignored) {}
-
-        if (cap != null) {
-            try {
-                stored = cap.getXpStored();
-                max = cap.getMaxXp();
-            } catch (Throwable ignored) {
-                // fallthrough to NBT
-                cap = null;
-            }
-        }
-
-        if (cap == null) {
-            net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
-            if (data == null) return FILL_LEVEL_EMPTY;
+        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
+        if (data != null) {
             stored = data.getInteger(XP_KEY);
-            int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
-            long maxLong = (long) IExperiencePumpCapability.BASE_XP_PER_LEVEL * (1L << (Math.max(1, capacityLevels) - 1));
-            if (maxLong > Integer.MAX_VALUE) maxLong = Integer.MAX_VALUE;
-            max = (int) maxLong;
+            max = getMaxXpFromNBT(stack);
+        } else {
+            // NBT 不可用时，回退到 capability
+            IExperiencePumpCapability cap = null;
+            try {
+                cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            } catch (Throwable ignored) {}
+
+            if (cap != null) {
+                try {
+                    stored = cap.getXpStored();
+                    max = cap.getMaxXp();
+                } catch (Throwable ignored) {
+                    return FILL_LEVEL_EMPTY;
+                }
+            } else {
+                return FILL_LEVEL_EMPTY;
+            }
         }
 
         if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
         if (stored >= max) return FILL_LEVEL_FULL;
 
         // 使用精确的整数比例判断以避免浮点舍入问题
-        // 直接比较 stored * 4 与 max 的倍数，避免整数除法的截断问题
+        // 计算实际填充百分比，使用长整型避免溢出
         // 精确判断填充等级
-        if (stored * 4 <= max) return FILL_LEVEL_EMPTY;          // 0%
-        if (stored * 4 <= max * 2) return FILL_LEVEL_QUARTER;     // 1-25%
-        if (stored * 4 <= max * 3) return FILL_LEVEL_HALF;        // 26-50%
-        if (stored * 4 < max * 4) return FILL_LEVEL_THREE_QUARTERS; // 51-75%
-        return FILL_LEVEL_FULL;                                   // 76-100%
+        long fillRatio = (long) stored * 10000 / max; // 计算到小数点后两位，提高精度
+        
+        // 优化边界条件判断，使材质选择更加合理
+        // 使用更平滑的过渡范围，避免在边界点附近频繁切换材质
+        if (fillRatio < 3000) return FILL_LEVEL_QUARTER;     // 0.01-29.99% → 25%材质
+        if (fillRatio < 6000) return FILL_LEVEL_HALF;        // 30.00-59.99% → 50%材质
+        if (fillRatio < 9000) return FILL_LEVEL_THREE_QUARTERS; // 60.00-89.99% → 75%材质
+        return FILL_LEVEL_FULL;                                   // 90.00-100% → 100%材质
     }
 }

@@ -78,6 +78,30 @@ public class RsRingConfig {
         })
         @Config.Name("Allow Custom Filters")
         public boolean allowCustomFilters = true;
+
+        @Config.Comment({
+            "吸收间隔（tick）",
+            "How often to absorb items (ticks)"
+        })
+        @Config.Name("Absorption Interval")
+        @Config.RangeInt(min = 1, max = 20)
+        public int absorptionInterval = 5;
+
+        @Config.Comment({
+            "初始能量（FE）",
+            "Initial energy for new rings (FE)"
+        })
+        @Config.Name("Initial Energy")
+        @Config.RangeInt(min = 0, max = 10000000)
+        public int initialEnergy = 0;
+
+        @Config.Comment({
+            "能量消耗倍率",
+            "Energy cost multiplier"
+        })
+        @Config.Name("Energy Cost Multiplier")
+        @Config.RangeDouble(min = 0.1, max = 10.0)
+        public double energyCostMultiplier = 1.0;
     }
 
     @Mod.EventBusSubscriber(modid = RsRingMod.MODID)

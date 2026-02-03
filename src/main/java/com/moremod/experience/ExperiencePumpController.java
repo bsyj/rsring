@@ -488,7 +488,7 @@ public class ExperiencePumpController {
         
         // 如果储罐模式不是关闭，且控制器配置启用，则认为正在被管理
         return cap.getMode() != com.moremod.capability.IExperiencePumpCapability.MODE_OFF && 
-               com.moremod.config.ExperienceTankConfig.enabled;
+               com.moremod.config.ExperienceTankConfig.tank.enabled;
     }
     
     /**

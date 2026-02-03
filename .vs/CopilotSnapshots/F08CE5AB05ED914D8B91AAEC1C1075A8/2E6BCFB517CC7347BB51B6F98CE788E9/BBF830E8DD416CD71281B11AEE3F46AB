@@ -1,0 +1,378 @@
+﻿package com.moremod.client;
+
+import com.moremod.capability.IRsRingCapability;
+import com.moremod.capability.RsRingCapability;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.io.IOException;
+
+/**
+ * 箱子戒指黑白名单过滤GUI
+ * 参考Cyclic管道GUI设计：顶部9格过滤槽（仅匹配、不消耗），底部显示玩家背包
+ */
+@SideOnly(Side.CLIENT)
+public class GuiRingFilter extends GuiScreen {
+
+    private static final int SLOT_SIZE = 18;
+    private static final int SLOT_COUNT = 9;
+    private static final int PADDING = 8;
+    private static final int TOGGLE_BTN_WIDTH = 60;
+    private static final int TOGGLE_BTN_HEIGHT = 20;
+
+    private static final int GUI_WIDTH = 176; // 标准GUI宽度
+    private static final int GUI_HEIGHT = 166; // 标准GUI高度
+
+    // 纹理资源（已放置于 assets/rsring/textures/gui/ ）
+    private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/slot_large_plain.png");
+    private static final ResourceLocation BG_TEXTURE = new ResourceLocation("rsring", "textures/gui/pipe_gui.png");
+    private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/button_machine_field.png");
+    private static final ResourceLocation ICON_FILTER = new ResourceLocation("rsring", "textures/gui/icon_filter.png");
+    private static final ResourceLocation ICON_EXTRACT = new ResourceLocation("rsring", "textures/gui/icon_extract.png");
+
+    private final ItemStack ringStack;
+    private final String title;
+    private IRsRingCapability capability;
+
+    private int guiLeft;
+    private int guiTop;
+
+    public GuiRingFilter(ItemStack ringStack, String title) {
+        this.ringStack = ringStack;
+        this.title = title;
+        this.capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+    }
+
+    @Override
+    public void initGui() {
+        super.initGui();
+        guiLeft = (width - GUI_WIDTH) / 2;
+        guiTop = (height - GUI_HEIGHT) / 2;
+        buttonList.clear();
+    }
+
+    private void refreshCapability() {
+        if (capability == null) capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+    }
+
+    private String getToggleButtonText() {
+        if (capability == null) return "黑名单";
+        return capability.isWhitelistMode() ? "白名单" : "黑名单";
+    }
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        refreshCapability();
+        
+        // 1. 绘制背景（参考Cyclic的renderBackground）
+        drawDefaultBackground();
+        
+        // 2. 绘制GUI背景纹理（参考Cyclic的renderBg）
+        drawGuiBackground();
+        
+        // 3. 绘制过滤槽位
+        drawFilterSlots();
+        
+        // 4. 绘制玩家背包
+        drawPlayerInventory();
+        
+        // 5. 绘制按钮和其他组件（参考Cyclic的render）
+        // 绘制自定义按钮
+        drawCustomButtons(mouseX, mouseY);
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        
+        // 6. 绘制标题和标签（参考Cyclic的renderLabels）
+        updateButtonState();
+        String titleText = title;
+        int titleX = guiLeft + (GUI_WIDTH - fontRenderer.getStringWidth(titleText)) / 2;
+        fontRenderer.drawString(titleText, titleX, guiTop + 6, 0x404040);
+        
+        // 7. 绘制提示信息（参考Cyclic的renderTooltip）
+        drawTooltips(mouseX, mouseY);
+    }
+    
+    /**
+     * 更新按钮状态（参考Cyclic的onValueUpdate）
+     */
+    private void updateButtonState() {
+        // no-op: custom button rendered directly
+    }
+
+    private void drawCustomButtons(int mouseX, int mouseY) {
+        if (capability == null) return;
+        int x = guiLeft + 10;
+        int y = guiTop + 10;
+
+        // 绘制按钮背景
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
+        // 假设按钮贴图为单帧
+        drawTexturedModalRect(x, y, 0, 0, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT);
+
+        // 绘制图标
+        ResourceLocation icon = capability.isWhitelistMode() ? ICON_FILTER : ICON_FILTER;
+        mc.getTextureManager().bindTexture(icon);
+        drawTexturedModalRect(x + 4, y + 2, 0, 0, 16, 16);
+
+        // 绘制文本
+        String txt = getToggleButtonText();
+        int txtX = x + 24;
+        int txtY = y + (TOGGLE_BTN_HEIGHT - 8) / 2;
+        fontRenderer.drawString(txt, txtX, txtY, 0xE0E0E0);
+    }
+    
+    /**
+     * 绘制GUI背景（参考Cyclic的renderBg方法）
+     */
+    private void drawGuiBackground() {
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        mc.getTextureManager().bindTexture(BG_TEXTURE);
+        
+        // 绘制主背景（参考Cyclic的drawBackground）
+        drawTexturedModalRect(guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+    }
+    
+    /**
+     * 绘制过滤槽位（参考Cyclic的drawSlot方法）
+     */
+    private void drawFilterSlots() {
+        if (capability == null) return;
+        
+        // 过滤槽位起始位置（顶部居中，参考Cyclic的槽位布局）
+        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
+        int filterStartY = guiTop + 35;
+        
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        
+        // 绘制槽位背景（参考Cyclic的slot_large_plain.png）
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            int slotX = filterStartX + i * SLOT_SIZE;
+            int slotY = filterStartY;
+            
+            // 绘制槽位纹理
+            mc.getTextureManager().bindTexture(SLOT_TEXTURE);
+            drawTexturedModalRect(slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE);
+        }
+        
+        // 绘制过滤槽位中的物品
+        GlStateManager.enableRescaleNormal();
+        RenderHelper.enableGUIStandardItemLighting();
+        
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            String itemName = capability.getFilterSlot(i);
+            if (itemName == null || itemName.isEmpty()) continue;
+            
+            try {
+                ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
+                if (!display.isEmpty()) {
+                    int slotX = filterStartX + i * SLOT_SIZE + 1;
+                    int slotY = filterStartY + 1;
+                    mc.getRenderItem().renderItemAndEffectIntoGUI(display, slotX, slotY);
+                    mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, display, slotX, slotY, "");
+                }
+            } catch (Exception ignored) {}
+        }
+        
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+    }
+    
+    /**
+     * 绘制玩家背包（参考Cyclic的layoutPlayerInventorySlots）
+     */
+    private void drawPlayerInventory() {
+        // 背包起始位置（参考Cyclic的8, 84布局）
+        int invStartX = guiLeft + 8;
+        int invStartY = guiTop + 84;
+        
+        GlStateManager.enableRescaleNormal();
+        RenderHelper.enableGUIStandardItemLighting();
+        
+        // 绘制主背包（3行9列）
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                int slotIndex = 9 + row * 9 + col;
+                ItemStack stack = mc.player.inventory.getStackInSlot(slotIndex);
+                if (!stack.isEmpty()) {
+                    int x = invStartX + col * SLOT_SIZE;
+                    int y = invStartY + row * SLOT_SIZE;
+                    mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, y);
+                    mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, y, "");
+                }
+            }
+        }
+        
+        // 绘制快捷栏（参考Cyclic的+58偏移）
+        int hotbarY = invStartY + 58;
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = mc.player.inventory.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                int x = invStartX + i * SLOT_SIZE;
+                mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, hotbarY);
+                mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, hotbarY, "");
+            }
+        }
+        
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+    }
+    
+    /**
+     * 绘制工具提示（参考Cyclic的drawButtonTooltips）
+     */
+    private void drawTooltips(int mouseX, int mouseY) {
+        // 检查鼠标是否悬停在过滤槽位上
+        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
+        int filterStartY = guiTop + 35;
+        
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            int slotX = filterStartX + i * SLOT_SIZE;
+            int slotY = filterStartY;
+            
+            if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
+                String itemName = capability != null ? capability.getFilterSlot(i) : "";
+                if (itemName != null && !itemName.isEmpty()) {
+                    try {
+                        ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
+                        if (!display.isEmpty()) {
+                            renderToolTip(display, mouseX, mouseY);
+                        }
+                    } catch (Exception ignored) {}
+                } else {
+                    // 显示提示：点击添加过滤物品
+                    drawHoveringText(java.util.Arrays.asList(
+                        TextFormatting.GRAY + "点击添加过滤物品",
+                        TextFormatting.DARK_GRAY + "仅读取，不消耗"
+                    ), mouseX, mouseY);
+                }
+                break;
+            }
+        }
+        
+        // 显示底部提示（参考Cyclic的提示信息）
+        String hint = TextFormatting.GRAY + "点击背包物品添加到过滤槽 | 点击过滤槽清空";
+        int hintX = guiLeft + (GUI_WIDTH - fontRenderer.getStringWidth(hint)) / 2;
+        fontRenderer.drawString(hint, hintX, guiTop + GUI_HEIGHT - 10, 0x808080);
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        
+        if (mouseButton != 0) return; // 只处理左键点击
+        
+        refreshCapability();
+        if (capability == null) return;
+        
+        // 检查是否点击过滤槽位
+        int filterStartX = guiLeft + (GUI_WIDTH - SLOT_COUNT * SLOT_SIZE) / 2;
+        int filterStartY = guiTop + 35;
+        
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            int slotX = filterStartX + i * SLOT_SIZE;
+            int slotY = filterStartY;
+            
+            if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
+                // 点击过滤槽位
+                handleFilterSlotClick(i);
+                return;
+            }
+        }
+        
+        // 检查是否点击背包槽位
+        int invStartX = guiLeft + 8;
+        int invStartY = guiTop + 84;
+        
+        // 检查主背包
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                int slotIndex = 9 + row * 9 + col;
+                int x = invStartX + col * SLOT_SIZE;
+                int y = invStartY + row * SLOT_SIZE;
+                
+                if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
+                    handleInventorySlotClick(slotIndex);
+                    return;
+                }
+            }
+        }
+        
+        // 检查快捷栏
+        int hotbarY = invStartY + 58;
+        for (int i = 0; i < 9; i++) {
+            int x = invStartX + i * SLOT_SIZE;
+            
+            if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= hotbarY && mouseY < hotbarY + SLOT_SIZE) {
+                handleInventorySlotClick(i);
+                return;
+            }
+        }
+    }
+    
+    /**
+     * 处理过滤槽位点击（参考Cyclic：仅读取，不消耗，mayPlace允许任意物品）
+     */
+    private void handleFilterSlotClick(int slot) {
+        if (capability == null) return;
+        
+        ItemStack held = mc.player.inventory.getItemStack();
+        if (held.isEmpty()) {
+            // 清空过滤槽位
+            capability.setFilterSlot(slot, "");
+        } else {
+            // 仅读取物品类型，不消耗物品（参考Cyclic的过滤模板机制）
+            String name = held.getItem().getRegistryName() != null ? held.getItem().getRegistryName().toString() : "";
+            if (!name.isEmpty()) {
+                capability.setFilterSlot(slot, name);
+            }
+        }
+        RsRingCapability.syncCapabilityToStack(ringStack, capability);
+    }
+    
+    /**
+     * 处理背包槽位点击（参考Cyclic：复制到过滤槽，不消耗）
+     */
+    private void handleInventorySlotClick(int slotIndex) {
+        if (capability == null) return;
+        
+        ItemStack stackInSlot = mc.player.inventory.getStackInSlot(slotIndex);
+        if (!stackInSlot.isEmpty()) {
+            String name = stackInSlot.getItem().getRegistryName() != null ? stackInSlot.getItem().getRegistryName().toString() : "";
+            if (!name.isEmpty()) {
+                // 寻找一个空的过滤槽位
+                for (int i = 0; i < SLOT_COUNT; i++) {
+                    if (capability.getFilterSlot(i) == null || capability.getFilterSlot(i).isEmpty()) {
+                        capability.setFilterSlot(i, name);
+                        RsRingCapability.syncCapabilityToStack(ringStack, capability);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        refreshCapability();
+        if (capability == null) return;
+
+        if (button.id == 0) {
+            // 切换黑白名单模式（参考Cyclic的FILTER_TYPE字段切换）
+            capability.setWhitelistMode(!capability.isWhitelistMode());
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+        }
+    }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+}

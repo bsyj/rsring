@@ -1,0 +1,92 @@
+﻿package com.moremod.network;
+
+import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraft.entity.player.EntityPlayerMP;
+import com.moremod.item.ItemAbsorbRing;
+import com.moremod.capability.IRsRingCapability;
+import com.moremod.capability.RsRingCapability;
+import net.minecraft.item.ItemStack;
+
+/** 锟酵伙拷锟斤拷 -> 锟斤拷锟斤拷锟斤拷锟斤拷同锟斤拷锟斤拷指锟斤拷锟斤拷锟斤拷锟斤拷模式锟斤拷锟斤拷 */
+public class PacketSyncRingFilter implements IMessage {
+
+    private boolean whitelistMode;
+    private String[] slots = new String[9];
+
+    public PacketSyncRingFilter() {}
+
+    public PacketSyncRingFilter(boolean whitelistMode, String[] slots) {
+        this.whitelistMode = whitelistMode;
+        if (slots != null) {
+            for (int i = 0; i < Math.min(9, slots.length); i++) this.slots[i] = slots[i];
+        }
+    }
+
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        whitelistMode = buf.readBoolean();
+        for (int i = 0; i < 9; i++) {
+            boolean has = buf.readBoolean();
+            if (has) slots[i] = ByteBufUtils.readUTF8String(buf);
+            else slots[i] = "";
+        }
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeBoolean(whitelistMode);
+        for (int i = 0; i < 9; i++) {
+            String s = slots[i];
+            if (s != null && !s.isEmpty()) {
+                buf.writeBoolean(true);
+                ByteBufUtils.writeUTF8String(buf, s);
+            } else {
+                buf.writeBoolean(false);
+            }
+        }
+    }
+
+    public static class Handler implements IMessageHandler<PacketSyncRingFilter, IMessage> {
+        @Override
+        public IMessage onMessage(PacketSyncRingFilter msg, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            player.getServerWorld().addScheduledTask(() -> {
+                // 锟节凤拷锟斤拷锟斤拷锟剿诧拷锟揭讹拷应锟斤拷锟斤拷锟接斤拷指锟斤拷锟斤拷锟斤拷使锟斤拷统一锟斤拷 RingDetectionService锟斤拷支锟斤拷 Baubles锟斤拷
+                ItemStack stack = com.moremod.service.RingDetectionService.findRing(player, com.moremod.item.ItemAbsorbRing.class);
+                // 锟斤拷锟剿碉拷锟街持诧拷锟揭ｏ拷锟斤拷锟捷撅拷锟竭硷拷锟斤拷
+                if (stack == null || stack.isEmpty()) {
+                    stack = player.getHeldItemMainhand();
+                    if (stack.isEmpty() || !(stack.getItem() instanceof ItemAbsorbRing)) {
+                        stack = player.getHeldItemOffhand();
+                    }
+                }
+                if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemAbsorbRing)) return;
+
+                IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+                if (cap == null) return;
+
+                cap.setWhitelistMode(msg.whitelistMode);
+                for (int i = 0; i < 9; i++) {
+                    cap.setFilterSlot(i, msg.slots[i] == null ? "" : msg.slots[i]);
+                }
+                RsRingCapability.syncCapabilityToStack(stack, cap);
+                // 锟斤拷锟斤拷锟街革拷锟?Baubles 锟叫ｏ拷确锟斤拷 Baubles 锟斤拷锟斤拷锟轿?dirty 锟皆憋拷同锟斤拷
+                try {
+                    com.moremod.service.RingDetectionService.markBaublesDirtyIfNeeded(player);
+                } catch (Throwable t) {
+                    // 锟斤拷影锟斤拷锟斤拷要锟竭硷拷
+                }
+                // 锟斤拷锟斤拷曳锟斤拷锟?
+                if (player.world != null && !player.world.isRemote) {
+                    player.sendMessage(new net.minecraft.util.text.TextComponentString("锟斤拷锟接斤拷指锟斤拷锟斤拷锟斤拷锟斤拷锟窖憋拷锟斤拷"));
+                }
+            });
+            return null;
+        }
+    }
+}
+

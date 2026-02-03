@@ -1,0 +1,275 @@
+﻿package com.moremod.capability;
+
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraft.item.ItemStack;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+public class RsRingCapability implements IRsRingCapability {
+
+    @CapabilityInject(IRsRingCapability.class)
+    public static final Capability<IRsRingCapability> RS_RING_CAPABILITY = null;
+
+    private BlockPos terminalPos;
+    private int terminalDimension;
+    private boolean enabled = false;
+
+    // 黑白名单相关
+    private java.util.List<String> blacklistItems = new java.util.ArrayList<>();
+    // 修复Bug 8: 不要从配置初始化whitelistMode，应该从NBT读取或使用默认值false（白名单模式）
+    // 配置值仅用于参考，实际模式应该由玩家通过GUI控制并持久化到NBT
+    private boolean whitelistMode = false; // 默认白名单模式
+
+    // 构造函数
+    public RsRingCapability() {
+        // 从配置加载默认黑名单
+        for (String item : com.moremod.config.RsRingConfig.blacklist.itemBlacklist) {
+            if (!item.trim().isEmpty()) {
+                // 确保使用完整的资源位置格式
+                if (!item.contains(":")) {
+                    blacklistItems.add("minecraft:" + item);
+                } else {
+                    blacklistItems.add(item);
+                }
+            }
+        }
+    }
+
+    // 能量存储，最大容量10M FE (1千万)
+    private static final int MAX_ENERGY = 10_000_000;
+    private static final int MAX_IO = 10000;
+    private EnergyStorage energyStorage = new EnergyStorage(MAX_ENERGY, MAX_IO, MAX_IO, 0);
+
+    @Override
+    public void bindTerminal(World world, BlockPos pos) {
+        this.terminalPos = pos;
+        this.terminalDimension = world.provider.getDimension();
+    }
+
+    @Override
+    public BlockPos getTerminalPos() {
+        return this.terminalPos;
+    }
+
+    @Override
+    public int getTerminalDimension() {
+        return this.terminalDimension;
+    }
+
+    @Override
+    public World getTerminalWorld() {
+        // 通过世界提供器获取世界实例
+        return net.minecraftforge.common.DimensionManager.getWorld(this.terminalDimension);
+    }
+
+    @Override
+    public boolean isBound() {
+        return this.terminalPos != null;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    @Override
+    public IEnergyStorage getEnergyStorage() {
+        return this.energyStorage;
+    }
+
+    @Override
+    public IRsRingCapability copy() {
+        RsRingCapability copy = new RsRingCapability();
+        copy.terminalPos = this.terminalPos;
+        copy.terminalDimension = this.terminalDimension;
+        copy.enabled = this.enabled;
+        copy.blacklistItems = new ArrayList<>(this.blacklistItems);
+        copy.whitelistMode = this.whitelistMode;
+        copy.energyStorage = new EnergyStorage(
+            MAX_ENERGY,
+            MAX_IO,
+            MAX_IO,
+            this.energyStorage.getEnergyStored()
+        );
+        return copy;
+    }
+
+    @Override
+    public void addToBlacklist(ItemStack item) {
+        if (!item.isEmpty()) {
+            String itemName = item.getItem().getRegistryName().toString();
+            if (!blacklistItems.contains(itemName)) {
+                blacklistItems.add(itemName);
+            }
+        }
+    }
+
+    @Override
+    public void removeFromBlacklist(ItemStack item) {
+        if (!item.isEmpty()) {
+            String itemName = item.getItem().getRegistryName().toString();
+            blacklistItems.remove(itemName);
+        }
+    }
+
+    @Override
+    public boolean isInBlacklist(ItemStack item) {
+        if (item.isEmpty()) return false;
+        String itemName = item.getItem().getRegistryName().toString();
+        for (String s : blacklistItems) {
+            if (s != null && !s.isEmpty() && s.equals(itemName)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isWhitelistMode() {
+        return whitelistMode;
+    }
+
+    @Override
+    public void setWhitelistMode(boolean whitelistMode) {
+        this.whitelistMode = whitelistMode;
+    }
+
+    @Override
+    public List<String> getBlacklistItems() {
+        return new ArrayList<>(blacklistItems);
+    }
+
+    @Override
+    public void setFilterSlot(int slot, String itemRegistryName) {
+        // Limit slots to 0..7 (8 slots)
+        if (slot < 0 || slot >= 8) return;
+        while (blacklistItems.size() <= slot) blacklistItems.add("");
+        blacklistItems.set(slot, itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName);
+    }
+
+    @Override
+    public String getFilterSlot(int slot) {
+        if (slot < 0 || slot >= 8) return "";
+        if (slot >= blacklistItems.size()) return "";
+        String s = blacklistItems.get(slot);
+        return s == null ? "" : s;
+    }
+
+    // 内部存储类用于NBT序列化
+    public static class RsRingStorage implements Capability.IStorage<IRsRingCapability> {
+        @Override
+        public NBTBase writeNBT(Capability<IRsRingCapability> capability, IRsRingCapability instance, EnumFacing side) {
+            RsRingCapability cap = (RsRingCapability) instance;
+            NBTTagCompound tag = new NBTTagCompound();
+
+            if (cap.terminalPos != null) {
+                tag.setInteger("x", cap.terminalPos.getX());
+                tag.setInteger("y", cap.terminalPos.getY());
+                tag.setInteger("z", cap.terminalPos.getZ());
+                tag.setInteger("dimension", cap.terminalDimension);
+            }
+
+            tag.setBoolean("enabled", cap.enabled);
+            tag.setInteger("energy", cap.energyStorage.getEnergyStored());
+
+            // 序列化黑白名单
+            tag.setBoolean("whitelistMode", cap.whitelistMode);
+            net.minecraft.nbt.NBTTagList blacklistList = new net.minecraft.nbt.NBTTagList();
+            for (String item : cap.blacklistItems) {
+                blacklistList.appendTag(new net.minecraft.nbt.NBTTagString(item));
+            }
+            tag.setTag("blacklistItems", blacklistList);
+
+            return tag;
+        }
+
+        @Override
+        public void readNBT(Capability<IRsRingCapability> capability, IRsRingCapability instance, EnumFacing side, NBTBase nbt) {
+            RsRingCapability cap = (RsRingCapability) instance;
+            NBTTagCompound tag = (NBTTagCompound) nbt;
+
+            if (tag.hasKey("x") && tag.hasKey("y") && tag.hasKey("z")) {
+                cap.terminalPos = new BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z"));
+                cap.terminalDimension = tag.getInteger("dimension");
+            }
+
+            cap.enabled = tag.getBoolean("enabled");
+            int energy = Math.min(tag.getInteger("energy"), MAX_ENERGY);
+            cap.energyStorage = new EnergyStorage(MAX_ENERGY, MAX_IO, MAX_IO, energy);
+
+            // 反序列化黑白名单
+            cap.whitelistMode = tag.getBoolean("whitelistMode");
+            if (tag.hasKey("blacklistItems")) {
+                net.minecraft.nbt.NBTTagList blacklistList = tag.getTagList("blacklistItems", 8); // 8 = String tag
+                cap.blacklistItems.clear();
+                for (int i = 0; i < blacklistList.tagCount(); i++) {
+                    cap.blacklistItems.add(blacklistList.getStringTagAt(i));
+                }
+            }
+        }
+    }
+    
+    // 为物品提供能力的提供者
+    public static class RsRingCapabilityProvider implements ICapabilitySerializable<NBTTagCompound> {
+        private IRsRingCapability capability = new RsRingCapability();
+
+        public RsRingCapabilityProvider() {}
+
+        /** 从 NBT 初始化，用于物品移动时恢复数据 */
+        public void initFromNBT(NBTTagCompound nbt) {
+            if (nbt != null && !nbt.getKeySet().isEmpty() && RS_RING_CAPABILITY != null) {
+                RS_RING_CAPABILITY.getStorage().readNBT(RS_RING_CAPABILITY, capability, null, nbt);
+            }
+        }
+
+        @Override
+        public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+            return capability == RS_RING_CAPABILITY || capability == CapabilityEnergy.ENERGY;
+        }
+
+        @Override
+        public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+            if (capability == RS_RING_CAPABILITY) {
+                return (T) this.capability;
+            }
+            if (capability == CapabilityEnergy.ENERGY) {
+                return (T) this.capability.getEnergyStorage();
+            }
+            return null;
+        }
+
+        @Override
+        public NBTTagCompound serializeNBT() {
+            return (NBTTagCompound) RS_RING_CAPABILITY.getStorage().writeNBT(RS_RING_CAPABILITY, capability, null);
+        }
+
+        @Override
+        public void deserializeNBT(NBTTagCompound nbt) {
+            RS_RING_CAPABILITY.getStorage().readNBT(RS_RING_CAPABILITY, capability, null, nbt);
+        }
+    }
+
+    public static void syncCapabilityToStack(ItemStack stack, IRsRingCapability cap) {
+        if (cap == null || RS_RING_CAPABILITY == null) return;
+        NBTBase nbt = RS_RING_CAPABILITY.getStorage().writeNBT(RS_RING_CAPABILITY, cap, null);
+        if (nbt instanceof NBTTagCompound) {
+            if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+            stack.getTagCompound().setTag("RsRingData", (NBTTagCompound) nbt);
+        }
+    }
+}

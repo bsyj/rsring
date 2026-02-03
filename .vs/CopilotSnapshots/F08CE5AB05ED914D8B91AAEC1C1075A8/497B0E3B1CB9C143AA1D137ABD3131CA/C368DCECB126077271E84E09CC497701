@@ -1,0 +1,17 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RGR",
+    "GBG",
+    "RGR"
+  ],
+  "key": {
+    "R": { "item": "minecraft:redstone" },
+    "G": { "item": "minecraft:gold_ingot" },
+    "B": { "item": "minecraft:glass_bottle" }
+  },
+  "result": {
+    "item": "rsring:experience_pump",
+    "count": 1
+  }
+}

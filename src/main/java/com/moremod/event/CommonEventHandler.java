@@ -62,13 +62,10 @@ public class CommonEventHandler {
         RsRingMod.network.sendToServer(new PacketToggleRsRing());
     }
 
-    // 查找玩家手持的戒指（仅主手、副手，用于绑定）
+    // 查找玩家手持的戒指（仅主手，用于绑定）
     private ItemStack findHeldRing(EntityPlayer player, Class<? extends Item> ringClass) {
         if (!player.getHeldItemMainhand().isEmpty() && ringClass.isInstance(player.getHeldItemMainhand().getItem())) {
             return player.getHeldItemMainhand();
-        }
-        if (!player.getHeldItemOffhand().isEmpty() && ringClass.isInstance(player.getHeldItemOffhand().getItem())) {
-            return player.getHeldItemOffhand();
         }
         return ItemStack.EMPTY;
     }
@@ -404,6 +401,9 @@ public class CommonEventHandler {
         BlockPos pos = event.getPos();
 
         if (!player.isSneaking()) return;
+        
+        // 只在服务端处理绑定逻辑，避免客户端和服务端都发送消息
+        if (world.isRemote) return;
 
         // 物品吸收戒指 + 箱子/容器（仅手持时绑定）
         if (isChestOrContainer(world, pos)) {
@@ -411,11 +411,30 @@ public class CommonEventHandler {
             if (!ringStack.isEmpty()) {
                 IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
                 if (capability != null) {
+                    // 检查绑定前的状态
+                    boolean wasBound = capability.isBound();
+                    BlockPos oldPos = null;
+                    int oldDim = 0;
+                    if (wasBound) {
+                        oldPos = capability.getTerminalPos();
+                        oldDim = capability.getTerminalDimension();
+                    }
+                    
+                    // 执行绑定
                     capability.bindTerminal(world, pos);
                     RsRingCapability.syncCapabilityToStack(ringStack, capability);
-                    int dim = world.provider.getDimension();
-                    player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                        net.minecraft.util.text.TextFormatting.GREEN + "已绑定坐标：" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " 维度：" + dim));
+                    
+                    // 只有当绑定状态发生变化时才发送消息
+                    boolean isBound = capability.isBound();
+                    BlockPos newPos = capability.getTerminalPos();
+                    int newDim = capability.getTerminalDimension();
+                    
+                    if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
+                        int dim = world.provider.getDimension();
+                        player.sendMessage(new net.minecraft.util.text.TextComponentString(
+                            net.minecraft.util.text.TextFormatting.GREEN + "已绑定坐标：" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " 维度：" + dim));
+                    }
+                    
                     event.setCanceled(true);
                 }
             }
@@ -423,12 +442,25 @@ public class CommonEventHandler {
     }
 
     private boolean isChestOrContainer(World world, BlockPos pos) {
+        // 检查是否为箱子类方块
         TileEntity te = world.getTileEntity(pos);
         if (te == null) return false;
-        for (net.minecraft.util.EnumFacing f : net.minecraft.util.EnumFacing.values()) {
-            if (te.hasCapability(net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, f)) return true;
+        
+        // 只接受箱子类的TileEntity
+        if (te instanceof net.minecraft.tileentity.TileEntityChest) return true;
+        if (te instanceof net.minecraft.tileentity.TileEntityEnderChest) return true;
+        
+        // 检查方块类型名称，确保包含箱子相关的名称
+        IBlockState state = world.getBlockState(pos);
+        net.minecraft.util.ResourceLocation regName = state.getBlock().getRegistryName();
+        if (regName != null) {
+            String blockName = regName.toString().toLowerCase();
+            if (blockName.contains("chest") || blockName.contains("container")) {
+                return true;
+            }
         }
-        return te.hasCapability(net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        
+        return false;
     }
 
     // 检查方块是否为RS终端/接口/控制器

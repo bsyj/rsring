@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\main",
+    "\\src\\main\\java",
+    "\\src\\main\\java\\com",
+    "\\src\\main\\java\\com\\moremod",
+    "\\src\\main\\java\\com\\moremod\\client",
+    "\\src\\main\\java\\com\\moremod\\config",
+    "\\src\\main\\java\\com\\moremod\\experience",
+    "\\src\\main\\java\\com\\moremod\\rsring"
+  ],
+  "SelectedNode": "\\src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
+  "PreviewInSolutionExplorer": false
+}

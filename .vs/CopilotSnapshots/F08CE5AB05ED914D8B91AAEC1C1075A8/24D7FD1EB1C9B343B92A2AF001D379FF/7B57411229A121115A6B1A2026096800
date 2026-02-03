@@ -1,0 +1,479 @@
+﻿package com.moremod.experience;
+
+import com.moremod.item.ItemExperiencePump;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+
+/**
+ * Provides unified access to different inventory systems for experience tank detection.
+ * Supports player inventory, hotbar, and Baubles accessory slots with comprehensive
+ * error handling and graceful degradation when mods are not available.
+ * 
+ * Implements Requirements 3.1, 3.2, 3.3, 7.1 for comprehensive inventory integration.
+ */
+public class InventoryIntegrationLayer {
+    
+    private static final Logger LOGGER = LogManager.getLogger(InventoryIntegrationLayer.class);
+    
+    // Singleton instance
+    private static InventoryIntegrationLayer instance;
+    
+    // Cache for Baubles availability check
+    private Boolean baublesAvailable = null;
+    
+    /**
+     * Private constructor for singleton pattern.
+     */
+    private InventoryIntegrationLayer() {
+        LOGGER.debug("InventoryIntegrationLayer initialized");
+    }
+    
+    /**
+     * Gets the singleton instance.
+     */
+    public static InventoryIntegrationLayer getInstance() {
+        if (instance == null) {
+            instance = new InventoryIntegrationLayer();
+        }
+        return instance;
+    }
+    
+    /**
+     * Initializes the inventory integration layer.
+     * Should be called during mod initialization.
+     */
+    public static void initialize() {
+        getInstance(); // Ensure instance is created
+        LOGGER.info("Inventory integration layer initialized");
+    }
+    
+    /**
+     * Scans player inventory slots for experience tanks.
+     * Excludes hotbar slots to avoid double-counting.
+     * 
+     * Implements Requirement 3.1: Player inventory scanning
+     * 
+     * @param player The player to scan
+     * @return List of experience tanks found in player inventory (excluding hotbar)
+     */
+    public List<ItemStack> getPlayerInventoryTanks(EntityPlayer player) {
+        List<ItemStack> tanks = new ArrayList<>();
+        
+        if (player == null) {
+            LOGGER.debug("Player is null, cannot scan player inventory");
+            return tanks;
+        }
+        
+        LOGGER.debug("Scanning player inventory for experience tanks: {}", player.getName());
+        
+        // Scan player inventory slots 9-35 (excluding hotbar slots 0-8)
+        // Player inventory structure: 0-8 hotbar, 9-35 main inventory, 36-39 armor, 40 offhand
+        for (int i = 9; i < 36; i++) {
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            if (isExperienceTank(stack)) {
+                tanks.add(stack);
+                LOGGER.debug("Found experience tank in player inventory slot {}: {}", i, stack.getDisplayName());
+            }
+        }
+        
+        LOGGER.debug("Found {} experience tanks in player inventory", tanks.size());
+        return tanks;
+    }
+    
+    /**
+     * Scans hotbar slots for experience tanks.
+     * 
+     * Implements Requirement 3.2: Hotbar scanning
+     * 
+     * @param player The player to scan
+     * @return List of experience tanks found in hotbar slots
+     */
+    public List<ItemStack> getHotbarTanks(EntityPlayer player) {
+        List<ItemStack> tanks = new ArrayList<>();
+        
+        if (player == null) {
+            LOGGER.debug("Player is null, cannot scan hotbar");
+            return tanks;
+        }
+        
+        LOGGER.debug("Scanning hotbar for experience tanks: {}", player.getName());
+        
+        // Scan hotbar slots 0-8
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            if (isExperienceTank(stack)) {
+                tanks.add(stack);
+                LOGGER.debug("Found experience tank in hotbar slot {}: {}", i, stack.getDisplayName());
+            }
+        }
+        
+        // Also check off-hand slot
+        ItemStack offHand = player.getHeldItemOffhand();
+        if (isExperienceTank(offHand)) {
+            tanks.add(offHand);
+            LOGGER.debug("Found experience tank in off-hand: {}", offHand.getDisplayName());
+        }
+        
+        LOGGER.debug("Found {} experience tanks in hotbar", tanks.size());
+        return tanks;
+    }
+    
+    /**
+     * Scans Baubles accessory slots for experience tanks.
+     * Gracefully handles cases where Baubles mod is not available.
+     * 
+     * Implements Requirement 3.3: Baubles API integration for accessory slots
+     * 
+     * @param player The player to scan
+     * @return List of experience tanks found in Baubles slots
+     */
+    public List<ItemStack> getBaublesTanks(EntityPlayer player) {
+        List<ItemStack> tanks = new ArrayList<>();
+        
+        if (player == null) {
+            LOGGER.debug("Player is null, cannot scan Baubles");
+            return tanks;
+        }
+        
+        if (!isBaublesAvailable()) {
+            LOGGER.debug("Baubles mod not available, skipping Baubles scan");
+            return tanks;
+        }
+        
+        LOGGER.debug("Scanning Baubles slots for experience tanks: {}", player.getName());
+        
+        try {
+            IInventory baublesInventory = getBaublesInventory(player);
+            if (baublesInventory != null) {
+                for (int i = 0; i < baublesInventory.getSizeInventory(); i++) {
+                    ItemStack stack = baublesInventory.getStackInSlot(i);
+                    if (isExperienceTank(stack)) {
+                        tanks.add(stack);
+                        LOGGER.debug("Found experience tank in Baubles slot {}: {}", i, stack.getDisplayName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error scanning Baubles inventory for player {}: {}", player.getName(), e.getMessage());
+            LOGGER.debug("Baubles scan error details", e);
+        }
+        
+        LOGGER.debug("Found {} experience tanks in Baubles slots", tanks.size());
+        return tanks;
+    }
+    
+    /**
+     * Performs a comprehensive scan across all inventory types.
+     * Returns a detailed result with tanks categorized by location.
+     * 
+     * Implements Requirements 3.1, 3.2, 3.3 for comprehensive tank detection
+     * 
+     * @param player The player to scan
+     * @return TankScanResult containing all detected tanks with location information
+     */
+    public TankScanResult scanAllInventories(EntityPlayer player) {
+        if (player == null) {
+            LOGGER.debug("Player is null, returning empty scan result");
+            return TankScanResult.empty();
+        }
+        
+        LOGGER.debug("Performing comprehensive inventory scan for player: {}", player.getName());
+        
+        TankScanResult.Builder builder = new TankScanResult.Builder();
+        
+        // Scan player inventory (excluding hotbar)
+        List<ItemStack> playerTanks = getPlayerInventoryTanks(player);
+        builder.addTanks(playerTanks, TankScanResult.InventoryType.PLAYER_INVENTORY);
+        
+        // Scan hotbar
+        List<ItemStack> hotbarTanks = getHotbarTanks(player);
+        builder.addTanks(hotbarTanks, TankScanResult.InventoryType.HOTBAR);
+        
+        // Scan Baubles
+        List<ItemStack> baublesTanks = getBaublesTanks(player);
+        builder.addTanks(baublesTanks, TankScanResult.InventoryType.BAUBLES);
+        
+        TankScanResult result = builder.build();
+        
+        LOGGER.debug("Comprehensive scan complete - Total tanks: {}, Player: {}, Hotbar: {}, Baubles: {}", 
+                    result.getTankCount(), playerTanks.size(), hotbarTanks.size(), baublesTanks.size());
+        
+        return result;
+    }
+    
+    /**
+     * Refreshes cached inventory state for a player.
+     * Useful when external code knows inventory changes have occurred.
+     * 
+     * Implements Requirement 7.1: Cross-inventory integration
+     * 
+     * @param player The player whose inventory state should be refreshed
+     */
+    public void refreshInventoryState(EntityPlayer player) {
+        if (player == null) {
+            LOGGER.debug("Player is null, cannot refresh inventory state");
+            return;
+        }
+        
+        LOGGER.debug("Refreshing inventory state for player: {}", player.getName());
+        
+        // Clear any cached state (currently none, but future-proofing)
+        // This method can be extended to clear caches if we add them later
+        
+        // Trigger inventory change handler refresh
+        InventoryChangeHandler.getInstance().refreshPlayerInventory(player);
+        
+        // If Baubles is available, also refresh Baubles state
+        if (isBaublesAvailable()) {
+            InventoryChangeHandler.getInstance().refreshBaublesInventory(player);
+        }
+        
+        LOGGER.debug("Inventory state refresh complete for player: {}", player.getName());
+    }
+    
+    /**
+     * Gets the total number of experience tanks across all inventory types.
+     * 
+     * @param player The player to count tanks for
+     * @return Total number of experience tanks found
+     */
+    public int getTotalTankCount(EntityPlayer player) {
+        if (player == null) {
+            return 0;
+        }
+        
+        TankScanResult result = scanAllInventories(player);
+        return result.getTankCount();
+    }
+    
+    /**
+     * Gets the total capacity of all experience tanks across all inventory types.
+     * 
+     * @param player The player to calculate total capacity for
+     * @return Total capacity in XP points
+     */
+    public int getTotalCapacity(EntityPlayer player) {
+        if (player == null) {
+            return 0;
+        }
+        
+        TankScanResult result = scanAllInventories(player);
+        return result.getTotalCapacity();
+    }
+    
+    /**
+     * Gets the total stored experience across all tanks in all inventory types.
+     * 
+     * @param player The player to calculate total stored XP for
+     * @return Total stored XP points
+     */
+    public int getTotalStoredExperience(EntityPlayer player) {
+        if (player == null) {
+            return 0;
+        }
+        
+        TankScanResult result = scanAllInventories(player);
+        return result.getTotalStored();
+    }
+    
+    /**
+     * Finds the first available tank with remaining capacity across all inventories.
+     * Searches in priority order: Hotbar -> Player Inventory -> Baubles
+     * 
+     * @param player The player to search
+     * @return The first tank with available capacity, or ItemStack.EMPTY if none found
+     */
+    public ItemStack findFirstAvailableTank(EntityPlayer player) {
+        if (player == null) {
+            return ItemStack.EMPTY;
+        }
+        
+        LOGGER.debug("Searching for first available tank for player: {}", player.getName());
+        
+        // Search hotbar first (most accessible)
+        List<ItemStack> hotbarTanks = getHotbarTanks(player);
+        for (ItemStack tank : hotbarTanks) {
+            if (hasAvailableCapacity(tank)) {
+                LOGGER.debug("Found available tank in hotbar: {}", tank.getDisplayName());
+                return tank;
+            }
+        }
+        
+        // Search player inventory
+        List<ItemStack> playerTanks = getPlayerInventoryTanks(player);
+        for (ItemStack tank : playerTanks) {
+            if (hasAvailableCapacity(tank)) {
+                LOGGER.debug("Found available tank in player inventory: {}", tank.getDisplayName());
+                return tank;
+            }
+        }
+        
+        // Search Baubles slots
+        List<ItemStack> baublesTanks = getBaublesTanks(player);
+        for (ItemStack tank : baublesTanks) {
+            if (hasAvailableCapacity(tank)) {
+                LOGGER.debug("Found available tank in Baubles: {}", tank.getDisplayName());
+                return tank;
+            }
+        }
+        
+        LOGGER.debug("No available tanks found for player: {}", player.getName());
+        return ItemStack.EMPTY;
+    }
+    
+    /**
+     * Finds all tanks with available capacity across all inventories.
+     * 
+     * @param player The player to search
+     * @return List of tanks with available capacity
+     */
+    public List<ItemStack> findAllAvailableTanks(EntityPlayer player) {
+        List<ItemStack> availableTanks = new ArrayList<>();
+        
+        if (player == null) {
+            return availableTanks;
+        }
+        
+        TankScanResult result = scanAllInventories(player);
+        
+        for (ItemStack tank : result.getAllTanks()) {
+            if (hasAvailableCapacity(tank)) {
+                availableTanks.add(tank);
+            }
+        }
+        
+        LOGGER.debug("Found {} tanks with available capacity for player: {}", 
+                    availableTanks.size(), player.getName());
+        
+        return availableTanks;
+    }
+    
+    // Private helper methods
+    
+    /**
+     * Checks if an ItemStack is an experience tank.
+     * 
+     * @param stack The ItemStack to check
+     * @return True if the stack is an experience tank
+     */
+    private boolean isExperienceTank(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump;
+    }
+    
+    /**
+     * Checks if a tank has available capacity for storing more experience.
+     * 
+     * @param tank The tank to check
+     * @return True if the tank has available capacity
+     */
+    private boolean hasAvailableCapacity(ItemStack tank) {
+        if (!isExperienceTank(tank)) {
+            return false;
+        }
+        
+        int stored = ItemExperiencePump.getXpStoredFromNBT(tank);
+        int capacity = ItemExperiencePump.getMaxXpFromNBT(tank);
+        
+        return stored < capacity;
+    }
+    
+    /**
+     * Checks if the Baubles mod is available and accessible.
+     * Uses caching to avoid repeated reflection calls.
+     * 
+     * @return True if Baubles is available
+     */
+    private boolean isBaublesAvailable() {
+        if (baublesAvailable == null) {
+            baublesAvailable = checkBaublesAvailability();
+        }
+        return baublesAvailable;
+    }
+    
+    /**
+     * Performs the actual Baubles availability check using reflection.
+     * 
+     * @return True if Baubles is available and accessible
+     */
+    private boolean checkBaublesAvailability() {
+        if (!Loader.isModLoaded("baubles")) {
+            LOGGER.debug("Baubles mod not loaded");
+            return false;
+        }
+        
+        try {
+            Class.forName("baubles.api.BaublesApi");
+            LOGGER.debug("Baubles API available");
+            return true;
+        } catch (ClassNotFoundException e) {
+            LOGGER.debug("Baubles API class not found despite mod being loaded");
+            return false;
+        }
+    }
+    
+    /**
+     * Gets the Baubles inventory for a player using reflection.
+     * 
+     * @param player The player to get Baubles inventory for
+     * @return The Baubles inventory, or null if not available
+     * @throws Exception If reflection fails
+     */
+    private IInventory getBaublesInventory(EntityPlayer player) throws Exception {
+        Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
+        Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class)
+                               .invoke(null, player);
+        
+        if (handler instanceof IInventory) {
+            IInventory baubles = (IInventory) handler;
+            LOGGER.debug("Successfully accessed Baubles inventory with {} slots", 
+                        baubles.getSizeInventory());
+            return baubles;
+        } else {
+            LOGGER.debug("Baubles handler is not an IInventory: {}", 
+                        handler != null ? handler.getClass().getName() : "null");
+            return null;
+        }
+    }
+    
+    /**
+     * Resets the Baubles availability cache.
+     * Useful for testing or when mod state changes.
+     */
+    public void resetBaublesCache() {
+        baublesAvailable = null;
+        LOGGER.debug("Baubles availability cache reset");
+    }
+    
+    /**
+     * Gets diagnostic information about the inventory integration layer.
+     * Useful for debugging and monitoring.
+     * 
+     * @param player The player to get diagnostics for
+     * @return Map containing diagnostic information
+     */
+    public Map<String, Object> getDiagnostics(EntityPlayer player) {
+        Map<String, Object> diagnostics = new LinkedHashMap<>();
+        
+        if (player == null) {
+            diagnostics.put("error", "Player is null");
+            return diagnostics;
+        }
+        
+        diagnostics.put("playerName", player.getName());
+        diagnostics.put("baublesAvailable", isBaublesAvailable());
+        
+        TankScanResult result = scanAllInventories(player);
+        diagnostics.put("totalTanks", result.getTankCount());
+        diagnostics.put("totalCapacity", result.getTotalCapacity());
+        diagnostics.put("totalStored", result.getTotalStored());
+        diagnostics.put("tanksByLocation", result.getLocationSummary());
+        
+        return diagnostics;
+    }
+}

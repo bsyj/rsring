@@ -337,8 +337,8 @@ src/
 
 ## 联系方式
 
-- 项目地址：https://github.com/yourusername/rsring
-- 问题追踪：https://github.com/yourusername/rsring/issues
+- 项目地址：https://github.com/bsyj/rsring
+- 问题追踪：https://github.com/bsyj/rsring/issues
 
 ---
 

@@ -116,10 +116,73 @@ public class GuiRingFilterContainer extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        
+        // 绘制标题 - RGB 跑马灯效果
         String titleText = title;
+        long t = System.currentTimeMillis();
+        int titlePeriod = 2000; // 2秒一个周期
+        float titleHue = ((t % titlePeriod) / (float) titlePeriod) % 1.0f;
+        // 添加额外的色相偏移，产生更炫酷的双重彩虹效果
+        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 额外的波动
+        int titleColor = hsvToRgbInt((titleHue + hueOffset) % 1.0f, 1.0f, 1.0f); // 饱和度和明度都是最大，色彩鲜艳
         int titleX = (this.xSize - this.fontRenderer.getStringWidth(titleText)) / 2;
-        this.fontRenderer.drawString(titleText, titleX, 6, 0x404040);
+        this.fontRenderer.drawStringWithShadow(titleText, titleX, 6, titleColor);
+        
         drawCustomButtons(mouseX, mouseY);
+    }
+    
+    /**
+     * 将 HSV 颜色转换为 RGB 整数值
+     * @param hue 色相 (0.0-1.0)
+     * @param saturation 饱和度 (0.0-1.0)
+     * @param value 明度 (0.0-1.0)
+     * @return RGB 颜色的整数值 (0xRRGGBB)
+     */
+    private int hsvToRgbInt(float hue, float saturation, float value) {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0) {
+            r = g = b = Math.round(value * 255);
+        } else {
+            float h = (hue - (float)Math.floor(hue)) * 6.0f;
+            float f = h - (float)Math.floor(h);
+            float p = value * (1.0f - saturation);
+            float q = value * (1.0f - saturation * f);
+            float t = value * (1.0f - (saturation * (1.0f - f)));
+            
+            switch ((int)h) {
+                case 0:
+                    r = Math.round(value * 255);
+                    g = Math.round(t * 255);
+                    b = Math.round(p * 255);
+                    break;
+                case 1:
+                    r = Math.round(q * 255);
+                    g = Math.round(value * 255);
+                    b = Math.round(p * 255);
+                    break;
+                case 2:
+                    r = Math.round(p * 255);
+                    g = Math.round(value * 255);
+                    b = Math.round(t * 255);
+                    break;
+                case 3:
+                    r = Math.round(p * 255);
+                    g = Math.round(q * 255);
+                    b = Math.round(value * 255);
+                    break;
+                case 4:
+                    r = Math.round(t * 255);
+                    g = Math.round(p * 255);
+                    b = Math.round(value * 255);
+                    break;
+                case 5:
+                    r = Math.round(value * 255);
+                    g = Math.round(p * 255);
+                    b = Math.round(q * 255);
+                    break;
+            }
+        }
+        return (r << 16) | (g << 8) | b;
     }
 
     private void drawFilterSlots() {
@@ -215,11 +278,37 @@ public class GuiRingFilterContainer extends GuiContainer {
         int btnX = 150;
         int btnY = PAD / 2;
         if (isMouseOverButton(relativeX, relativeY, btnX, btnY)) {
+            // 为按钮悬停提示添加 RGB 跑马灯效果
+            long t = System.currentTimeMillis();
+            int period = 2000; // 2秒一个周期
+            float hue = ((t % period) / (float) period) % 1.0f;
+            
+            // 创建带RGB颜色的文本
+            java.util.List<String> tooltip = new java.util.ArrayList<>();
             String mode = capability.isWhitelistMode() ? "白名单模式" : "黑名单模式";
-            this.drawHoveringText(java.util.Arrays.asList(
-                TextFormatting.YELLOW + mode,
-                TextFormatting.GRAY + "点击切换过滤模式"
-            ), mouseX, mouseY);
+            
+            // 使用TextFormatting的颜色代码，通过HUE值循环切换颜色
+            net.minecraft.util.text.TextFormatting[] colors = {
+                net.minecraft.util.text.TextFormatting.RED,
+                net.minecraft.util.text.TextFormatting.GOLD,
+                net.minecraft.util.text.TextFormatting.YELLOW,
+                net.minecraft.util.text.TextFormatting.GREEN,
+                net.minecraft.util.text.TextFormatting.AQUA,
+                net.minecraft.util.text.TextFormatting.BLUE,
+                net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
+                net.minecraft.util.text.TextFormatting.DARK_PURPLE
+            };
+            
+            int colorIndex = (int)(hue * colors.length) % colors.length;
+            net.minecraft.util.text.TextFormatting modeColor = colors[colorIndex];
+            
+            int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+            net.minecraft.util.text.TextFormatting hintColor = colors[hintColorIndex];
+            
+            tooltip.add(modeColor + mode);
+            tooltip.add(hintColor + "点击切换过滤模式");
+            
+            this.drawHoveringText(tooltip, mouseX, mouseY);
         }
     }
 

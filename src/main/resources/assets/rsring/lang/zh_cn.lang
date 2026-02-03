@@ -3,6 +3,10 @@
 item.rsring.item_absorb_ring.name=物品吸收戒指
 item.rsring.experience_tank.name=经验储罐
 item.rsring.experience_pump_controller.name=经验泵控制器
+item.rsring.experience_tank_100.name=经验储罐 - 100级
+item.rsring.experience_tank_500.name=经验储罐 - 500级
+item.rsring.experience_tank_1000.name=经验储罐 - 1000级
+item.rsring.experience_tank_2000.name=经验储罐 - 2000级
 
 #keys
 key.rsring.toggle.desc=切换戒指功能

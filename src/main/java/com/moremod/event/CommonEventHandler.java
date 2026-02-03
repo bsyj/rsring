@@ -432,7 +432,7 @@ public class CommonEventHandler {
                     if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
                         int dim = world.provider.getDimension();
                         player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                            net.minecraft.util.text.TextFormatting.GREEN + "已绑定坐标：" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " 维度：" + dim));
+                            net.minecraft.util.text.TextFormatting.GREEN + "绑定坐标：" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + "(" + dim + ")"));
                     }
                     
                     event.setCanceled(true);

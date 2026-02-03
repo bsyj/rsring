@@ -145,11 +145,11 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 if (capability.isBound()) {
                     BlockPos pos = capability.getTerminalPos();
                     int dim = capability.getTerminalDimension();
-                    bindInfo = "绑定坐标:" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + "(" + dim + ")";
+                    bindInfo = "绑定坐标：" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + "(" + dim + ")";
                 } else {
                     bindInfo = "未绑定";
                 }
-                String msg = String.format("%s | %s | %s", bindInfo, mode, status);
+                String msg = net.minecraft.util.text.TextFormatting.GREEN + bindInfo + "|" + mode + "|" + status;
                 player.sendMessage(new TextComponentString(msg));
             }
         }

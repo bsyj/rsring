@@ -81,11 +81,29 @@ public class GuiExperiencePumpController extends GuiScreen {
         // 从控制器加载配置
         loadControllerConfiguration();
         
+        // 从控制器加载存取等级
+        loadExtractStoreLevels();
+        
         // Initialize with comprehensive storage scanning
         refreshTankData();
         
         // 将控制器配置同步到所有储罐
         syncControllerToTanks();
+    }
+    
+    /**
+     * 从控制器加载存取等级
+     */
+    private void loadExtractStoreLevels() {
+        extractLevels = ItemExperiencePumpController.getExtractLevels(controllerStack);
+        storeLevels = ItemExperiencePumpController.getStoreLevels(controllerStack);
+    }
+    
+    /**
+     * 保存存取等级到控制器
+     */
+    private void saveExtractStoreLevels() {
+        ItemExperiencePumpController.setExtractStoreLevels(controllerStack, extractLevels, storeLevels);
     }
 
     /**
@@ -543,12 +561,14 @@ public class GuiExperiencePumpController extends GuiScreen {
         GuiButton extractBtn = getButton(4);
         if (extractBtn != null && extractBtn.isMouseOver()) {
             if (dw > 0) {
-                // 向上滚轮：增加取出等级
-                extractLevels = Math.min(100, extractLevels + 1);
+                // 向上滚轮：增加取出等级，无上限
+                extractLevels = extractLevels + 1;
             } else {
-                // 向下滚轮：减少取出等级
+                // 向下滚轮：减少取出等级，最低1级
                 extractLevels = Math.max(1, extractLevels - 1);
             }
+            // 保存取出等级到控制器
+            saveExtractStoreLevels();
             return;
         }
 
@@ -556,12 +576,14 @@ public class GuiExperiencePumpController extends GuiScreen {
         GuiButton storeBtn = getButton(5);
         if (storeBtn != null && storeBtn.isMouseOver()) {
             if (dw > 0) {
-                // 向上滚轮：增加存入等级
-                storeLevels = Math.min(100, storeLevels + 1);
+                // 向上滚轮：增加存入等级，无上限
+                storeLevels = storeLevels + 1;
             } else {
-                // 向下滚轮：减少存入等级
+                // 向下滚轮：减少存入等级，最低1级
                 storeLevels = Math.max(1, storeLevels - 1);
             }
+            // 保存存入等级到控制器
+            saveExtractStoreLevels();
             return;
         }
     }

@@ -26,6 +26,11 @@ import com.moremod.event.CommonEventHandler;
 import com.moremod.event.CraftingExperiencePumpController;
 import com.moremod.item.ItemAbsorbRing;
 import com.moremod.item.ItemExperiencePump;
+import com.moremod.item.ItemExperienceTank100;
+import com.moremod.item.ItemExperienceTank500;
+import com.moremod.item.ItemExperienceTank1000;
+import com.moremod.item.ItemExperienceTank2000;
+import com.moremod.crafting.CustomTankRecipes;
 import com.moremod.network.PacketPumpAction;
 import com.moremod.network.PacketPumpData;
 import com.moremod.proxy.CommonProxy;
@@ -53,6 +58,10 @@ public class RsRingMod
     public static ItemAbsorbRing absorbRing;
     public static ItemExperiencePump experiencePump;
     public static com.moremod.item.ItemExperiencePumpController experiencePumpController;
+    public static ItemExperienceTank100 experienceTank100;
+    public static ItemExperienceTank500 experienceTank500;
+    public static ItemExperienceTank1000 experienceTank1000;
+    public static ItemExperienceTank2000 experienceTank2000;
     public static SimpleNetworkWrapper network;
 
     @EventHandler
@@ -75,6 +84,16 @@ public class RsRingMod
         ForgeRegistries.ITEMS.register(experiencePump);
         experiencePumpController = new com.moremod.item.ItemExperiencePumpController();
         ForgeRegistries.ITEMS.register(experiencePumpController);
+        
+        // Register custom experience tanks
+        experienceTank100 = new ItemExperienceTank100();
+        ForgeRegistries.ITEMS.register(experienceTank100);
+        experienceTank500 = new ItemExperienceTank500();
+        ForgeRegistries.ITEMS.register(experienceTank500);
+        experienceTank1000 = new ItemExperienceTank1000();
+        ForgeRegistries.ITEMS.register(experienceTank1000);
+        experienceTank2000 = new ItemExperienceTank2000();
+        ForgeRegistries.ITEMS.register(experienceTank2000);
 
         CapabilityManager.INSTANCE.register(IExperiencePumpCapability.class, new ExperiencePumpCapability.Storage(), ExperiencePumpCapability::new);
         CapabilityManager.INSTANCE.register(IRsRingCapability.class, new RsRingCapability.RsRingStorage(), RsRingCapability::new);
@@ -105,6 +124,9 @@ public class RsRingMod
 
         // 注册经验泵控制器的合成配方
         new CraftingExperiencePumpController().registerRecipes();
+        
+        // 注册自定义储罐的合成配方
+        CustomTankRecipes.registerRecipes();
     }
 
     @EventHandler

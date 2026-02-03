@@ -62,6 +62,46 @@ public class ItemExperiencePumpController extends Item {
         
         stack.getTagCompound().setTag(CONTROLLER_TAG, data);
     }
+    
+    /**
+     * 设置控制器的存取等级
+     */
+    public static void setExtractStoreLevels(ItemStack stack, int extractLevels, int storeLevels) {
+        if (stack.isEmpty()) return;
+        
+        if (!stack.hasTagCompound()) {
+            stack.setTagCompound(new NBTTagCompound());
+        }
+        
+        NBTTagCompound data = getControllerData(stack);
+        if (data == null) {
+            data = new NBTTagCompound();
+            data.setInteger("mode", IExperiencePumpCapability.MODE_OFF);
+            data.setInteger("retainLevel", 10);
+            data.setBoolean("mending", false);
+        }
+        
+        data.setInteger("extractLevels", extractLevels);
+        data.setInteger("storeLevels", storeLevels);
+        
+        stack.getTagCompound().setTag(CONTROLLER_TAG, data);
+    }
+    
+    /**
+     * 获取控制器的取出等级
+     */
+    public static int getExtractLevels(ItemStack stack) {
+        NBTTagCompound data = getControllerData(stack);
+        return data != null && data.hasKey("extractLevels") ? data.getInteger("extractLevels") : 1;
+    }
+    
+    /**
+     * 获取控制器的存入等级
+     */
+    public static int getStoreLevels(ItemStack stack) {
+        NBTTagCompound data = getControllerData(stack);
+        return data != null && data.hasKey("storeLevels") ? data.getInteger("storeLevels") : 1;
+    }
 
     /**
      * 获取控制器的模式

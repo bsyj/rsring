@@ -28,31 +28,31 @@ public class PacketPumpAction implements IMessage {
     private int handOrdinal;
     private int action;
     private int value; // 用于 RETAIN 或 TAKE_ONE/STORE_ONE 的级数
-    private boolean isController; // 是否来自控制器
 
     public PacketPumpAction() {}
 
     public PacketPumpAction(EnumHand hand, int action) {
-        this(hand, action, null, 0, false);
+        this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
+        this.action = action;
+        this.value = 0;
     }
 
     public PacketPumpAction(EnumHand hand, int action, int value) {
-        this(hand, action, null, value, false);
-    }
-
-    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack) {
-        this(hand, action, tankStack, 0, true);
-    }
-
-    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack, int value) {
-        this(hand, action, tankStack, value, true);
-    }
-
-    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack, int value, boolean isController) {
         this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
         this.action = action;
         this.value = value;
-        this.isController = isController;
+    }
+
+    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack) {
+        this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
+        this.action = action;
+        this.value = 0;
+    }
+
+    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack, int value) {
+        this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
+        this.action = action;
+        this.value = value;
     }
 
     @Override
@@ -60,7 +60,6 @@ public class PacketPumpAction implements IMessage {
         handOrdinal = buf.readByte();
         action = buf.readByte();
         value = buf.readInt();
-        isController = buf.readBoolean();
     }
 
     @Override
@@ -68,7 +67,6 @@ public class PacketPumpAction implements IMessage {
         buf.writeByte(handOrdinal);
         buf.writeByte(action);
         buf.writeInt(value);
-        buf.writeBoolean(isController);
     }
 
     public static class Handler implements IMessageHandler<PacketPumpAction, IMessage> {
@@ -190,133 +188,108 @@ public class PacketPumpAction implements IMessage {
                         break;
 
                     case ACTION_TAKE_ALL: {
-                        int currentTotal = getPlayerTotalXp.get();
-                        int totalTaken = 0;
+                        // 提取所有经验：从储罐中提取所有经验
+                        int totalExtracted = 0;
+                        
                         for (ItemStack tankStack : prioritized) {
-                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-                            if (cap == null) continue;
-                            int take = cap.takeXp(cap.getXpStored());
-                            if (take > 0) {
-                                totalTaken += take;
-                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
+                            int extracted = ItemExperiencePump.extractAllExperience(tankStack, player);
+                            if (extracted > 0) {
+                                totalExtracted += extracted;
                                 syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
-                        }
-                        if (totalTaken > 0) {
-                            // 精确设置玩家经验，避免浮点误差
-                            int newTotal = currentTotal + totalTaken;
-                            player.experienceLevel = 0;
-                            player.experienceTotal = 0;
-                            player.experience = 0;
-                            if (newTotal > 0) player.addExperience(newTotal);
                         }
                         break;
                     }
 
                     case ACTION_TAKE_ONE: {
-                        // 取出N级：玩家从当前等级升N级，最终等级为 currentLevel + N，经验条为0
+                        // 取出N级：从储罐中提取指定等级数的经验
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
+                        if (levelsToTake <= 0) break;
+                        
+                        // 计算需要的总经验数（基于玩家当前等级）
                         int currentLevel = player.experienceLevel;
                         int targetLevel = currentLevel + levelsToTake;
-                        int currentTotal = getPlayerTotalXp.get();
-                        int targetTotal = levelToTotalXp.apply(targetLevel); // 目标等级0经验时的总XP
-                        int need = Math.max(0, targetTotal - currentTotal);
-                        if (need <= 0) break;
-
-                        int remaining = need;
-                        int totalGiven = 0;
+                        int totalXPNeeded = com.moremod.util.XpHelper.getExperienceBetweenLevels(currentLevel, targetLevel);
+                        if (totalXPNeeded <= 0) break;
+                        
+                        int totalExtracted = 0;
+                        
                         for (ItemStack tankStack : prioritized) {
-                            if (remaining <= 0) break;
+                            if (totalXPNeeded <= 0) break;
+                            
+                            // 从当前储罐中提取经验
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
+                            
                             int available = cap.getXpStored();
                             if (available <= 0) continue;
-                            int take = Math.min(available, remaining);
-                            int taken = cap.takeXp(take);
-                            if (taken > 0) {
-                                remaining -= taken;
-                                totalGiven += taken;
+                            
+                            int take = Math.min(available, totalXPNeeded);
+                            int extracted = cap.takeXp(take);
+                            if (extracted > 0) {
+                                totalExtracted += extracted;
+                                totalXPNeeded -= extracted;
+                                com.moremod.util.XpHelper.addExperienceToPlayer(player, extracted);
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
                                 syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
-                        }
-                        if (totalGiven > 0) {
-                            // 精确设置玩家到目标等级0经验，避免浮点误差
-                            int newTotal = currentTotal + totalGiven;
-                            player.experienceLevel = 0;
-                            player.experienceTotal = 0;
-                            player.experience = 0;
-                            if (newTotal > 0) player.addExperience(newTotal);
                         }
                         break;
                     }
 
                     case ACTION_STORE_ALL: {
-                        int currentTotal = getPlayerTotalXp.get();
-                        if (currentTotal <= 0) break;
-                        int remainingToStore = currentTotal;
+                        // 存储所有经验：将玩家的所有经验存储到储罐中
                         int totalStored = 0;
+                        
                         for (ItemStack tankStack : prioritized) {
-                            if (remainingToStore <= 0) break;
-                            IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-                            if (cap == null) continue;
-                            int space = cap.getMaxXp() - cap.getXpStored();
-                            if (space <= 0) continue;
-                            int store = Math.min(space, remainingToStore);
-                            int stored = cap.addXp(store);
+                            int stored = ItemExperiencePump.storeAllExperience(tankStack, player);
                             if (stored > 0) {
-                                remainingToStore -= stored;
                                 totalStored += stored;
-                                ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
                                 syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
-                        }
-                        if (totalStored > 0) {
-                            // 精确设置玩家经验，避免浮点误差
-                            int newTotal = currentTotal - totalStored;
-                            player.experienceLevel = 0;
-                            player.experienceTotal = 0;
-                            player.experience = 0;
-                            if (newTotal > 0) player.addExperience(newTotal);
                         }
                         break;
                     }
 
                     case ACTION_STORE_ONE: {
-                        // 存入N级：玩家从当前等级降N级，最终等级为 currentLevel - N，经验条为0
+                        // 存入N级：将指定等级数的经验存储到储罐中
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
+                        
+                        // 计算需要存储的总经验数（基于玩家当前等级）
                         int currentLevel = player.experienceLevel;
                         int targetLevel = Math.max(0, currentLevel - levelsToStore);
-                        int currentTotal = getPlayerTotalXp.get();
-                        int targetTotal = levelToTotalXp.apply(targetLevel); // 目标等级0经验时的总XP
-                        int toStore = Math.max(0, currentTotal - targetTotal);
-                        if (toStore <= 0) break;
-
-                        int remainingToStore = toStore;
+                        int totalXPToStore = com.moremod.util.XpHelper.getExperienceBetweenLevels(targetLevel, currentLevel);
+                        if (totalXPToStore <= 0) break;
+                        
+                        // 确保不超过玩家实际拥有的经验
+                        int playerTotalXP = com.moremod.util.XpHelper.getPlayerTotalExperience(player);
+                        int targetTotalXP = com.moremod.util.XpHelper.getExperienceForLevel(targetLevel);
+                        if (playerTotalXP <= targetTotalXP) break;
+                        totalXPToStore = Math.min(totalXPToStore, playerTotalXP - targetTotalXP);
+                        if (totalXPToStore <= 0) break;
+                        
                         int totalStored = 0;
+                        
                         for (ItemStack tankStack : prioritized) {
-                            if (remainingToStore <= 0) break;
+                            if (totalXPToStore <= 0) break;
+                            
+                            // 向当前储罐中存储经验
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
-                            int space = cap.getMaxXp() - cap.getXpStored();
-                            if (space <= 0) continue;
-                            int store = Math.min(space, remainingToStore);
+                            
+                            int availableSpace = cap.getMaxXp() - cap.getXpStored();
+                            if (availableSpace <= 0) continue;
+                            
+                            int store = Math.min(availableSpace, totalXPToStore);
                             int stored = cap.addXp(store);
                             if (stored > 0) {
-                                remainingToStore -= stored;
                                 totalStored += stored;
+                                totalXPToStore -= stored;
+                                com.moremod.util.XpHelper.removeExperienceFromPlayer(player, stored);
                                 ItemExperiencePump.syncCapabilityToStack(tankStack, cap);
                                 syncTankBack(tankStack, tankLocations.get(tankStack), player);
                             }
-                        }
-                        if (totalStored > 0) {
-                            // 精确设置玩家到目标等级0经验，避免浮点误差
-                            int newTotal = currentTotal - totalStored;
-                            player.experienceLevel = 0;
-                            player.experienceTotal = 0;
-                            player.experience = 0;
-                            if (newTotal > 0) player.addExperience(newTotal);
                         }
                         break;
                     }
@@ -369,67 +342,20 @@ public class PacketPumpAction implements IMessage {
             return net.minecraft.item.ItemStack.EMPTY;
         }
 
-        private static int xpForOneLevel(int level) {
-            if (level <= 0) return IExperiencePumpCapability.BASE_XP_PER_LEVEL;
-            return levelToTotalXp(level) - levelToTotalXp(level - 1);
-        }
 
-        private static int getPlayerTotalXp(net.minecraft.entity.player.EntityPlayer player) {
-            return (int) (player.experience * (float) player.xpBarCap()) + levelToTotalXp(player.experienceLevel);
-        }
-
-        private static int levelToTotalXp(int level) {
-            if (level <= 0) return 0;
-            if (level < 16) return level * (6 + level);
-            if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
-            return (int) (level * (4.5 * level - 162.5) + 2220);
-        }
-
-        private static int getTotalXpForLevel(int level) {
-            if (level <= 0) return 0;
-            if (level < 16) return level * (6 + level);
-            if (level < 31) return (int) (level * (2.5 * level - 40.5) + 360);
-            return (int) (level * (4.5 * level - 162.5) + 2220);
-        }
-
-        private static int getXPToNextLevel(int level) {
-            if (level < 0) return IExperiencePumpCapability.BASE_XP_PER_LEVEL;
-            return levelToTotalXp(level + 1) - levelToTotalXp(level);
-        }
-
-        private static int getXPToPreviousLevel(int level) {
-            if (level <= 0) return 0;
-            return levelToTotalXp(level) - levelToTotalXp(level - 1);
-        }
-
-        private static void addPlayerXp(net.minecraft.entity.player.EntityPlayer player, int amount) {
-            if (amount >= 0) {
-                player.addExperience(amount);
-                return;
-            }
-            int take = -amount;
-            int current = getPlayerTotalXp(player);
-            take = Math.min(take, current);
-            if (take <= 0) return;
-            int remain = current - take;
-            player.experienceLevel = 0;
-            player.experienceTotal = 0;
-            player.experience = 0;
-            if (remain > 0) player.addExperience(remain);
-        }
 
         /** 在玩家和经验储罐之间泵送经验 */
         private void pumpExperienceBetweenPlayerAndTank(net.minecraft.entity.player.EntityPlayer player, IExperiencePumpCapability cap) {
             int retain = cap.getRetainLevel();
-            int playerTotal = getPlayerTotalXp(player);
-            int targetXp = getTotalXpForLevel(retain); // 使用精确的等级到经验转换
+            int playerTotal = com.moremod.util.XpHelper.getPlayerTotalExperience(player);
+            int targetXp = com.moremod.util.XpHelper.getExperienceForLevel(retain); // 使用精确的等级到经验转换
 
             if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
                 // 从玩家泵入：玩家高于保留等级时抽取
                 if (playerTotal > targetXp) {
                     int take = Math.min(playerTotal - targetXp, cap.getMaxXp() - cap.getXpStored());
                     if (take > 0) {
-                        addPlayerXp(player, -take);
+                        com.moremod.util.XpHelper.removeExperienceFromPlayer(player, take);
                         cap.addXp(take);
                     }
                 }
@@ -438,54 +364,12 @@ public class PacketPumpAction implements IMessage {
                 if (playerTotal < targetXp && cap.getXpStored() > 0) {
                     int need = targetXp - playerTotal;
                     int give = cap.takeXp(Math.min(need, 100));
-                    if (give > 0) addPlayerXp(player, give);
+                    if (give > 0) com.moremod.util.XpHelper.addExperienceToPlayer(player, give);
                 }
             }
         }
 
-        /** 
-         * 查找玩家身上的所有经验储罐
-         * 返回 TankLocation 对象，包含储罐和位置信息，以便修改后能正确同步回去
-         */
-        private java.util.List<TankLocation> findAllExperienceTanksWithLocation(net.minecraft.entity.player.EntityPlayer player) {
-            java.util.List<TankLocation> tanks = new java.util.ArrayList<>();
-            if (player == null) return tanks;
-            
-            // 优先检查饰品栏（Baubles）
-            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
-                try {
-                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
-                    if (handler instanceof net.minecraft.inventory.IInventory) {
-                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                            ItemStack stack = baubles.getStackInSlot(i);
-                            if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                                tanks.add(new TankLocation(stack, TankLocation.LocationType.BAUBLES, i, baubles));
-                            }
-                        }
-                    }
-                } catch (Throwable ignored) {}
-            }
 
-            // 然后检查背包，从前到后（index 0 开始）以保证优先使用背包前面的槽位
-            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-                ItemStack stack = player.inventory.getStackInSlot(i);
-                if (!stack.isEmpty() && stack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    tanks.add(new TankLocation(stack, TankLocation.LocationType.PLAYER_INVENTORY, i, player.inventory));
-                }
-            }
-
-            // 最后检查主手和副手
-            for (EnumHand h : EnumHand.values()) {
-                ItemStack heldStack = player.getHeldItem(h);
-                if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.moremod.item.ItemExperiencePump) {
-                    tanks.add(new TankLocation(heldStack, TankLocation.LocationType.HAND, h.ordinal(), null));
-                }
-            }
-
-            return tanks;
-        }
         
         /** 查找玩家身上的所有经验储罐（简化版，返回ItemStack列表） */
         private java.util.List<ItemStack> findAllExperienceTanks(net.minecraft.entity.player.EntityPlayer player) {
@@ -596,42 +480,6 @@ public class PacketPumpAction implements IMessage {
             // 手持物品会自动同步，无需特殊处理
         }
         
-        /** 储罐位置信息，用于修改后同步回原位置 */
-        private static class TankLocation {
-            enum LocationType {
-                BAUBLES,
-                PLAYER_INVENTORY,
-                HAND
-            }
-            
-            final ItemStack tank;
-            final LocationType locationType;
-            final int slotIndex;
-            final net.minecraft.inventory.IInventory inventory; // 用于 Baubles
-            
-            TankLocation(ItemStack tank, LocationType locationType, int slotIndex, net.minecraft.inventory.IInventory inventory) {
-                this.tank = tank;
-                this.locationType = locationType;
-                this.slotIndex = slotIndex;
-                this.inventory = inventory;
-            }
-            
-            /** 将修改后的储罐同步回原位置 */
-            void syncBack(net.minecraft.entity.player.EntityPlayer player) {
-                switch (locationType) {
-                    case BAUBLES:
-                        if (inventory != null) {
-                            inventory.setInventorySlotContents(slotIndex, tank);
-                        }
-                        break;
-                    case PLAYER_INVENTORY:
-                        player.inventory.setInventorySlotContents(slotIndex, tank);
-                        break;
-                    case HAND:
-                        // 手持物品会自动同步，无需特殊处理
-                        break;
-                }
-            }
-        }
+
     }
 }

@@ -241,6 +241,126 @@ public class ItemExperiencePump extends Item implements IBauble {
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
+    /**
+     * 将指定等级数的经验存储到储罐中
+     * 
+     * @param stack 储罐物品
+     * @param player 玩家实例
+     * @param levelsToStore 要存储的等级数
+     * @return 实际存储的经验点数
+     */
+    public static int storeExperienceLevels(ItemStack stack, EntityPlayer player, int levelsToStore) {
+        if (levelsToStore <= 0) {
+            return 0;
+        }
+        
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap == null) {
+            return 0;
+        }
+        
+        int xpToStore = com.moremod.util.XpHelper.extractExperienceLevels(player, levelsToStore);
+        if (xpToStore <= 0) {
+            return 0;
+        }
+        
+        int actualStored = cap.addXp(xpToStore);
+        if (actualStored > 0) {
+            syncCapabilityToStack(stack, cap);
+        }
+        
+        return actualStored;
+    }
+    
+    /**
+     * 从储罐中提取指定等级数的经验
+     * 
+     * @param stack 储罐物品
+     * @param player 玩家实例
+     * @param levelsToExtract 要提取的等级数
+     * @return 实际提取的经验点数
+     */
+    public static int extractExperienceLevels(ItemStack stack, EntityPlayer player, int levelsToExtract) {
+        if (levelsToExtract <= 0) {
+            return 0;
+        }
+        
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap == null) {
+            return 0;
+        }
+        
+        int currentLevel = player.experienceLevel;
+        int targetLevel = currentLevel + levelsToExtract;
+        int xpNeeded = com.moremod.util.XpHelper.getExperienceBetweenLevels(currentLevel, targetLevel);
+        
+        if (xpNeeded <= 0) {
+            return 0;
+        }
+        
+        int actualExtracted = cap.takeXp(xpNeeded);
+        if (actualExtracted > 0) {
+            com.moremod.util.XpHelper.addExperienceToPlayer(player, actualExtracted);
+            syncCapabilityToStack(stack, cap);
+        }
+        
+        return actualExtracted;
+    }
+    
+    /**
+     * 存储玩家的所有经验
+     * 
+     * @param stack 储罐物品
+     * @param player 玩家实例
+     * @return 实际存储的经验点数
+     */
+    public static int storeAllExperience(ItemStack stack, EntityPlayer player) {
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap == null) {
+            return 0;
+        }
+        
+        int playerTotalXP = com.moremod.util.XpHelper.getPlayerTotalExperience(player);
+        if (playerTotalXP <= 0) {
+            return 0;
+        }
+        
+        int actualStored = cap.addXp(playerTotalXP);
+        if (actualStored > 0) {
+            com.moremod.util.XpHelper.removeExperienceFromPlayer(player, actualStored);
+            syncCapabilityToStack(stack, cap);
+        }
+        
+        return actualStored;
+    }
+    
+    /**
+     * 提取储罐中的所有经验
+     * 
+     * @param stack 储罐物品
+     * @param player 玩家实例
+     * @return 实际提取的经验点数
+     */
+    public static int extractAllExperience(ItemStack stack, EntityPlayer player) {
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap == null) {
+            return 0;
+        }
+        
+        int storedXP = cap.getXpStored();
+        if (storedXP <= 0) {
+            return 0;
+        }
+        
+        int actualExtracted = cap.takeXp(storedXP);
+        if (actualExtracted > 0) {
+            com.moremod.util.XpHelper.addExperienceToPlayer(player, actualExtracted);
+            syncCapabilityToStack(stack, cap);
+        }
+        
+        return actualExtracted;
+    }
+    
     public static void syncCapabilityToStack(ItemStack stack, IExperiencePumpCapability cap) {
         if (cap == null || ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY == null) return;
         net.minecraft.nbt.NBTBase nbt = ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY.getStorage()

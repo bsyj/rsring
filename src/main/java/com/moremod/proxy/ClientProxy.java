@@ -129,6 +129,6 @@ public class ClientProxy extends CommonProxy {
 
         // 经验泵控制器（使用自定义材质）
         ModelLoader.setCustomModelResourceLocation(
-            RsRingMod.experiencePumpController, 0, new ModelResourceLocation(new ResourceLocation("rsring", "experience_pump_controller"), "inventory"));
+            RsRingMod.experiencePumpController, 0, new ModelResourceLocation(RsRingMod.experiencePumpController.getRegistryName(), "inventory"));
     }
 }

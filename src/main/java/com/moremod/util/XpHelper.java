@@ -124,21 +124,17 @@ public class XpHelper {
     
     /**
      * 设置玩家的总经验点数
-     * 会自动计算并设置对应的等级和进度
+     * 参考 XP-Tome 的实现，直接计算并设置对应的等级和进度
      * 
      * @param player 玩家实例
      * @param experience 要设置的总经验点数
      */
     public static void setPlayerTotalExperience(EntityPlayer player, int experience) {
-        // 重置玩家经验
-        player.experienceLevel = 0;
-        player.experienceTotal = 0;
-        player.experience = 0.0f;
-        
-        // 添加新的经验（Minecraft 会自动计算等级和进度）
-        if (experience > 0) {
-            player.addExperience(experience);
-        }
+        experience = Math.max(0, experience);
+        player.experienceTotal = experience;
+        player.experienceLevel = getLevelForExperience(experience);
+        int expForLevel = getExperienceForLevel(player.experienceLevel);
+        player.experience = (float)(experience - expForLevel) / (float)player.xpBarCap();
     }
     
     /**
@@ -166,19 +162,27 @@ public class XpHelper {
     
     /**
      * 向玩家添加指定数量的经验点
+     * 参考 XP-Tome 的实现，直接计算并设置玩家的总经验
      * 
      * @param player 玩家实例
      * @param amount 要添加的经验点数
      */
     public static void addExperienceToPlayer(EntityPlayer player, int amount) {
-        if (amount > 0) {
-            player.addExperience(amount);
+        if (amount <= 0) {
+            return;
         }
+        
+        int experience = getPlayerTotalExperience(player) + amount;
+        player.experienceTotal = experience;
+        player.experienceLevel = getLevelForExperience(experience);
+        int expForLevel = getExperienceForLevel(player.experienceLevel);
+        player.experience = (float)(experience - expForLevel) / (float)player.xpBarCap();
     }
     
     /**
      * 格式化经验显示
      * 显示格式：XP点数 (等级)
+     * 与Minecraft客户端保持一致，只显示整数等级
      * 
      * @param xp 经验点数
      * @return 格式化的字符串
@@ -188,7 +192,78 @@ public class XpHelper {
             return "0 XP (0 levels)";
         }
         
-        double levels = getLevelsForExperience(xp);
-        return String.format("%d XP (%.1f levels)", xp, levels);
+        int levels = getLevelForExperience(xp);
+        return String.format("%d XP (%d levels)", xp, levels);
+    }
+    
+    /**
+     * 计算从当前等级到目标等级所需的经验点数
+     * 
+     * @param currentLevel 当前等级
+     * @param targetLevel 目标等级
+     * @return 所需的经验点数
+     */
+    public static int getExperienceBetweenLevels(int currentLevel, int targetLevel) {
+        if (currentLevel == targetLevel) {
+            return 0;
+        }
+        
+        int currentTotal = getExperienceForLevel(currentLevel);
+        int targetTotal = getExperienceForLevel(targetLevel);
+        return Math.abs(targetTotal - currentTotal);
+    }
+    
+    /**
+     * 从玩家身上提取指定等级数的经验
+     * 
+     * @param player 玩家实例
+     * @param levelsToExtract 要提取的等级数
+     * @return 实际提取的经验点数
+     */
+    public static int extractExperienceLevels(EntityPlayer player, int levelsToExtract) {
+        if (levelsToExtract <= 0) {
+            return 0;
+        }
+        
+        int currentLevel = player.experienceLevel;
+        int targetLevel = Math.max(0, currentLevel - levelsToExtract);
+        
+        int currentTotal = getPlayerTotalExperience(player);
+        int targetTotal = getExperienceForLevel(targetLevel);
+        int toExtract = Math.max(0, currentTotal - targetTotal);
+        
+        if (toExtract > 0) {
+            int actualRemoved = removeExperienceFromPlayer(player, toExtract);
+            return actualRemoved;
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * 向玩家添加指定等级数的经验
+     * 
+     * @param player 玩家实例
+     * @param levelsToAdd 要添加的等级数
+     * @return 实际添加的经验点数
+     */
+    public static int addExperienceLevels(EntityPlayer player, int levelsToAdd) {
+        if (levelsToAdd <= 0) {
+            return 0;
+        }
+        
+        int currentLevel = player.experienceLevel;
+        int targetLevel = currentLevel + levelsToAdd;
+        
+        int currentTotal = getPlayerTotalExperience(player);
+        int targetTotal = getExperienceForLevel(targetLevel);
+        int toAdd = Math.max(0, targetTotal - currentTotal);
+        
+        if (toAdd > 0) {
+            addExperienceToPlayer(player, toAdd);
+            return toAdd;
+        }
+        
+        return 0;
     }
 }

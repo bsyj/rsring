@@ -276,13 +276,8 @@ public class ExperiencePumpController {
         TankScanResult scanResult = scanAllInventories(player);
         List<ItemStack> tanks = scanResult.getAllTanks();
 
-        // Sort tanks by available space in ascending order to fill nearly-full tanks first
-        // This maximizes the efficiency of storage utilization
-        tanks.sort((tank1, tank2) -> {
-            int available1 = ItemExperiencePump.getMaxXpFromNBT(tank1) - ItemExperiencePump.getXpStoredFromNBT(tank1);
-            int available2 = ItemExperiencePump.getMaxXpFromNBT(tank2) - ItemExperiencePump.getXpStoredFromNBT(tank2);
-            return Integer.compare(available1, available2); // Ascending order (smaller available space first)
-        });
+        // 按照原始顺序处理储罐，优先填满前面的储罐
+        // 不移除任何储罐，确保所有储罐都有机会接收经验
 
         int totalInjected = 0;
         int remainingToInject = amount;

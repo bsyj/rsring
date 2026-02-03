@@ -43,7 +43,7 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         if (data == null) {
             // 即使没有NBT数据也要显示基础信息
-            int initialCapacity = 11670582120; // 2000级玩家经验对应的容量
+            long initialCapacity = 11670582120L; // 2000级玩家经验对应的容量
             tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "2000级");
             tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + initialCapacity + " mb");
 
@@ -63,7 +63,7 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
 
         int xp = data.getInteger("xp");
         int capacityLevels = data.hasKey("capacityLevels") ? data.getInteger("capacityLevels") : 25;  // 默认25级
-        int max = 11670582120; // 2000级玩家经验对应的容量
+        long max = 11670582120L; // 2000级玩家经验对应的容量
 
         // 基础信息显示
         tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "2000级");
@@ -96,7 +96,7 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
         if (!world.isRemote) {
             // 从NBT读取数据（确保准确性）
             int xpStored = getXpStoredFromNBT(stack);
-            int maxXp = 11670582120; // 2000级玩家经验对应的容量
+            long maxXp = 11670582120L; // 2000级玩家经验对应的容量
             
             // 构造消息：2000级储罐 - Y / Z mb
             String message = TextFormatting.AQUA + "2000级储罐 " + 
@@ -136,7 +136,7 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
     /**
      * 获取2000级储罐的最大容量
      */
-    public static int getMaxXp() {
-        return 11670582120; // 2000级玩家经验对应的容量
+    public static long getMaxXp() {
+        return 11670582120L; // 2000级玩家经验对应的容量
     }
 }

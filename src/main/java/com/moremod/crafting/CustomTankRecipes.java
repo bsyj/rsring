@@ -20,43 +20,51 @@ public class CustomTankRecipes {
      */
     public static void registerRecipes() {
         // 100级储罐合成表（铁锭 + 基础储罐）
-        GameRegistry.addRecipe(
+        GameRegistry.addShapedRecipe(
+            new net.minecraft.util.ResourceLocation("rsring", "experience_tank_100"),
+            null,
             new ItemStack(RsRingMod.experienceTank100),
             "III",
             "ITI",
             "III",
-            'I', new ItemStack(Items.IRON_INGOT),
-            'T', new ItemStack(RsRingMod.experiencePump) // 基础经验储罐
+            'I', Items.IRON_INGOT,
+            'T', RsRingMod.experiencePump // 基础经验储罐
         );
 
         // 500级储罐合成表（金锭 + 100级储罐）
-        GameRegistry.addRecipe(
+        GameRegistry.addShapedRecipe(
+            new net.minecraft.util.ResourceLocation("rsring", "experience_tank_500"),
+            null,
             new ItemStack(RsRingMod.experienceTank500),
             "GGG",
             "GTG",
             "GGG",
-            'G', new ItemStack(Items.GOLD_INGOT),
-            'T', new ItemStack(RsRingMod.experienceTank100) // 100级经验储罐
+            'G', Items.GOLD_INGOT,
+            'T', RsRingMod.experienceTank100 // 100级经验储罐
         );
 
         // 1000级储罐合成表（绿宝石 + 500级储罐）
-        GameRegistry.addRecipe(
+        GameRegistry.addShapedRecipe(
+            new net.minecraft.util.ResourceLocation("rsring", "experience_tank_1000"),
+            null,
             new ItemStack(RsRingMod.experienceTank1000),
             "EEE",
             "ETE",
             "EEE",
-            'E', new ItemStack(Items.EMERALD),
-            'T', new ItemStack(RsRingMod.experienceTank500) // 500级经验储罐
+            'E', Items.EMERALD,
+            'T', RsRingMod.experienceTank500 // 500级经验储罐
         );
 
         // 2000级储罐合成表（钻石 + 1000级储罐）
-        GameRegistry.addRecipe(
+        GameRegistry.addShapedRecipe(
+            new net.minecraft.util.ResourceLocation("rsring", "experience_tank_2000"),
+            null,
             new ItemStack(RsRingMod.experienceTank2000),
             "DDD",
             "DTD",
             "DDD",
-            'D', new ItemStack(Items.DIAMOND),
-            'T', new ItemStack(RsRingMod.experienceTank1000) // 1000级经验储罐
+            'D', Items.DIAMOND,
+            'T', RsRingMod.experienceTank1000 // 1000级经验储罐
         );
     }
 }

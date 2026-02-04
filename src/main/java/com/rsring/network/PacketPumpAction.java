@@ -418,6 +418,8 @@ public class PacketPumpAction implements IMessage {
         
         /** 记录储罐位置信息 */
         private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
+            java.util.Set<ItemStack> mapped = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
             // 检查饰品栏
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
@@ -427,28 +429,34 @@ public class PacketPumpAction implements IMessage {
                         net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
                         for (int i = 0; i < baubles.getSizeInventory(); i++) {
                             ItemStack stack = baubles.getStackInSlot(i);
-                            if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                                for (ItemStack tank : tanks) {
-                                    if (tank == stack) { // 引用相等
-                                        locations.put(tank, new TankLocationInfo("baubles", i, baubles));
-                                        break;
-                                    }
+                            if (stack.isEmpty() || !(stack.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
+                                continue;
+                            }
+                            for (ItemStack tank : tanks) {
+                                if (mapped.contains(tank)) continue;
+                                if (tank == stack || ItemStack.areItemStacksEqual(tank, stack)) {
+                                    locations.put(tank, new TankLocationInfo("baubles", i, baubles));
+                                    mapped.add(tank);
+                                    break;
                                 }
                             }
                         }
                     }
                 } catch (Throwable ignored) {}
             }
-            
+
             // 检查背包
             for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
                 ItemStack stack = player.inventory.getStackInSlot(i);
-                if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                    for (ItemStack tank : tanks) {
-                        if (tank == stack) {
-                            locations.put(tank, new TankLocationInfo("inventory", i, player.inventory));
-                            break;
-                        }
+                if (stack.isEmpty() || !(stack.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
+                    continue;
+                }
+                for (ItemStack tank : tanks) {
+                    if (mapped.contains(tank)) continue;
+                    if (tank == stack || ItemStack.areItemStacksEqual(tank, stack)) {
+                        locations.put(tank, new TankLocationInfo("inventory", i, player.inventory));
+                        mapped.add(tank);
+                        break;
                     }
                 }
             }

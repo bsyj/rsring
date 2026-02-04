@@ -7,10 +7,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.rsring.rsring.RsRingMod;
 
 /**
- * GUI Factory for RsRing Mod configuration
- * 
- * This class provides the configuration GUI that appears when clicking
- * the "Config" button in the Mod List screen.
+ *用于 RsRing Mod 配置的 GUI 工厂
+ *
+ *该类提供点击时出现的配置GUI
+ *Mod列表屏幕中的“配置”按钮。
  */
 @SideOnly(Side.CLIENT)
 public class GuiFactory extends DefaultGuiFactory {

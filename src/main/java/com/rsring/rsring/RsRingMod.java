@@ -47,7 +47,7 @@ public class RsRingMod
 {
     public static final String MODID = "rsring";
     public static final String NAME = "RS Rings and Tanks";
-    public static final String VERSION = "1.3.2";
+    public static final String VERSION = "1.3.3";
 
     @Mod.Instance(MODID)
     public static RsRingMod instance;

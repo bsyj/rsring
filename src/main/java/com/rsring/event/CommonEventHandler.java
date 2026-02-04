@@ -20,13 +20,13 @@ import com.rsring.item.ItemAbsorbRing;
 import com.rsring.item.ItemExperiencePump;
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
+import com.rsring.util.BaublesHelper;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.Loader;
 import com.rsring.network.PacketToggleRsRing;
 
 public class CommonEventHandler {
@@ -82,18 +82,15 @@ public class CommonEventHandler {
         if (!player.getHeldItemOffhand().isEmpty() && ringClass.isInstance(player.getHeldItemOffhand().getItem())) {
             return player.getHeldItemOffhand();
         }
-        if (Loader.isModLoaded("baubles")) {
-            try {
-                Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                if (handler instanceof net.minecraft.inventory.IInventory) {
-                    net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                    for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                        ItemStack stack = baubles.getStackInSlot(i);
-                        if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) return stack;
-                    }
+        if (BaublesHelper.isBaublesLoaded()) {
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            int size = BaublesHelper.getSlots(handler);
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) {
+                    return stack;
                 }
-            } catch (Throwable ignored) {}
+            }
         }
         for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
             ItemStack stack = player.inventory.getStackInSlot(i);
@@ -102,62 +99,55 @@ public class CommonEventHandler {
         return ItemStack.EMPTY;
     }
 
+
     /**
      * 查找经验泵，优先使用空的经验泵
      * 优先级：手持 > 饰品栏 > 背包，相同位置优先使用空的经验泵
      */
     private ItemStack findExperiencePump(EntityPlayer player) {
-        // 检查主手和副手
+        // Check hands
         for (EnumHand hand : EnumHand.values()) {
             ItemStack heldStack = player.getHeldItem(hand);
             if (!heldStack.isEmpty() && heldStack.getItem() instanceof ItemExperiencePump) {
-                // 检查是否为空的经验泵
                 com.rsring.capability.IExperiencePumpCapability cap = heldStack.getCapability(com.rsring.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                 if (cap != null && cap.getXpStored() == 0) {
-                    return heldStack; // 返回空的经验泵
+                    return heldStack;
                 }
             }
         }
 
-        // 检查饰品栏
-        if (Loader.isModLoaded("baubles")) {
-            try {
-                Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                if (handler instanceof net.minecraft.inventory.IInventory) {
-                    net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                    for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                        ItemStack stack = baubles.getStackInSlot(i);
-                        if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
-                            com.rsring.capability.IExperiencePumpCapability cap = stack.getCapability(com.rsring.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-                            if (cap != null && cap.getXpStored() == 0) {
-                                return stack; // 返回空的经验泵
-                            }
-                        }
-                    }
-                    // 如果没找到空的经验泵，返回第一个经验泵
-                    for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                        ItemStack stack = baubles.getStackInSlot(i);
-                        if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
-                            return stack;
-                        }
+        // Check baubles
+        if (BaublesHelper.isBaublesLoaded()) {
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            int size = BaublesHelper.getSlots(handler);
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
+                    com.rsring.capability.IExperiencePumpCapability cap = stack.getCapability(com.rsring.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+                    if (cap != null && cap.getXpStored() == 0) {
+                        return stack;
                     }
                 }
-            } catch (Throwable ignored) {}
+            }
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
+                    return stack;
+                }
+            }
         }
 
-        // 检查背包
+        // Check inventory
         for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
             ItemStack stack = player.inventory.getStackInSlot(i);
             if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
                 com.rsring.capability.IExperiencePumpCapability cap = stack.getCapability(com.rsring.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                 if (cap != null && cap.getXpStored() == 0) {
-                    return stack; // 返回空的经验泵
+                    return stack;
                 }
             }
         }
 
-        // 如果没找到空的经验泵，返回第一个经验泵
         for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
             ItemStack stack = player.inventory.getStackInSlot(i);
             if (!stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump) {
@@ -167,6 +157,7 @@ public class CommonEventHandler {
 
         return ItemStack.EMPTY;
     }
+
 
     /**
      * 查找经验泵控制器（扫描整个背包）

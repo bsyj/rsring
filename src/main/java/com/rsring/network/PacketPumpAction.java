@@ -3,6 +3,7 @@ package com.rsring.network;
 import com.rsring.capability.IExperiencePumpCapability;
 import com.rsring.capability.ExperiencePumpCapability;
 import com.rsring.item.ItemExperiencePump;
+import com.rsring.util.BaublesHelper;
 import com.rsring.network.PacketSyncTankSlots;
 import com.rsring.rsring.RsRingMod;
 import io.netty.buffer.ByteBuf;
@@ -300,22 +301,15 @@ public class PacketPumpAction implements IMessage {
         /** 查找玩家身上的经验储罐 */
         private ItemStack findExperienceTank(EntityPlayer player) {
             if (player == null) return net.minecraft.item.ItemStack.EMPTY;
-            // 优先检查饰品栏（Baubles），再检查主手/副手，最后检查背包
-            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
-                try {
-                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                    if (handler instanceof net.minecraft.inventory.IInventory) {
-                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                            ItemStack stack = baubles.getStackInSlot(i);
-                            if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) return stack;
-                        }
-                    }
-                } catch (Throwable ignored) {}
+            if (BaublesHelper.isBaublesLoaded()) {
+                Object handler = BaublesHelper.getBaublesHandler(player);
+                int size = BaublesHelper.getSlots(handler);
+                for (int i = 0; i < size; i++) {
+                    ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                    if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) return stack;
+                }
             }
 
-            // 检查主手和副手（其次）
             for (EnumHand h : EnumHand.values()) {
                 ItemStack heldStack = player.getHeldItem(h);
                 if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
@@ -323,7 +317,6 @@ public class PacketPumpAction implements IMessage {
                 }
             }
 
-            // 最后检查背包
             for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
                 ItemStack stack = player.inventory.getStackInSlot(i);
                 if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
@@ -333,6 +326,7 @@ public class PacketPumpAction implements IMessage {
 
             return net.minecraft.item.ItemStack.EMPTY;
         }
+
 
 
 
@@ -367,24 +361,18 @@ public class PacketPumpAction implements IMessage {
         private List<ItemStack> findAllExperienceTanks(EntityPlayer player) {
             List<ItemStack> tanks = new ArrayList<>();
             if (player == null) return tanks;
-            // 优先检查饰品栏（Baubles）
-            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
-                try {
-                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                    if (handler instanceof net.minecraft.inventory.IInventory) {
-                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                            ItemStack stack = baubles.getStackInSlot(i);
-                            if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                                tanks.add(stack);
-                            }
-                        }
+
+            if (BaublesHelper.isBaublesLoaded()) {
+                Object handler = BaublesHelper.getBaublesHandler(player);
+                int size = BaublesHelper.getSlots(handler);
+                for (int i = 0; i < size; i++) {
+                    ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                    if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
+                        tanks.add(stack);
                     }
-                } catch (Throwable ignored) {}
+                }
             }
 
-            // 然后检查背包，从前到后（index 0 开始）以保证优先使用背包前面的槽位
             for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
                 ItemStack stack = player.inventory.getStackInSlot(i);
                 if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
@@ -392,7 +380,6 @@ public class PacketPumpAction implements IMessage {
                 }
             }
 
-            // 最后检查主手和副手
             for (EnumHand h : EnumHand.values()) {
                 ItemStack heldStack = player.getHeldItem(h);
                 if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
@@ -403,13 +390,14 @@ public class PacketPumpAction implements IMessage {
             return tanks;
         }
 
+
         /** 储罐位置信息 */
         private static class TankLocationInfo {
             final String locationType; // "baubles", "inventory", "hand"
             final int slotIndex;
-            final net.minecraft.inventory.IInventory inventory;
+            final Object inventory;
             
-            TankLocationInfo(String locationType, int slotIndex, net.minecraft.inventory.IInventory inventory) {
+            TankLocationInfo(String locationType, int slotIndex, Object inventory) {
                 this.locationType = locationType;
                 this.slotIndex = slotIndex;
                 this.inventory = inventory;
@@ -420,32 +408,27 @@ public class PacketPumpAction implements IMessage {
         private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
             java.util.Set<ItemStack> mapped = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
-            // 检查饰品栏
-            if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
-                try {
-                    Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                    if (handler instanceof net.minecraft.inventory.IInventory) {
-                        net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                        for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                            ItemStack stack = baubles.getStackInSlot(i);
-                            if (stack.isEmpty() || !(stack.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
-                                continue;
-                            }
-                            for (ItemStack tank : tanks) {
-                                if (mapped.contains(tank)) continue;
-                                if (tank == stack || ItemStack.areItemStacksEqual(tank, stack)) {
-                                    locations.put(tank, new TankLocationInfo("baubles", i, baubles));
-                                    mapped.add(tank);
-                                    break;
-                                }
-                            }
+            // Check baubles
+            if (BaublesHelper.isBaublesLoaded()) {
+                Object handler = BaublesHelper.getBaublesHandler(player);
+                int size = BaublesHelper.getSlots(handler);
+                for (int i = 0; i < size; i++) {
+                    ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                    if (stack.isEmpty() || !(stack.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
+                        continue;
+                    }
+                    for (ItemStack tank : tanks) {
+                        if (mapped.contains(tank)) continue;
+                        if (tank == stack || ItemStack.areItemStacksEqual(tank, stack)) {
+                            locations.put(tank, new TankLocationInfo("baubles", i, handler));
+                            mapped.add(tank);
+                            break;
                         }
                     }
-                } catch (Throwable ignored) {}
+                }
             }
 
-            // 检查背包
+            // Check inventory
             for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
                 ItemStack stack = player.inventory.getStackInSlot(i);
                 if (stack.isEmpty() || !(stack.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
@@ -461,24 +444,27 @@ public class PacketPumpAction implements IMessage {
                 }
             }
         }
+
         
         /** 同步储罐回原位置，并发送客户端同步包（解决饰品栏/背包储罐存取后客户端不同步） */
         private void syncTankBack(ItemStack tank, TankLocationInfo location, EntityPlayerMP player) {
             if (location == null) {
                 return;
             }
-            
-            if ("baubles".equals(location.locationType) && location.inventory != null) {
-                location.inventory.setInventorySlotContents(location.slotIndex, tank);
-                location.inventory.markDirty(); // 关键：标记为脏，确保Baubles同步
-                RsRingMod.network.sendTo(new PacketSyncTankSlots("baubles", location.slotIndex, tank), player);
-            } else if ("inventory".equals(location.locationType) && location.inventory != null) {
-                location.inventory.setInventorySlotContents(location.slotIndex, tank);
-                location.inventory.markDirty(); // 标记为脏，确保背包同步
+
+            if ("baubles".equals(location.locationType)) {
+                if (BaublesHelper.setStackInSlot(location.inventory, location.slotIndex, tank)) {
+                    RsRingMod.network.sendTo(new PacketSyncTankSlots("baubles", location.slotIndex, tank), player);
+                }
+            } else if ("inventory".equals(location.locationType) && location.inventory instanceof net.minecraft.inventory.IInventory) {
+                net.minecraft.inventory.IInventory inv = (net.minecraft.inventory.IInventory) location.inventory;
+                inv.setInventorySlotContents(location.slotIndex, tank);
+                inv.markDirty();
                 RsRingMod.network.sendTo(new PacketSyncTankSlots("inventory", location.slotIndex, tank), player);
             }
-            // 手持物品会自动同步，无需特殊处理
+            // Hand items sync automatically
         }
+
         
 
     }

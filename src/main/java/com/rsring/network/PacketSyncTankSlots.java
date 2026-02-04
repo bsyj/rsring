@@ -1,11 +1,11 @@
 package com.rsring.network;
 
 import com.rsring.item.ItemExperiencePump;
+import com.rsring.util.BaublesHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -56,17 +56,11 @@ public class PacketSyncTankSlots implements IMessage {
                 if (player == null || msg.tankStack.isEmpty() || !(msg.tankStack.getItem() instanceof ItemExperiencePump)) {
                     return;
                 }
-                if (msg.locationType == TYPE_BAUBLES && Loader.isModLoaded("baubles")) {
-                    try {
-                        Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                        Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-                        if (handler instanceof net.minecraft.inventory.IInventory) {
-                            net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                            if (msg.slotIndex >= 0 && msg.slotIndex < baubles.getSizeInventory()) {
-                                baubles.setInventorySlotContents(msg.slotIndex, msg.tankStack);
-                            }
-                        }
-                    } catch (Throwable ignored) {}
+                if (msg.locationType == TYPE_BAUBLES && BaublesHelper.isBaublesLoaded()) {
+                    Object handler = BaublesHelper.getBaublesHandler(player);
+                    if (handler != null) {
+                        BaublesHelper.setStackInSlot(handler, msg.slotIndex, msg.tankStack);
+                    }
                 } else if (msg.locationType == TYPE_INVENTORY && msg.slotIndex >= 0 && msg.slotIndex < player.inventory.getSizeInventory()) {
                     player.inventory.setInventorySlotContents(msg.slotIndex, msg.tankStack);
                 }

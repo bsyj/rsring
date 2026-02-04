@@ -4,7 +4,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.inventory.IInventory;
-import net.minecraftforge.fml.common.Loader;
+import com.rsring.util.BaublesHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -204,8 +204,25 @@ public class RingDetectionService {
      * @param player The player whose Baubles inventory should be marked dirty
      */
     public static void markBaublesDirtyIfNeeded(EntityPlayer player) {
-        BaublesIntegration.markBaublesDirtyIfNeeded(player);
-    }
+            if (player == null) {
+                LOGGER.debug("Player is null, cannot mark Baubles dirty");
+                return;
+            }
+            if (!BaublesHelper.isBaublesLoaded()) {
+                LOGGER.debug("Baubles mod not loaded, skipping dirty marking");
+                return;
+            }
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            if (handler instanceof IInventory) {
+                ((IInventory) handler).markDirty();
+                LOGGER.debug("Marked Baubles inventory dirty for player: {}", player.getName());
+            } else {
+                LOGGER.debug("Baubles handler is not IInventory, cannot mark dirty");
+            }
+        }
+
+
+
     
     /**
      * Checks if the Baubles mod is available and the API is accessible.
@@ -214,8 +231,10 @@ public class RingDetectionService {
      * @return true if Baubles is available and API is accessible, false otherwise
      */
     public static boolean isBaublesAvailable() {
-        return BaublesIntegration.isBaublesAvailable();
-    }
+            return BaublesHelper.isBaublesLoaded();
+        }
+
+
     
     /**
      * Helper class for robust Baubles API integration with enhanced error handling.
@@ -237,52 +256,33 @@ public class RingDetectionService {
                 LOGGER.debug("Player is null, cannot search Baubles");
                 return ItemStack.EMPTY;
             }
-            
             if (ringClass == null) {
                 LOGGER.debug("Ring class is null, cannot search Baubles");
                 return ItemStack.EMPTY;
             }
-            
-            LOGGER.debug("Searching Baubles for ring type: {}", ringClass.getSimpleName());
-            
-            if (!Loader.isModLoaded("baubles")) {
+            if (!BaublesHelper.isBaublesLoaded()) {
                 LOGGER.debug("Baubles mod not loaded, skipping Baubles search");
                 return ItemStack.EMPTY;
             }
-            
-            try {
-                // Use reflection to access Baubles API
-                Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class)
-                                       .invoke(null, player);
-                
-                if (handler instanceof IInventory) {
-                    IInventory baubles = (IInventory) handler;
-                    LOGGER.debug("Successfully accessed Baubles inventory with {} slots", 
-                        baubles.getSizeInventory());
-                    
-                    return searchInventoryForRing(baubles, ringClass);
-                } else {
-                    LOGGER.debug("Baubles handler is not an IInventory: {}", 
-                        handler != null ? handler.getClass().getName() : "null");
-                }
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("Baubles API class not found - mod may be outdated", e);
-            } catch (NoSuchMethodException e) {
-                LOGGER.error("Baubles API method not found - incompatible version", e);
-            } catch (IllegalAccessException e) {
-                LOGGER.error("Failed to access Baubles API - security restriction", e);
-            } catch (java.lang.reflect.InvocationTargetException e) {
-                LOGGER.error("Baubles API method invocation failed", e);
-                if (e.getCause() != null) {
-                    LOGGER.error("Root cause: {}", e.getCause().getMessage());
-                }
-            } catch (Exception e) {
-                LOGGER.error("Unexpected error accessing Baubles inventory", e);
+
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            if (handler == null) {
+                LOGGER.debug("Baubles handler is null");
+                return ItemStack.EMPTY;
             }
-            
+
+            int size = BaublesHelper.getSlots(handler);
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) {
+                    LOGGER.debug("Found ring in Baubles slot {}", i);
+                    return stack;
+                }
+            }
+
             return ItemStack.EMPTY;
         }
+
         
         /**
          * Marks the Baubles inventory as dirty to ensure proper synchronization.
@@ -295,42 +295,19 @@ public class RingDetectionService {
                 LOGGER.debug("Player is null, cannot mark Baubles dirty");
                 return;
             }
-            
-            if (!Loader.isModLoaded("baubles")) {
+            if (!BaublesHelper.isBaublesLoaded()) {
                 LOGGER.debug("Baubles mod not loaded, skipping dirty marking");
                 return;
             }
-            
-            try {
-                // Use reflection to access Baubles API
-                Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class)
-                                       .invoke(null, player);
-                
-                if (handler instanceof IInventory) {
-                    IInventory baubles = (IInventory) handler;
-                    baubles.markDirty();
-                    LOGGER.debug("Successfully marked Baubles inventory as dirty for player: {}", 
-                        player.getName());
-                } else {
-                    LOGGER.debug("Baubles handler is not an IInventory, cannot mark dirty: {}", 
-                        handler != null ? handler.getClass().getName() : "null");
-                }
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("Baubles API class not found - cannot mark dirty", e);
-            } catch (NoSuchMethodException e) {
-                LOGGER.error("Baubles API method not found - cannot mark dirty", e);
-            } catch (IllegalAccessException e) {
-                LOGGER.error("Failed to access Baubles API - cannot mark dirty", e);
-            } catch (java.lang.reflect.InvocationTargetException e) {
-                LOGGER.error("Baubles API method invocation failed - cannot mark dirty", e);
-                if (e.getCause() != null) {
-                    LOGGER.error("Root cause: {}", e.getCause().getMessage());
-                }
-            } catch (Exception e) {
-                LOGGER.error("Unexpected error marking Baubles inventory dirty", e);
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            if (handler instanceof IInventory) {
+                ((IInventory) handler).markDirty();
+                LOGGER.debug("Marked Baubles inventory dirty for player: {}", player.getName());
+            } else {
+                LOGGER.debug("Baubles handler is not IInventory, cannot mark dirty");
             }
         }
+
         
         /**
          * Checks if the Baubles mod is available and the API is accessible.
@@ -338,17 +315,8 @@ public class RingDetectionService {
          * @return true if Baubles is available and API is accessible, false otherwise
          */
         public static boolean isBaublesAvailable() {
-            if (!Loader.isModLoaded("baubles")) {
-                return false;
-            }
-            
-            try {
-                Class.forName("baubles.api.BaublesApi");
-                return true;
-            } catch (ClassNotFoundException e) {
-                LOGGER.debug("Baubles API class not found despite mod being loaded");
-                return false;
-            }
+            return BaublesHelper.isBaublesLoaded();
         }
+
     }
 }

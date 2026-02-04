@@ -1,0 +1,483 @@
+package com.rsring.item;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import java.util.List;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.energy.IEnergyStorage;
+import com.rsring.capability.IRsRingCapability;
+import com.rsring.capability.RsRingCapability;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.Optional;
+import baubles.api.IBauble;
+import baubles.api.BaubleType;
+import org.lwjgl.input.Keyboard;
+
+@Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
+public class ItemAbsorbRing extends Item implements IBauble {
+
+    public ItemAbsorbRing() {
+        super();
+        this.setTranslationKey("rsring.item_absorb_ring");
+        this.setRegistryName(new ResourceLocation("rsring", "item_absorb_ring"));
+        this.setMaxStackSize(1);
+        this.setCreativeTab(CreativeTabs.MISC);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap == null) return;
+
+        IEnergyStorage energy = cap.getEnergyStorage();
+        tooltip.add(TextFormatting.GRAY + "能量: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored()) + TextFormatting.GRAY + " / " + formatFe(energy.getMaxEnergyStored()) + " FE");
+        tooltip.add(TextFormatting.GRAY + "状态: " + (cap.isEnabled() ? TextFormatting.GREEN + "已开启" : TextFormatting.RED + "已关闭"));
+        if (cap.isBound()) {
+            // 显示单行绑定信息：位置 + 维度
+            BlockPos pos = cap.getTerminalPos();
+            String dim = getDimensionName(cap.getTerminalDimension());
+            tooltip.add(TextFormatting.GRAY + "绑定: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY() + "," + pos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.AQUA + dim + TextFormatting.GRAY + ")");
+            // 绑定后显示过滤模式
+            tooltip.add(TextFormatting.GRAY + "过滤模式: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "白名单" : TextFormatting.AQUA + "黑名单"));
+        } else {
+            tooltip.add(TextFormatting.GRAY + "未绑定");
+        }
+        boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        if (!showDetail) {
+            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看功能介绍");
+        } else {
+            tooltip.add("");
+        tooltip.add(TextFormatting.GOLD + "功能介绍:");
+        tooltip.add(TextFormatting.GRAY + "  · 吸收8格内掉落物到戒指储存/转发");
+        tooltip.add(TextFormatting.GRAY + "  · 可选择黑/白名单过滤");
+        tooltip.add(TextFormatting.GRAY + "  · 每个物品消耗能源");
+            tooltip.add("");
+            tooltip.add(TextFormatting.GOLD + "使用方法:");
+        tooltip.add(TextFormatting.GRAY + "  1. 右键打开过滤设置界面");
+        tooltip.add(TextFormatting.GRAY + "  2. 用FE充能器充电 (最大10M FE)");
+        tooltip.add(TextFormatting.GRAY + "  3. 按K键开启/关闭吸收功能");
+        tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/饰品栏/手持均可生效");
+        }
+    }
+
+    @Override
+    public boolean showDurabilityBar(ItemStack stack) {
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap == null) return false;
+        int stored = cap.getEnergyStorage().getEnergyStored();
+        int max = cap.getEnergyStorage().getMaxEnergyStored();
+        return max > 0 && stored < max;
+    }
+
+    @Override
+    public double getDurabilityForDisplay(ItemStack stack) {
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap == null) return 1.0;
+        int stored = cap.getEnergyStorage().getEnergyStored();
+        int max = cap.getEnergyStorage().getMaxEnergyStored();
+        if (max <= 0) return 0.0;
+        return 1.0 - ((double) stored / (double) max);
+    }
+
+    private static String formatFe(int fe) {
+        if (fe >= 1_000_000) return String.format("%.1fM", fe / 1_000_000.0);
+        if (fe >= 1_000) return String.format("%.1fK", fe / 1_000.0);
+        return String.valueOf(fe);
+    }
+
+    private static String getDimensionName(int dim) {
+        switch (dim) {
+            case 0: return "主世界";
+            case -1: return "下界";
+            case 1: return "末地";
+            default: return "维度 " + dim;
+        }
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public BaubleType getBaubleType(ItemStack itemstack) {
+        return BaubleType.RING;
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        // 蹲下右键由 onItemUse 处理绑定箱子
+        if (player.isSneaking()) {
+            return new ActionResult<>(EnumActionResult.PASS, stack);
+        }
+
+        // 只有手持戒指右键空气才打开GUI
+        if (world.isRemote) {
+            com.rsring.rsring.RsRingMod.proxy.openAbsorbRingGui(stack);
+        } else {
+            IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+            if (capability != null) {
+                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
+                String status = capability.isEnabled() ? "已开启" : "已关闭";
+                String bindInfo;
+                if (capability.isBound()) {
+                    BlockPos pos = capability.getTerminalPos();
+                    int dim = capability.getTerminalDimension();
+                    bindInfo = "绑定坐标：" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + "(" + dim + ")";
+                } else {
+                    bindInfo = "未绑定";
+                }
+                String msg = net.minecraft.util.text.TextFormatting.GREEN + bindInfo + "|" + mode + "|" + status;
+                player.sendMessage(new TextComponentString(msg));
+            }
+        }
+        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+    }
+    
+    @Override
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, 
+                                     EnumFacing facing, float hitX, float hitY, float hitZ) {
+        // 绑定逻辑已移至 CommonEventHandler.onPlayerInteract 中统一处理
+        // 此处不再执行绑定操作，以避免重复绑定和确保绑定限制条件的一致性
+        return EnumActionResult.PASS;
+    }
+    
+    /**
+     * Provides improved GUI access for absorb rings regardless of their inventory location.
+     * Implements Requirements 2.1, 2.2, 2.3, 2.4 for enhanced ring GUI access.
+     *
+     * This method allows accessing the absorb ring GUI from any valid inventory location:
+     * - When held in main hand or off hand
+     * - When equipped in Baubles ring slots
+     * - When stored in player inventory or hotbar
+     *
+     * @param player The player attempting to access the ring GUI
+     * @return true if GUI was successfully opened, false otherwise
+     */
+    public static boolean tryOpenAbsorbRingGui(EntityPlayer player) {
+        if (player == null) {
+            return false;
+        }
+        
+        // Use the RingDetectionSystem to find any absorb ring in player's inventory
+        com.rsring.service.RingDetectionSystem ringSystem = com.rsring.service.RingDetectionSystem.getInstance();
+        com.rsring.experience.RingDetectionResult result = ringSystem.scanForRings(player);
+        
+        if (!result.hasRings()) {
+            // No rings found - provide feedback
+            if (player.world.isRemote) {
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "未找到物品吸收戒指！请确保戒指在背包、快捷栏或饰品栏中。"));
+            }
+            return false;
+        }
+        
+        // Find the first absorb ring in the detection results
+        ItemStack absorbRing = findAbsorbRingInResults(result);
+
+        if (absorbRing.isEmpty()) {
+            // No absorb rings found (might have other ring types)
+            if (player.world.isRemote) {
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "未找到物品吸收戒指！找到了其他类型的戒指，但需要物品吸收戒指才能打开黑白名单界面。"));
+            }
+            return false;
+        }
+
+        // Open the blacklist/whitelist GUI for the found absorb ring
+        if (player.world.isRemote) {
+            // 使用proxy打开黑白名单GUI
+            com.rsring.rsring.RsRingMod.proxy.openAbsorbRingGui(absorbRing);
+
+            // Provide feedback about successful access
+            com.rsring.experience.RingDetectionResult.InventoryLocation location = findRingLocation(result, absorbRing);
+            String locationName = location != null ? location.getDisplayName() : "未知位置";
+            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "已打开物品吸收戒指黑白名单界面！位置：" + locationName));
+        } else {
+            // Server-side feedback
+            IRsRingCapability capability = absorbRing.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+            if (capability != null) {
+                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
+                String msg = "物品吸收戒指黑白名单已激活 | 当前模式: " + mode + " | 能量: " +
+                           capability.getEnergyStorage().getEnergyStored() + "/" +
+                           capability.getEnergyStorage().getMaxEnergyStored() + " FE";
+                player.sendMessage(new TextComponentString(msg));
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Finds the first absorb ring in the detection results.
+     *
+     * @param result The ring detection result
+     * @return The first absorb ring found, or ItemStack.EMPTY if none found
+     */
+    private static ItemStack findAbsorbRingInResults(com.rsring.experience.RingDetectionResult result) {
+        for (ItemStack ring : result.getFoundRings()) {
+            if (!ring.isEmpty() && ring.getItem() instanceof ItemAbsorbRing) {
+                return ring;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+    
+    /**
+     * Finds the location of a specific ring in the detection results.
+     * 
+     * @param result The ring detection result
+     * @param targetRing The ring to find the location for
+     * @return The location of the ring, or null if not found
+     */
+    private static com.rsring.experience.RingDetectionResult.InventoryLocation findRingLocation(
+            com.rsring.experience.RingDetectionResult result, ItemStack targetRing) {
+        
+        // Check each location for the target ring
+        for (com.rsring.experience.RingDetectionResult.InventoryLocation location : 
+             com.rsring.experience.RingDetectionResult.InventoryLocation.values()) {
+            
+            for (ItemStack ring : result.getRingsFromLocation(location)) {
+                if (ring == targetRing) {
+                    return location;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Alternative GUI access method that can be triggered by key bindings or other events.
+     * Implements Requirements 2.1, 2.2, 2.3 for multiple access methods.
+     *
+     * This method provides an alternative way to access the absorb ring GUI without
+     * requiring the player to hold the ring and right-click air.
+     *
+     * @param player The player attempting to access the ring GUI
+     * @return true if GUI was successfully opened, false otherwise
+     */
+    public static boolean openAbsorbRingGuiFromAnyLocation(EntityPlayer player) {
+        return tryOpenAbsorbRingGui(player);
+    }
+
+    /**
+     * Checks if the player has any accessible absorb rings in their inventory.
+     * Implements Requirement 2.4 for location-independent ring access.
+     *
+     * @param player The player to check
+     * @return true if the player has accessible absorb rings, false otherwise
+     */
+    public static boolean hasAccessibleAbsorbRing(EntityPlayer player) {
+        if (player == null) {
+            return false;
+        }
+
+        // Use the RingDetectionSystem to check for absorb rings
+        com.rsring.service.RingDetectionSystem ringSystem = com.rsring.service.RingDetectionSystem.getInstance();
+        com.rsring.experience.RingDetectionResult result = ringSystem.scanForRings(player);
+
+        if (!result.hasRings()) {
+            return false;
+        }
+
+        // Check if any of the found rings are absorb rings
+        for (ItemStack ring : result.getFoundRings()) {
+            if (!ring.isEmpty() && ring.getItem() instanceof ItemAbsorbRing) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void onWornTick(ItemStack itemstack, EntityLivingBase player) {
+        if (player.world.isRemote || !(player instanceof EntityPlayer)) return;
+
+        EntityPlayer entityPlayer = (EntityPlayer) player;
+        IRsRingCapability capability = itemstack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (capability != null && capability.isBound()) {
+            com.rsring.capability.RsRingCapability.syncCapabilityToStack(itemstack, capability);
+        }
+
+        if (capability == null || !capability.isEnabled() || !capability.isBound()) return;
+        IEnergyStorage energyStorage = capability.getEnergyStorage();
+        if (energyStorage.getEnergyStored() < 1) return;
+
+        if (entityPlayer.ticksExisted % 5 == 0) {
+            absorbItemsToChest(entityPlayer, capability);
+        }
+    }
+
+    public ICapabilityProvider initCapabilities(ItemStack stack, net.minecraft.nbt.NBTTagCompound nbt) {
+        RsRingCapability.RsRingCapabilityProvider provider = new RsRingCapability.RsRingCapabilityProvider();
+        net.minecraft.nbt.NBTTagCompound data = nbt;
+        if ((data == null || data.getKeySet().isEmpty()) && stack.getTagCompound() != null) {
+            if (stack.getTagCompound().hasKey("RsRingData")) {
+                data = stack.getTagCompound().getCompoundTag("RsRingData");
+            } else if (stack.getTagCompound().hasKey("ForgeCaps")) {
+                net.minecraft.nbt.NBTTagCompound caps = stack.getTagCompound().getCompoundTag("ForgeCaps");
+                // 检查旧的命名以保持向后兼容性
+                if (caps.hasKey("rsring:chestring")) data = caps.getCompoundTag("rsring:chestring");
+                else if (caps.hasKey("rsring:rsring")) data = caps.getCompoundTag("rsring:rsring");
+            }
+        }
+        provider.initFromNBT(data);
+        return provider;
+    }
+
+    @Override
+    public net.minecraft.nbt.NBTTagCompound getNBTShareTag(ItemStack stack) {
+        net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound() != null ? stack.getTagCompound().copy() : new net.minecraft.nbt.NBTTagCompound();
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap != null && RsRingCapability.RS_RING_CAPABILITY != null) {
+            net.minecraft.nbt.NBTBase capNbt = RsRingCapability.RS_RING_CAPABILITY.getStorage().writeNBT(RsRingCapability.RS_RING_CAPABILITY, cap, null);
+            if (capNbt instanceof net.minecraft.nbt.NBTTagCompound) {
+                tag.setTag("RsRingData", (net.minecraft.nbt.NBTTagCompound) capNbt);
+            }
+        }
+        return tag;
+    }
+
+    @Override
+    public void readNBTShareTag(ItemStack stack, net.minecraft.nbt.NBTTagCompound nbt) {
+        stack.setTagCompound(nbt);
+        if (nbt != null && nbt.hasKey("RsRingData") && RsRingCapability.RS_RING_CAPABILITY != null) {
+            net.minecraft.nbt.NBTTagCompound data = nbt.getCompoundTag("RsRingData");
+            IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+            if (cap != null) {
+                RsRingCapability.RS_RING_CAPABILITY.getStorage().readNBT(RsRingCapability.RS_RING_CAPABILITY, cap, null, data);
+            }
+        }
+    }
+
+    /**
+     * 吸收物品到绑定的箱子
+     * 修复Bug 6: 支持跨维度吸取功能
+     */
+    /** 吸收玩家周围物品并传送到已绑定的箱子（支持跨维度） */
+    private void absorbItemsToChest(EntityPlayer player, IRsRingCapability capability) {
+        if (capability == null || !capability.isBound()) return;
+
+        // 获取目标箱子世界与位置（支持跨维度）
+        net.minecraft.world.World targetWorld = capability.getTerminalWorld();
+        BlockPos targetPos = capability.getTerminalPos();
+        if (targetWorld == null) {
+            int dim = capability.getTerminalDimension();
+            targetWorld = DimensionManager.getWorld(dim);
+        }
+        if (targetWorld == null || targetPos == null) return;
+
+        // 确保区块已加载
+        if (!targetWorld.isBlockLoaded(targetPos)) {
+            targetWorld.getChunk(targetPos);
+            if (!targetWorld.isBlockLoaded(targetPos)) return;
+        }
+
+        List<net.minecraft.entity.item.EntityItem> items = player.world.getEntitiesWithinAABB(
+            net.minecraft.entity.item.EntityItem.class,
+            player.getEntityBoundingBox().grow(8.0)
+        );
+
+        IEnergyStorage energyStorage = capability.getEnergyStorage();
+        for (net.minecraft.entity.item.EntityItem item : items) {
+            if (item.isDead) continue;
+            ItemStack itemStack = item.getItem();
+            if (itemStack.isEmpty() || energyStorage.getEnergyStored() < 1) continue;
+
+            // 黑白名单过滤
+            if (shouldFilterItem(capability, itemStack)) continue;
+
+            // 尝试将整个堆或部分插入目标箱子
+            int inserted = insertIntoChest(targetWorld, targetPos, itemStack);
+            if (inserted > 0) {
+                int energyNeeded = Math.max(1, inserted); // 每个物品至少1 FE
+                int energyAvailable = energyStorage.getEnergyStored();
+                int energyToUse = Math.min(energyAvailable, energyNeeded);
+                energyStorage.extractEnergy(energyToUse, false);
+                if (itemStack.isEmpty()) {
+                    item.setDead();
+                } else {
+                    item.setItem(itemStack);
+                }
+            }
+        }
+    }
+
+    /**
+     * 检查物品是否应该被过滤（根据黑白名单）
+     * 修复Bug 6: 黑白名单功能修复
+     */
+    private boolean shouldFilterItem(IRsRingCapability capability, ItemStack itemStack) {
+        boolean isWhitelistMode = capability.isWhitelistMode();
+        java.util.List<String> filterItems = capability.getBlacklistItems();
+
+        String itemName = itemStack.getItem().getRegistryName().toString();
+        boolean isInList = false;
+
+        // 检查是否在过滤列表中（前9个槽位是过滤槽）
+        for (int i = 0; i < Math.min(9, filterItems.size()); i++) {
+            String filterName = capability.getFilterSlot(i);
+            if (filterName != null && !filterName.isEmpty() && filterName.equals(itemName)) {
+                isInList = true;
+                break;
+            }
+        }
+
+        // 白名单模式：只接受列表中的物品
+        if (isWhitelistMode) {
+            return !isInList; // 如果不在列表中，则过滤掉
+        } else {
+            // 黑名单模式：拒绝列表中的物品
+            return isInList; // 如果在列表中，则过滤掉
+        }
+    }
+
+    private int insertIntoChest(World world, BlockPos pos, ItemStack stack) {
+        if (world == null || pos == null || stack.isEmpty()) return 0;
+        TileEntity te = world.getTileEntity(pos);
+        if (te == null) return 0;
+
+        for (EnumFacing f : EnumFacing.VALUES) {
+            int inserted = tryInsert(te, f, stack);
+            if (inserted > 0) return inserted;
+        }
+        return tryInsert(te, null, stack);
+    }
+
+    private int tryInsert(TileEntity te, EnumFacing facing, ItemStack stack) {
+        if (!te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) return 0;
+        IItemHandler h = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+        if (h == null || h.getSlots() == 0) return 0;
+        int before = stack.getCount();
+        ItemStack remainder = ItemHandlerHelper.insertItemStacked(h, stack.copy(), false);
+        int inserted = before - remainder.getCount();
+        if (inserted > 0) stack.setCount(remainder.getCount());
+        return inserted;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void onPlayerBaubleRender(ItemStack stack, EntityPlayer player, float partialTicks) {
+        GlStateManager.pushMatrix();
+        Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.NONE);
+        GlStateManager.popMatrix();
+    }
+}

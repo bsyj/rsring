@@ -1,0 +1,143 @@
+# Configuration file
+# 由模组首次运行后自动生成，路径: .minecraft/config/rsring.cfg
+
+########################################################################################################
+# rsring.ring - 物品吸收戒指设置 / Absorb Ring Settings
+########################################################################################################
+
+    rsring.ring {
+        # 默认黑名单物品 [default: ]
+        S:defaultBlacklistItems <>
+
+        # 默认白名单物品 [default: ]
+        S:defaultWhitelistItems <>
+
+        # 默认使用黑名单模式 [default: true]
+        B:useBlacklistModeByDefault=true
+
+        # 吸收范围 [range: 1 ~ 32, default: 8]
+        I:absorptionRange=8
+
+        # 每个物品能量消耗 [range: 0 ~ 1000, default: 1]
+        I:energyCostPerItem=1
+
+        # 最大能量容量 [range: 1000 ~ 100000000, default: 10000000]
+        I:maxEnergyCapacity=10000000
+
+        # 允许自定义过滤 [default: true]
+        B:allowCustomFilters=true
+
+        # 吸收间隔 [range: 1 ~ 20, default: 5]
+        I:absorptionInterval=5
+
+        # 初始能量 [range: 0 ~ 10000000, default: 0]
+        I:initialEnergy=0
+
+        # 能量消耗倍率 [default: 1.0]
+        D:energyCostMultiplier=1.0
+    }
+
+########################################################################################################
+# rsring.tank - 经验储罐设置 / Experience Tank Settings
+########################################################################################################
+
+    rsring.tank {
+        # 启用 [default: true]
+        B:enabled=true
+
+        # 经验抽取速率 [range: 1 ~ 1000, default: 20]
+        I:xpExtractionRate=20
+
+        # 经验抽取范围 [default: 5.0]
+        D:xpExtractionRange=5.0
+
+        # 抽取经验瓶 [default: true]
+        B:extractXpBottles=true
+
+        # 启用修补 [default: true]
+        B:mendingOn=true
+
+        # 修补玩家物品 [default: true]
+        B:mendPlayerItems=true
+
+        # 启用溢出经验瓶 [default: true]
+        B:enableOverflowBottles=true
+
+        # 启用自动泵送 [default: true]
+        B:enableAutoPumping=true
+
+        # 泵送间隔 [range: 1 ~ 100, default: 5]
+        I:pumpingInterval=5
+
+        # 修补间隔 [range: 1 ~ 100, default: 20]
+        I:mendingInterval=20
+
+        # 抽取间隔 [range: 1 ~ 100, default: 4]
+        I:extractionInterval=4
+
+        # 默认泵送模式 [range: 0 ~ 2, default: 0]
+        I:defaultPumpMode=0
+
+        # 默认保留等级 [range: 0 ~ 100, default: 1]
+        I:defaultRetainLevel=1
+
+        # 默认修补模式 [default: true]
+        B:defaultMendingMode=true
+
+        # 最大储罐等级限制 [range: 5 ~ 100, default: 20]
+        I:maxTankLevelLimit=20
+
+        # 启用特殊储罐 [default: true]
+        B:enableSpecialTanks=true
+
+        # 经验瓶转换效率 [default: 1.0]
+        D:xpToBottleEfficiency=1.0
+
+        # 经验修补效率 [default: 1.0]
+        D:xpMendingEfficiency=1.0
+    }
+
+########################################################################################################
+# rsring.controller - 经验泵控制器设置 / Pump Controller Settings
+########################################################################################################
+
+    rsring.controller {
+        # 最大管理储罐数量 [range: 1 ~ 32, default: 32]
+        I:maxManagedTanks=32
+    }
+
+########################################################################################################
+# rsring.general - 通用设置 / General Settings
+########################################################################################################
+
+    rsring.general {
+        # 启用Baubles集成 [default: true] [requires Minecraft restart]
+        B:enableBaublesIntegration=true
+
+        # 启用声音效果 [default: true]
+        B:enableSoundEffects=true
+
+        # 启用粒子效果 [default: true]
+        B:enableParticleEffects=true
+
+        # 调试模式 [default: false]
+        B:debugMode=false
+
+        # 自动保存间隔 [range: 60 ~ 3600, default: 300]
+        I:autoSaveInterval=300
+    }
+
+########################################################################################################
+# rsring.network - 网络设置 / Network Settings
+########################################################################################################
+
+    rsring.network {
+        # 数据包发送频率 [range: 1 ~ 30, default: 10]
+        I:packetSendFrequency=10
+
+        # 数据包大小限制 [range: 1024 ~ 16384, default: 4096]
+        I:packetSizeLimit=4096
+
+        # 启用网络压缩 [default: true]
+        B:enableNetworkCompression=true
+    }

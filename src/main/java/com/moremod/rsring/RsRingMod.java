@@ -71,13 +71,7 @@ public class RsRingMod
     {
         logger = event.getModLog();
 
-        // 加载配置
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        config.load();
-
-        // 配置已经在 RsRingConfig 类中设置了默认值，不需要手动添加
-
-        if (config.hasChanged()) config.save();
+        // 配置已经在 RsRingConfig 类中通过 @Config 注解设置，不需要手动创建 Configuration 对象
 
         // Register absorb ring (replaces old chest ring)
         absorbRing = new ItemAbsorbRing();

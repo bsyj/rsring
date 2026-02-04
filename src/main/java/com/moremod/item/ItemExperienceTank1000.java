@@ -116,10 +116,14 @@ public class ItemExperienceTank1000 extends ItemExperiencePump implements IBaubl
         if (data == null) {
             data = new net.minecraft.nbt.NBTTagCompound();
             data.setInteger("capacityLevels", 22); // 对应原系统的22级
+            data.setInteger("fixedMaxXp", DEFAULT_CAPACITY); // 1000级储罐固定容量
             data.setInteger("xp", 0);
             data.setInteger("mode", 0);
             data.setInteger("retainLevel", 1);
             data.setBoolean("mending", false);
+        } else if (!data.hasKey("fixedMaxXp")) {
+            // 迁移：旧版特殊储罐无 fixedMaxXp，补充以便 capability.getMaxXp() 正确
+            data.setInteger("fixedMaxXp", DEFAULT_CAPACITY);
         }
 
         provider.initFromNBT(data);

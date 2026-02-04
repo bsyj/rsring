@@ -473,7 +473,7 @@ public class GuiExperiencePumpController extends GuiScreen {
                 syncControllerToTanks();
                 // 发送网络包（如果有储罐）
                 if (!tankStack.isEmpty()) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_MENDING, tankStack));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_MENDING));
                 }
                 break;
             case 1: // 模式切换
@@ -484,7 +484,7 @@ public class GuiExperiencePumpController extends GuiScreen {
                 syncControllerToTanks();
                 // 发送网络包（如果有储罐）
                 if (!tankStack.isEmpty()) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_MODE, tankStack));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_MODE));
                 }
                 break;
             case 2: // 保留等级（点击+1）
@@ -495,29 +495,29 @@ public class GuiExperiencePumpController extends GuiScreen {
                 syncControllerToTanks();
                 // 发送网络包（如果有储罐）
                 if (!tankStack.isEmpty()) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_UP, tankStack, 1));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_UP, 1));
                 }
                 break;
             case 3: // 全部取出（需要储罐）
                 if (!tankStack.isEmpty()) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_TAKE_ALL, tankStack));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_TAKE_ALL));
                 }
                 break;
             case 4: // 取出N级（需要储罐）
                 if (!tankStack.isEmpty()) {
                     // 发送取出N级的请求，value参数传递要取出的等级数
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_TAKE_ONE, tankStack, extractLevels));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_TAKE_ONE, extractLevels));
                 }
                 break;
             case 5: // 存入N级（需要储罐）
                 if (!tankStack.isEmpty()) {
                     // 发送存入N级的请求，value参数传递要存入的等级数
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_STORE_ONE, tankStack, storeLevels));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_STORE_ONE, storeLevels));
                 }
                 break;
             case 6: // 全部存入（需要储罐）
                 if (!tankStack.isEmpty()) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_STORE_ALL, tankStack));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_STORE_ALL));
                 }
                 break;
         }
@@ -549,9 +549,9 @@ public class GuiExperiencePumpController extends GuiScreen {
             syncControllerToTanks();
             if (!tankStack.isEmpty()) {
                 if (dw > 0) {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_UP, tankStack, 1));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_UP, 1));
                 } else {
-                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_DOWN, tankStack, 1));
+                    RsRingMod.network.sendToServer(new PacketPumpAction(hand, PacketPumpAction.ACTION_RETAIN_DOWN, 1));
                 }
             }
             return;

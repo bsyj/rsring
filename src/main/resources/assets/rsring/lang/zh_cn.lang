@@ -15,42 +15,18 @@ key.categories.rsring=戒指
 #messages
 message.rsring.ring_not_found=未找到戒指
 
-#config gui title
-rsring.config.title=物品吸收戒指 配置
-
-#config category
-rsring.configgui.ctgy.absorb ring settings=物品吸收戒指设置
-
-#config options - 直接使用配置文件中的名称
-rsring.config.absorption range=吸收范围
-rsring.config.absorption range.tooltip=物品吸收范围（格）
-
-rsring.config.allow custom filters=允许自定义过滤
-rsring.config.allow custom filters.tooltip=是否允许玩家自定义过滤列表
-
-rsring.config.default blacklist items=默认黑名单物品
-rsring.config.default blacklist items.tooltip=默认黑名单物品列表（使用物品注册名）\n格式：modid:item_name\n例如：minecraft:dirt
-
-rsring.config.default whitelist items=默认白名单物品
-rsring.config.default whitelist items.tooltip=默认白名单物品列表（使用物品注册名）\n格式：modid:item_name\n例如：minecraft:diamond
-
-rsring.config.energy cost per item=每个物品能量消耗
-rsring.config.energy cost per item.tooltip=吸收每个物品消耗的能量（FE）
-
-rsring.config.max energy capacity=最大能量容量
-rsring.config.max energy capacity.tooltip=戒指的最大能量容量（FE）
-
-rsring.config.use blacklist mode by default=默认使用黑名单模式
-rsring.config.use blacklist mode by default.tooltip=是否默认启用黑名单模式（true=黑名单，false=白名单）
-
-# 新配置项
-rsring.config.absorption interval=吸收间隔
-rsring.config.absorption interval.tooltip=控制每多少tick吸收一次物品（1秒=20tick）
-rsring.config.initial energy=初始能量
-rsring.config.initial energy.tooltip=新戒指的初始能量（FE）
-
-rsring.config.energy cost multiplier=能量消耗倍率
-rsring.config.energy cost multiplier.tooltip=物品能量消耗的倍率
+# Configuration
+config.rsring.absorbRing=物品吸收戒指设置
+config.rsring.absorbRing.defaultBlacklistItems=默认黑名单物品
+config.rsring.absorbRing.defaultWhitelistItems=默认白名单物品
+config.rsring.absorbRing.useBlacklistModeByDefault=默认使用黑名单模式
+config.rsring.absorbRing.absorptionRange=吸收范围
+config.rsring.absorbRing.energyCostPerItem=每个物品能量消耗
+config.rsring.absorbRing.maxEnergyCapacity=最大能量容量
+config.rsring.absorbRing.allowCustomFilters=允许自定义过滤
+config.rsring.absorbRing.absorptionInterval=吸收间隔
+config.rsring.absorbRing.initialEnergy=初始能量
+config.rsring.absorbRing.energyCostMultiplier=能量消耗倍率
 
 # 经验储罐配置
 config.rsring.experienceTank=经验储罐设置

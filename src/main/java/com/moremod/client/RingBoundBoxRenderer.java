@@ -37,20 +37,12 @@ public class RingBoundBoxRenderer {
         
         if (player == null) return;
 
-        // 只有手持戒指时才渲染绑定方块（主手或副手）
-        ItemStack heldStack = ItemStack.EMPTY;
+        // 只有主手手持戒指时才渲染绑定方块（参考 XRay 的渲染时机）
         ItemStack mainHand = player.getHeldItemMainhand();
-        ItemStack offHand = player.getHeldItemOffhand();
-        
-        if (!mainHand.isEmpty() && mainHand.getItem() instanceof ItemAbsorbRing) {
-            heldStack = mainHand;
-        } else if (!offHand.isEmpty() && offHand.getItem() instanceof ItemAbsorbRing) {
-            heldStack = offHand;
+        if (mainHand.isEmpty() || !(mainHand.getItem() instanceof ItemAbsorbRing)) {
+            return;
         }
-        
-        if (heldStack.isEmpty()) {
-            return; // 没有手持戒指
-        }
+        ItemStack heldStack = mainHand;
 
         // 获取戒指的capability
         IRsRingCapability cap = heldStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);

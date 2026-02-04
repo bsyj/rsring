@@ -70,8 +70,9 @@ public class RsRingMod
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
+        proxy.preInit();
 
-        // 初始化配置系统
+        // 初始化配置系统（event.getSuggestedConfigurationFile() 会生成 config/rsring.cfg）
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         ConfigRegistry.init(config);
         

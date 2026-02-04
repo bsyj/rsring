@@ -25,6 +25,7 @@ public class GeneralConfig implements IHasConfig {
             true,
             "config.rsring.general.enableBaublesIntegration",
             "config.rsring.general.enableBaublesIntegration");
+        config.getCategory(RsRingMod.MODID + ".general").get("enableBaublesIntegration").setRequiresMcRestart(true);
 
         general.enableSoundEffects = config.getBoolean("enableSoundEffects",
             RsRingMod.MODID + ".general",

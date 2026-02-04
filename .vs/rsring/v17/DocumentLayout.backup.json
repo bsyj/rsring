@@ -3,16 +3,128 @@
   "WorkspaceRootPath": "E:\\mod\\rsring\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\TankScanResult.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\TankScanResult.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\chestring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\recipes\\chestring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\rsring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\recipes\\rsring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\CommonProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\proxy\\CommonProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png||{58961B49-13E0-48C0-9258-13CBC4D40279}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png||{58961B49-13E0-48C0-9258-13CBC4D40279}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\rsring\\RsRingMod.java||{3B902123-F8A7-4915-9F01-361F908088D0}",
@@ -34,11 +146,353 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "InventoryIntegrationLayer.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T10:30:16.042Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ExperienceTankManager.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T10:30:13.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "RingDetectionResult.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:40.384Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TankScanResult.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:39.192Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ExperienceTankData.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T10:30:12.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PacketSyncRingFilter.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAAAFcAAAAYAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:15:49.46Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "InventoryChangeEvent.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java",
+              "ViewState": "AgIAADYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:33.136Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "GuiExperiencePumpController.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java",
+              "ViewState": "AgIAACUBAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T08:47:12.718Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PacketPumpAction.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java",
+              "ViewState": "AgIAALUAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T08:48:38.05Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ExperiencePumpController.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java",
+              "ViewState": "AgIAANcAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:14:45.916Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ItemAbsorbRing.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java",
+              "ViewState": "AgIAAOkBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:25:44.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CraftingUpgradeHandler.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:47.155Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "CommonEventHandler.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java",
+              "ViewState": "AgIAAHoBAAAAAAAAAAAWwI4BAABfAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:43.037Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "IRsRingCapability.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAnwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:23:08.417Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "GuiRingFilter.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAABMAAAAsAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:03:00.312Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "RsRingCapability.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java",
+              "ViewState": "AgIAAIwAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:08:45.345Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "ClientProxy.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
+              "ViewState": "AgIAABEAAAAAAAAAAAAnwAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T08:35:51.949Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "rsring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T09:10:05.081Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "item_absorb_ring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T09:07:36.691Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "chestring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\chestring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\recipes\\chestring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\chestring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\chestring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T09:08:44.614Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "item_absorb_ring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T09:09:53.241Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "rsring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\rsring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\recipes\\rsring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\recipes\\rsring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\rsring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T09:08:36.638Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "ClientInputEvents.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:50.209Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "chestring.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T08:46:47.89Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "CraftingExperiencePumpController.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:46.122Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "InventoryChangeHandler.java",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java",
+              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java",
+              "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-02-02T09:02:28.611Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
               "Title": "CommonProxy.java",
               "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\CommonProxy.java",
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\proxy\\CommonProxy.java",
@@ -51,7 +505,45 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 27,
+              "Title": "experience_pump_controller.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T08:46:52.069Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "experience_pump_25.json",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-02-02T08:46:55.411Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "experience_pump_0.png",
+              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
+              "RelativeDocumentMoniker": "src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
+              "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
+              "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001533|",
+              "WhenOpened": "2026-02-02T08:46:41.357Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
               "Title": "ItemChestRing.java",
               "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemChestRing.java",
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\item\\ItemChestRing.java",
@@ -59,12 +551,11 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\item\\ItemChestRing.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:40:11.111Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:40:11.111Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 30,
               "Title": "ItemExperiencePump.java",
               "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java",
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java",
@@ -77,20 +568,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ClientProxy.java",
-              "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
-              "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
-              "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
-              "RelativeToolTip": "src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
-              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:35:51.949Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 31,
               "Title": "RsRingMod.java",
               "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\rsring\\RsRingMod.java",
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\rsring\\RsRingMod.java",
@@ -98,12 +576,11 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\rsring\\RsRingMod.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:35:48.941Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:35:48.941Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 32,
               "Title": "RingDetectionSystem.java",
               "DocumentMoniker": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\service\\RingDetectionSystem.java",
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\service\\RingDetectionSystem.java",
@@ -111,8 +588,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\service\\RingDetectionSystem.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:35:31.884Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:35:31.884Z"
             }
           ]
         }

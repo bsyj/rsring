@@ -1,16 +1,13 @@
-package com.moremod.test;
+package com.rsring.test;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 /**
- * 自定义容量储罐示例代码
- * 方案B：通过NBT标签直接存储容量，实现与玩家等级对应的储罐
- */
+ * 自定义容量储罐示例代�? * 方案B：通过NBT标签直接存储容量，实现与玩家等级对应的储�? */
 public class CustomCapacityTanks {
     
-    // 玩家等级对应的总经验值（基于Minecraft官方公式）
-    public static final long XP_FOR_LEVEL_100 = 873320;
+    // 玩家等级对应的总经验值（基于Minecraft官方公式�?    public static final long XP_FOR_LEVEL_100 = 873320;
     public static final long XP_FOR_LEVEL_500 = 167754120;
     public static final long XP_FOR_LEVEL_1000 = 1418780120;
     public static final long XP_FOR_LEVEL_2000 = 11670582120;
@@ -22,7 +19,7 @@ public class CustomCapacityTanks {
         ItemStack tank = new ItemStack(/* 储罐物品 */);
         setCustomCapacity(tank, XP_FOR_LEVEL_100);
         setTankLevel(tank, 11); // 对应原系统的储罐等级
-        setTankName(tank, "经验储罐 - 100级");
+        setTankName(tank, "经验储罐 - 100�?);
         return tank;
     }
     
@@ -33,7 +30,7 @@ public class CustomCapacityTanks {
         ItemStack tank = new ItemStack(/* 储罐物品 */);
         setCustomCapacity(tank, XP_FOR_LEVEL_500);
         setTankLevel(tank, 19); // 对应原系统的储罐等级
-        setTankName(tank, "经验储罐 - 500级");
+        setTankName(tank, "经验储罐 - 500�?);
         return tank;
     }
     
@@ -44,7 +41,7 @@ public class CustomCapacityTanks {
         ItemStack tank = new ItemStack(/* 储罐物品 */);
         setCustomCapacity(tank, XP_FOR_LEVEL_1000);
         setTankLevel(tank, 22); // 对应原系统的储罐等级
-        setTankName(tank, "经验储罐 - 1000级");
+        setTankName(tank, "经验储罐 - 1000�?);
         return tank;
     }
     
@@ -55,7 +52,7 @@ public class CustomCapacityTanks {
         ItemStack tank = new ItemStack(/* 储罐物品 */);
         setCustomCapacity(tank, XP_FOR_LEVEL_2000);
         setTankLevel(tank, 25); // 对应原系统的储罐等级
-        setTankName(tank, "经验储罐 - 2000级");
+        setTankName(tank, "经验储罐 - 2000�?);
         return tank;
     }
     
@@ -92,8 +89,7 @@ public class CustomCapacityTanks {
     }
     
     /**
-     * 设置储罐是否为无限容量
-     */
+     * 设置储罐是否为无限容�?     */
     public static void setInfinite(ItemStack stack, boolean isInfinite) {
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
@@ -128,8 +124,7 @@ public class CustomCapacityTanks {
     // ==================== 核心容量计算方法 ====================
     
     /**
-     * 获取储罐的实际容量
-     * 优先使用自定义容量，否则使用默认计算
+     * 获取储罐的实际容�?     * 优先使用自定义容量，否则使用默认计算
      */
     public static long getTankCapacity(ItemStack stack) {
         // 检查是否为无限储罐
@@ -137,19 +132,16 @@ public class CustomCapacityTanks {
             return Long.MAX_VALUE;
         }
         
-        // 检查是否有自定义容量
-        long customCapacity = getCustomCapacity(stack);
+        // 检查是否有自定义容�?        long customCapacity = getCustomCapacity(stack);
         if (customCapacity > 0) {
             return customCapacity;
         }
         
-        // 使用默认容量计算（原系统）
-        return calculateDefaultCapacity(stack);
+        // 使用默认容量计算（原系统�?        return calculateDefaultCapacity(stack);
     }
     
     /**
-     * 计算默认容量（原系统）
-     */
+     * 计算默认容量（原系统�?     */
     private static long calculateDefaultCapacity(ItemStack stack) {
         int level = 1;
         if (stack.hasTagCompound() && stack.getTagCompound().hasKey("TankLevel")) {
@@ -163,7 +155,7 @@ public class CustomCapacityTanks {
         return capacity;
     }
     
-    // ==================== 合成表示例 ====================
+    // ==================== 合成表示�?====================
     /*
      * 合成表配置示例（可在Mod类中注册）：
      * 
@@ -207,8 +199,7 @@ public class CustomCapacityTanks {
      *     'T', createLevel1000Tank()
      * );
      * 
-     * // 无限储罐合成表（示例）
-     * GameRegistry.addRecipe(
+     * // 无限储罐合成表（示例�?     * GameRegistry.addRecipe(
      *     createInfiniteTank(),
      *     "OOO",
      *     "OTO",
@@ -220,18 +211,12 @@ public class CustomCapacityTanks {
     
     // ==================== 材质配置示例 ====================
     /*
-     * 材质文件结构示例：
-     * 
-     * assets/moremod/textures/items/
+     * 材质文件结构示例�?     * 
+     * assets/rsring/textures/items/
      * ├── tank_basic.png          # 基础储罐
-     * ├── tank_level100.png       # 100级储罐（绿色装饰）
-     * ├── tank_level500.png       # 500级储罐（蓝色装饰）
-     * ├── tank_level1000.png      # 1000级储罐（紫色装饰）
-     * ├── tank_level2000.png      # 2000级储罐（金色装饰）
-     * └── tank_infinite.png       # 无限储罐（彩虹装饰）
+     * ├── tank_level100.png       # 100级储罐（绿色装饰�?     * ├── tank_level500.png       # 500级储罐（蓝色装饰�?     * ├── tank_level1000.png      # 1000级储罐（紫色装饰�?     * ├── tank_level2000.png      # 2000级储罐（金色装饰�?     * └── tank_infinite.png       # 无限储罐（彩虹装饰）
      * 
-     * 模型文件配置示例：
-     * assets/moremod/models/item/
+     * 模型文件配置示例�?     * assets/rsring/models/item/
      * ├── tank_basic.json
      * ├── tank_level100.json
      * ├── tank_level500.json
@@ -242,26 +227,17 @@ public class CustomCapacityTanks {
     
     // ==================== 物品介绍配置 ====================
     /*
-     * 物品介绍示例（可在语言文件中配置）：
-     * 
-     * item.moremod:tank_level100.name=经验储罐 - 100级
-     * item.moremod:tank_level100.desc=存储容量：873,320 XP
-     * item.moremod:tank_level100.desc2=可存储最多100级经验
-     * 
-     * item.moremod:tank_level500.name=经验储罐 - 500级
-     * item.moremod:tank_level500.desc=存储容量：167,754,120 XP
-     * item.moremod:tank_level500.desc2=可存储最多500级经验
-     * 
-     * item.moremod:tank_level1000.name=经验储罐 - 1000级
-     * item.moremod:tank_level1000.desc=存储容量：1,418,780,120 XP
-     * item.moremod:tank_level1000.desc2=可存储最多1000级经验
-     * 
-     * item.moremod:tank_level2000.name=经验储罐 - 2000级
-     * item.moremod:tank_level2000.desc=存储容量：11,670,582,120 XP
-     * item.moremod:tank_level2000.desc2=可存储最多2000级经验
-     * 
-     * item.moremod:tank_infinite.name=经验储罐 - 无限
-     * item.moremod:tank_infinite.desc=存储容量：无限
-     * item.moremod:tank_infinite.desc2=可存储无限经验
-     */
+     * 物品介绍示例（可在语言文件中配置）�?     * 
+     * item.rsring:tank_level100.name=经验储罐 - 100�?     * item.rsring:tank_level100.desc=存储容量�?73,320 XP
+     * item.rsring:tank_level100.desc2=可存储最�?00级经�?     * 
+     * item.rsring:tank_level500.name=经验储罐 - 500�?     * item.rsring:tank_level500.desc=存储容量�?67,754,120 XP
+     * item.rsring:tank_level500.desc2=可存储最�?00级经�?     * 
+     * item.rsring:tank_level1000.name=经验储罐 - 1000�?     * item.rsring:tank_level1000.desc=存储容量�?,418,780,120 XP
+     * item.rsring:tank_level1000.desc2=可存储最�?000级经�?     * 
+     * item.rsring:tank_level2000.name=经验储罐 - 2000�?     * item.rsring:tank_level2000.desc=存储容量�?1,670,582,120 XP
+     * item.rsring:tank_level2000.desc2=可存储最�?000级经�?     * 
+     * item.rsring:tank_infinite.name=经验储罐 - 无限
+     * item.rsring:tank_infinite.desc=存储容量：无�?     * item.rsring:tank_infinite.desc2=可存储无限经�?     */
 }
+
+

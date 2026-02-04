@@ -146,8 +146,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 2,
@@ -158,8 +162,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryIntegrationLayer.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T10:30:16.042Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T10:30:16.042Z"
             },
             {
               "$type": "Document",
@@ -171,8 +174,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankManager.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T10:30:13.274Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T10:30:13.274Z"
             },
             {
               "$type": "Document",
@@ -184,8 +186,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\RingDetectionResult.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:40.384Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:40.384Z"
             },
             {
               "$type": "Document",
@@ -195,7 +196,7 @@
               "RelativeDocumentMoniker": "src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
               "ToolTip": "E:\\mod\\rsring\\src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\TankScanResult.java",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAfAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
               "WhenOpened": "2026-02-02T09:02:39.192Z",
               "EditorCaption": ""
@@ -210,8 +211,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperienceTankData.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T10:30:12.061Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T10:30:12.061Z"
             },
             {
               "$type": "Document",
@@ -223,8 +223,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\network\\PacketSyncRingFilter.java",
               "ViewState": "AgIAAD4AAAAAAAAAAAAAAFcAAAAYAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:15:49.46Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:15:49.46Z"
             },
             {
               "$type": "Document",
@@ -236,8 +235,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeEvent.java",
               "ViewState": "AgIAADYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:33.136Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:33.136Z"
             },
             {
               "$type": "Document",
@@ -249,8 +247,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\client\\GuiExperiencePumpController.java",
               "ViewState": "AgIAACUBAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:47:12.718Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:47:12.718Z"
             },
             {
               "$type": "Document",
@@ -262,8 +259,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\network\\PacketPumpAction.java",
               "ViewState": "AgIAALUAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:48:38.05Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:48:38.05Z"
             },
             {
               "$type": "Document",
@@ -275,8 +271,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\ExperiencePumpController.java",
               "ViewState": "AgIAANcAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:14:45.916Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:14:45.916Z"
             },
             {
               "$type": "Document",
@@ -288,8 +283,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\item\\ItemAbsorbRing.java",
               "ViewState": "AgIAAOkBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:25:44.134Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:25:44.134Z"
             },
             {
               "$type": "Document",
@@ -301,8 +295,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CraftingUpgradeHandler.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:47.155Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:47.155Z"
             },
             {
               "$type": "Document",
@@ -314,8 +307,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CommonEventHandler.java",
               "ViewState": "AgIAAHoBAAAAAAAAAAAWwI4BAABfAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:43.037Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:43.037Z"
             },
             {
               "$type": "Document",
@@ -327,8 +319,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\capability\\IRsRingCapability.java",
               "ViewState": "AgIAAA4AAAAAAAAAAAAnwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:23:08.417Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:23:08.417Z"
             },
             {
               "$type": "Document",
@@ -340,8 +331,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\client\\GuiRingFilter.java",
               "ViewState": "AgIAAAsAAAAAAAAAAAAAABMAAAAsAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:03:00.312Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:03:00.312Z"
             },
             {
               "$type": "Document",
@@ -353,8 +343,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\capability\\RsRingCapability.java",
               "ViewState": "AgIAAIwAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:08:45.345Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:08:45.345Z"
             },
             {
               "$type": "Document",
@@ -366,8 +355,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\proxy\\ClientProxy.java",
               "ViewState": "AgIAABEAAAAAAAAAAAAnwAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:35:51.949Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:35:51.949Z"
             },
             {
               "$type": "Document",
@@ -379,8 +367,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\rsring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T09:10:05.081Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:10:05.081Z"
             },
             {
               "$type": "Document",
@@ -392,8 +379,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\item_absorb_ring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T09:07:36.691Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:07:36.691Z"
             },
             {
               "$type": "Document",
@@ -405,8 +391,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\chestring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T09:08:44.614Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:08:44.614Z"
             },
             {
               "$type": "Document",
@@ -418,8 +403,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\item_absorb_ring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T09:09:53.241Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:09:53.241Z"
             },
             {
               "$type": "Document",
@@ -431,8 +415,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\recipes\\rsring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T09:08:36.638Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:08:36.638Z"
             },
             {
               "$type": "Document",
@@ -444,8 +427,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\ClientInputEvents.java",
               "ViewState": "AgIAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:50.209Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:50.209Z"
             },
             {
               "$type": "Document",
@@ -457,8 +439,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\chestring.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T08:46:47.89Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:46:47.89Z"
             },
             {
               "$type": "Document",
@@ -470,8 +451,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\event\\CraftingExperiencePumpController.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:46.122Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T09:02:46.122Z"
             },
             {
               "$type": "Document",
@@ -483,12 +463,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\experience\\InventoryChangeHandler.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T09:02:28.611Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "WhenOpened": "2026-02-02T09:02:28.611Z"
             },
             {
               "$type": "Document",
@@ -500,8 +475,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\proxy\\CommonProxy.java",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:40:11.153Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:40:11.153Z"
             },
             {
               "$type": "Document",
@@ -513,8 +487,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_controller.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T08:46:52.069Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:46:52.069Z"
             },
             {
               "$type": "Document",
@@ -526,8 +499,7 @@
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\models\\item\\experience_pump_25.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-02T08:46:55.411Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:46:55.411Z"
             },
             {
               "$type": "Document",
@@ -538,8 +510,7 @@
               "ToolTip": "E:\\mod\\rsring\\src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
               "RelativeToolTip": "src\\main\\resources\\assets\\rsring\\textures\\items\\experience_pump_0.png",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001533|",
-              "WhenOpened": "2026-02-02T08:46:41.357Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:46:41.357Z"
             },
             {
               "$type": "Document",
@@ -563,8 +534,7 @@
               "RelativeToolTip": "src\\main\\java\\com\\moremod\\item\\ItemExperiencePump.java",
               "ViewState": "AgIAAM8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKISURBVEhLtZVBaBNBFIb/N5ltNjRC0yoVWmF7EUoRSq8FwaNoj4UcBS89ePGgiIem1YqgIoRS6EFRwVsLnurFQy\u002BChSJ4qbQQyKLRJigkaNLOdncyHra72d2WbBPqB\u002B8w7715/7yZ2VlCDOfuVMf3tNSrBk\u002BOR2MxlDCPYYp6gxg3inqiP/W9zvWzda6jwZPRlDi2ST7I3Eez5zYA7rtJCobqytVfn7Z32eBSnSdR5zq6EDHJmRuSAGMhtyJASsxUl8RXNao3uI4uRUxy5i4of6gIfP5bKKNjZlvlAJjuypsE2BywtGDwVGA4OCxscUC0BJRSvuVyOQCAYRhQKrTCWJhbXAOEBgp0MDIyglKphGw2i3w\u002BH5rUCQyWBvKKi9ZFMk0TjuOgUqmgVquFJnUCI0vb97v4L2ewz3e8LYoTmJycRLlcjrrbwuhAK0C4B733N\u002BMHlFIwDAPr6\u002BvI5XIoFotYXl7GwsJCqECUXscKjUlOXX6MJrsHmcDv2jAGN96EEjpl8G4t\u002BDGaTNlaAZYGtdcDtt865G5JOwJpR/idsITQdkhoYH9SR9rrhrRjBUUEQ4MVvA9Nl3Y0v2N6HREUecZo830ZllaHavtyn5i0IzDc/GGdscX1ypO\u002Bl\u002B5bZCUK0cTgUxG0OKZSq3g7cG3zy6KxBgCuAKkjAkR0rMVxq/8h\u002BhJVxxszAFCgIwKnBQGAGs3eVEq9iAY9REKD\u002B9PxLIkG1yF7LYxdfIehzFZ4AmGVZjENf4uk3AlnhNGlfXg7PLMwkNz9cGXi\u002BcZQZssEELSPaOKRN9ftYGz6vJL0E2i/yYedlBo8NWN8XlyLxo\u002BDAQBtrZSJ8BRAu2tiJ6X9mpNz6aTFAeAfIuQm8ieYCHQAAAAASUVORK5CYII=",
-              "WhenOpened": "2026-02-02T08:37:09.845Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-02T08:37:09.845Z"
             },
             {
               "$type": "Document",

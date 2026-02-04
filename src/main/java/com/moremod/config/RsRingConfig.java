@@ -23,20 +23,26 @@ public class RsRingConfig implements IHasConfig {
     @Override
     public void syncConfig(Configuration config) {
         config.addCustomCategoryComment(RsRingMod.MODID + ".ring", "config.rsring.ring");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".ring", "config.rsring.ring");
 
         absorbRing.defaultBlacklistItems = config.getStringList("defaultBlacklistItems",
             RsRingMod.MODID + ".ring",
             new String[]{},
+            "config.rsring.ring.defaultBlacklistItems",
+            null,
             "config.rsring.ring.defaultBlacklistItems");
 
         absorbRing.defaultWhitelistItems = config.getStringList("defaultWhitelistItems",
             RsRingMod.MODID + ".ring",
             new String[]{},
+            "config.rsring.ring.defaultWhitelistItems",
+            null,
             "config.rsring.ring.defaultWhitelistItems");
 
         absorbRing.useBlacklistModeByDefault = config.getBoolean("useBlacklistModeByDefault",
             RsRingMod.MODID + ".ring",
             true,
+            "config.rsring.ring.useBlacklistModeByDefault",
             "config.rsring.ring.useBlacklistModeByDefault");
 
         absorbRing.absorptionRange = config.getInt("absorptionRange",
@@ -44,6 +50,7 @@ public class RsRingConfig implements IHasConfig {
             8,
             1,
             32,
+            "config.rsring.ring.absorptionRange",
             "config.rsring.ring.absorptionRange");
 
         absorbRing.energyCostPerItem = config.getInt("energyCostPerItem",
@@ -51,6 +58,7 @@ public class RsRingConfig implements IHasConfig {
             1,
             0,
             1000,
+            "config.rsring.ring.energyCostPerItem",
             "config.rsring.ring.energyCostPerItem");
 
         absorbRing.maxEnergyCapacity = config.getInt("maxEnergyCapacity",
@@ -58,11 +66,13 @@ public class RsRingConfig implements IHasConfig {
             10000000,
             1000,
             100000000,
+            "config.rsring.ring.maxEnergyCapacity",
             "config.rsring.ring.maxEnergyCapacity");
 
         absorbRing.allowCustomFilters = config.getBoolean("allowCustomFilters",
             RsRingMod.MODID + ".ring",
             true,
+            "config.rsring.ring.allowCustomFilters",
             "config.rsring.ring.allowCustomFilters");
 
         absorbRing.absorptionInterval = config.getInt("absorptionInterval",
@@ -70,6 +80,7 @@ public class RsRingConfig implements IHasConfig {
             5,
             1,
             20,
+            "config.rsring.ring.absorptionInterval",
             "config.rsring.ring.absorptionInterval");
 
         absorbRing.initialEnergy = config.getInt("initialEnergy",
@@ -77,8 +88,11 @@ public class RsRingConfig implements IHasConfig {
             0,
             0,
             10000000,
+            "config.rsring.ring.initialEnergy",
             "config.rsring.ring.initialEnergy");
 
-        absorbRing.energyCostMultiplier = config.get(RsRingMod.MODID + ".ring", "energyCostMultiplier", 1.0D, "config.rsring.ring.energyCostMultiplier").getDouble();
+        net.minecraftforge.common.config.Property energyMultProp = config.get(RsRingMod.MODID + ".ring", "energyCostMultiplier", 1.0D, "config.rsring.ring.energyCostMultiplier");
+        energyMultProp.setLanguageKey("config.rsring.ring.energyCostMultiplier");
+        absorbRing.energyCostMultiplier = energyMultProp.getDouble();
     }
 }

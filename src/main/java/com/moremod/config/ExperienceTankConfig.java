@@ -36,11 +36,14 @@ public class ExperienceTankConfig implements IHasConfig {
     @Override
     public void syncConfig(Configuration config) {
         config.addCustomCategoryComment(RsRingMod.MODID + ".tank", "config.rsring.tank");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".tank", "config.rsring.tank");
         config.addCustomCategoryComment(RsRingMod.MODID + ".controller", "config.rsring.controller");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".controller", "config.rsring.controller");
 
         tank.enabled = config.getBoolean("enabled",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.enabled",
             "config.rsring.tank.enabled");
 
         tank.xpExtractionRate = config.getInt("xpExtractionRate",
@@ -48,33 +51,41 @@ public class ExperienceTankConfig implements IHasConfig {
             20,
             1,
             1000,
+            "config.rsring.tank.xpExtractionRate",
             "config.rsring.tank.xpExtractionRate");
 
-        tank.xpExtractionRange = config.get(RsRingMod.MODID + ".tank", "xpExtractionRange", 5.0D, "config.rsring.tank.xpExtractionRange").getDouble();
+        net.minecraftforge.common.config.Property xpRangeProp = config.get(RsRingMod.MODID + ".tank", "xpExtractionRange", 5.0D, "config.rsring.tank.xpExtractionRange");
+        xpRangeProp.setLanguageKey("config.rsring.tank.xpExtractionRange");
+        tank.xpExtractionRange = xpRangeProp.getDouble();
 
         tank.extractXpBottles = config.getBoolean("extractXpBottles",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.extractXpBottles",
             "config.rsring.tank.extractXpBottles");
 
         tank.mendingOn = config.getBoolean("mendingOn",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.mendingOn",
             "config.rsring.tank.mendingOn");
 
         tank.mendPlayerItems = config.getBoolean("mendPlayerItems",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.mendPlayerItems",
             "config.rsring.tank.mendPlayerItems");
 
         tank.enableOverflowBottles = config.getBoolean("enableOverflowBottles",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.enableOverflowBottles",
             "config.rsring.tank.enableOverflowBottles");
 
         tank.enableAutoPumping = config.getBoolean("enableAutoPumping",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.enableAutoPumping",
             "config.rsring.tank.enableAutoPumping");
 
         tank.pumpingInterval = config.getInt("pumpingInterval",
@@ -82,6 +93,7 @@ public class ExperienceTankConfig implements IHasConfig {
             5,
             1,
             100,
+            "config.rsring.tank.pumpingInterval",
             "config.rsring.tank.pumpingInterval");
 
         tank.mendingInterval = config.getInt("mendingInterval",
@@ -89,6 +101,7 @@ public class ExperienceTankConfig implements IHasConfig {
             20,
             1,
             100,
+            "config.rsring.tank.mendingInterval",
             "config.rsring.tank.mendingInterval");
 
         tank.extractionInterval = config.getInt("extractionInterval",
@@ -96,6 +109,7 @@ public class ExperienceTankConfig implements IHasConfig {
             4,
             1,
             100,
+            "config.rsring.tank.extractionInterval",
             "config.rsring.tank.extractionInterval");
 
         tank.defaultPumpMode = config.getInt("defaultPumpMode",
@@ -103,6 +117,7 @@ public class ExperienceTankConfig implements IHasConfig {
             0,
             0,
             2,
+            "config.rsring.tank.defaultPumpMode",
             "config.rsring.tank.defaultPumpMode");
 
         tank.defaultRetainLevel = config.getInt("defaultRetainLevel",
@@ -110,11 +125,13 @@ public class ExperienceTankConfig implements IHasConfig {
             1,
             0,
             100,
+            "config.rsring.tank.defaultRetainLevel",
             "config.rsring.tank.defaultRetainLevel");
 
         tank.defaultMendingMode = config.getBoolean("defaultMendingMode",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.defaultMendingMode",
             "config.rsring.tank.defaultMendingMode");
 
         tank.maxTankLevelLimit = config.getInt("maxTankLevelLimit",
@@ -122,22 +139,29 @@ public class ExperienceTankConfig implements IHasConfig {
             20,
             5,
             100,
+            "config.rsring.tank.maxTankLevelLimit",
             "config.rsring.tank.maxTankLevelLimit");
 
         tank.enableSpecialTanks = config.getBoolean("enableSpecialTanks",
             RsRingMod.MODID + ".tank",
             true,
+            "config.rsring.tank.enableSpecialTanks",
             "config.rsring.tank.enableSpecialTanks");
 
-        tank.xpToBottleEfficiency = config.get(RsRingMod.MODID + ".tank", "xpToBottleEfficiency", 1.0D, "config.rsring.tank.xpToBottleEfficiency").getDouble();
+        net.minecraftforge.common.config.Property bottleEffProp = config.get(RsRingMod.MODID + ".tank", "xpToBottleEfficiency", 1.0D, "config.rsring.tank.xpToBottleEfficiency");
+        bottleEffProp.setLanguageKey("config.rsring.tank.xpToBottleEfficiency");
+        tank.xpToBottleEfficiency = bottleEffProp.getDouble();
 
-        tank.xpMendingEfficiency = config.get(RsRingMod.MODID + ".tank", "xpMendingEfficiency", 1.0D, "config.rsring.tank.xpMendingEfficiency").getDouble();
+        net.minecraftforge.common.config.Property mendingEffProp = config.get(RsRingMod.MODID + ".tank", "xpMendingEfficiency", 1.0D, "config.rsring.tank.xpMendingEfficiency");
+        mendingEffProp.setLanguageKey("config.rsring.tank.xpMendingEfficiency");
+        tank.xpMendingEfficiency = mendingEffProp.getDouble();
 
         controller.maxManagedTanks = config.getInt("maxManagedTanks",
             RsRingMod.MODID + ".controller",
             32,
             1,
             32,
+            "config.rsring.controller.maxManagedTanks",
             "config.rsring.controller.maxManagedTanks");
     }
 

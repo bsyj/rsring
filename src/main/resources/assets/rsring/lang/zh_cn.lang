@@ -16,6 +16,7 @@ key.categories.rsring=戒指
 message.rsring.ring_not_found=未找到戒指
 
 # Configuration
+config.rsring.gui.title=RS戒指模组配置
 config.rsring.ring=物品吸收戒指设置
 config.rsring.ring.defaultBlacklistItems=默认黑名单物品
 config.rsring.ring.defaultWhitelistItems=默认白名单物品

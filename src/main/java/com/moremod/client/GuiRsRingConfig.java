@@ -3,6 +3,7 @@ package com.moremod.client;
 import com.moremod.config.ConfigRegistry;
 import com.moremod.rsring.RsRingMod;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.fml.client.config.GuiConfig;
 
@@ -14,7 +15,7 @@ public class GuiRsRingConfig extends GuiConfig {
               RsRingMod.MODID,
               false,
               false,
-              "RsRing Mod Configuration");
+              I18n.format("config.rsring.gui.title"));
     }
 
     @Override

@@ -18,25 +18,30 @@ public class GeneralConfig implements IHasConfig {
     @Override
     public void syncConfig(Configuration config) {
         config.addCustomCategoryComment(RsRingMod.MODID + ".general", "config.rsring.general");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".general", "config.rsring.general");
 
         general.enableBaublesIntegration = config.getBoolean("enableBaublesIntegration",
             RsRingMod.MODID + ".general",
             true,
+            "config.rsring.general.enableBaublesIntegration",
             "config.rsring.general.enableBaublesIntegration");
 
         general.enableSoundEffects = config.getBoolean("enableSoundEffects",
             RsRingMod.MODID + ".general",
             true,
+            "config.rsring.general.enableSoundEffects",
             "config.rsring.general.enableSoundEffects");
 
         general.enableParticleEffects = config.getBoolean("enableParticleEffects",
             RsRingMod.MODID + ".general",
             true,
+            "config.rsring.general.enableParticleEffects",
             "config.rsring.general.enableParticleEffects");
 
         general.debugMode = config.getBoolean("debugMode",
             RsRingMod.MODID + ".general",
             false,
+            "config.rsring.general.debugMode",
             "config.rsring.general.debugMode");
 
         general.autoSaveInterval = config.getInt("autoSaveInterval",
@@ -44,6 +49,7 @@ public class GeneralConfig implements IHasConfig {
             300,
             60,
             3600,
+            "config.rsring.general.autoSaveInterval",
             "config.rsring.general.autoSaveInterval");
     }
 }

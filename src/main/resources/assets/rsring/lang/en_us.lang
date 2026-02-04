@@ -12,6 +12,7 @@ key.categories.rsring=Rings
 message.rsring.ring_not_found=Ring not found
 
 # Configuration
+config.rsring.gui.title=RsRing Mod Configuration
 config.rsring.ring=Absorb Ring Settings
 config.rsring.ring.defaultBlacklistItems=Default Blacklist Items
 config.rsring.ring.defaultWhitelistItems=Default Whitelist Items

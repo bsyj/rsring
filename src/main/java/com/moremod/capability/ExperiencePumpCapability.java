@@ -24,12 +24,15 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
     // NBT 标签常量
     private static final String XP_NBT_KEY = "xp";
     private static final String CAPACITY_LEVELS_NBT_KEY = "capacityLevels";
+    private static final String FIXED_MAX_XP_NBT_KEY = "fixedMaxXp";
     private static final String MODE_NBT_KEY = "mode";
     private static final String RETAIN_LEVEL_NBT_KEY = "retainLevel";
     private static final String MENDING_NBT_KEY = "mending";
 
     private int xpStored = 0;
     private int capacityLevels = DEFAULT_CAPACITY_LEVELS;
+    /** 特殊储罐固定最大容量，>0时优先使用；0表示使用 capacityLevels 公式 */
+    private int fixedMaxXp = 0;
     private int mode = MODE_OFF;
     private int retainLevel = 10;
     private boolean useForMending = false;
@@ -59,7 +62,11 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
 
     @Override
     public int getMaxXp() {
-        // 按照指数增长计算容量：第n级容量 = BASE_XP_PER_LEVEL * 2^(n-1)
+        // 特殊储罐：优先使用固定容量（100/500/1000/2000级储罐）
+        if (fixedMaxXp > 0) {
+            return fixedMaxXp;
+        }
+        // 普通储罐：按照指数增长计算容量：第n级容量 = BASE_XP_PER_LEVEL * 2^(n-1)
         // 例如：1级=1000, 2级=2000, 3级=4000, 4级=8000...
         try {
             long maxCapacity = (long) BASE_XP_PER_LEVEL * (1L << (capacityLevels - 1));
@@ -132,6 +139,7 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
         ExperiencePumpCapability c = new ExperiencePumpCapability();
         c.xpStored = this.xpStored;
         c.capacityLevels = this.capacityLevels;
+        c.fixedMaxXp = this.fixedMaxXp;
         c.mode = this.mode;
         c.retainLevel = this.retainLevel;
         c.useForMending = this.useForMending;
@@ -146,6 +154,9 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             NBTTagCompound tag = new NBTTagCompound();
             tag.setInteger(XP_NBT_KEY, instance.getXpStored());
             tag.setInteger(CAPACITY_LEVELS_NBT_KEY, instance.getCapacityLevels());
+            if (instance instanceof ExperiencePumpCapability) {
+                tag.setInteger(FIXED_MAX_XP_NBT_KEY, ((ExperiencePumpCapability) instance).fixedMaxXp);
+            }
             tag.setInteger(MODE_NBT_KEY, instance.getMode());
             tag.setInteger(RETAIN_LEVEL_NBT_KEY, instance.getRetainLevel());
             tag.setBoolean(MENDING_NBT_KEY, instance.isUseForMending());
@@ -159,6 +170,9 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             NBTTagCompound tag = (NBTTagCompound) nbt;
             // 必须先设置容量等级再设置XP，否则 setXpStored 会在默认1级(max=1000)下截断，导致2级及以上储罐从NBT加载时经验丢失
             instance.setCapacityLevels(tag.hasKey(CAPACITY_LEVELS_NBT_KEY) ? tag.getInteger(CAPACITY_LEVELS_NBT_KEY) : DEFAULT_CAPACITY_LEVELS);
+            if (instance instanceof ExperiencePumpCapability && tag.hasKey(FIXED_MAX_XP_NBT_KEY)) {
+                ((ExperiencePumpCapability) instance).fixedMaxXp = tag.getInteger(FIXED_MAX_XP_NBT_KEY);
+            }
             instance.setXpStored(tag.hasKey(XP_NBT_KEY) ? tag.getInteger(XP_NBT_KEY) : 0);
             instance.setMode(tag.hasKey(MODE_NBT_KEY) ? tag.getInteger(MODE_NBT_KEY) : MODE_OFF);
             instance.setRetainLevel(tag.hasKey(RETAIN_LEVEL_NBT_KEY) ? tag.getInteger(RETAIN_LEVEL_NBT_KEY) : 10);

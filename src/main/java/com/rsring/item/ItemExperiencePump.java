@@ -28,80 +28,62 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
-/**
- * 经验储罐基础类 - 用于存储和管理玩家经验
- * 支持自动吸取周围经验球、经验存储、经验泵送和自动修复附魔装备
- */
+
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 public class ItemExperiencePump extends Item implements IBauble {
 
-    // NBT标签常量
     public static final String XP_TAG = "ExperiencePumpData";
 
-    // 经验相关常量
-    private static final int XP_PER_BOTTLE = 36; // MC原版：1瓶=36经验
-    private static final int DEFAULT_RETAIN_LEVEL = 1; // 默认保留等级
+    private static final int XP_PER_BOTTLE = 36;
+    private static final int DEFAULT_RETAIN_LEVEL = 1;
 
-    // NBT键值常量
+    // NBT keys
     private static final String CAPACITY_LEVELS_KEY = "capacityLevels";
     private static final String XP_KEY = "xp";
 
-    // 填充等级常量
     private static final int FILL_LEVEL_EMPTY = 0;
     private static final int FILL_LEVEL_QUARTER = 1;
     private static final int FILL_LEVEL_HALF = 2;
     private static final int FILL_LEVEL_THREE_QUARTERS = 3;
     private static final int FILL_LEVEL_FULL = 4;
 
-    /**
-     * 从 NBT 直接读取显示用数据，避免 capability 缓存导致升级后仍显示旧数据
-     */
+    
     public static net.minecraft.nbt.NBTTagCompound getDataFromNBT(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !stack.hasTagCompound() || !stack.getTagCompound().hasKey(XP_TAG))
             return null;
         return stack.getTagCompound().getCompoundTag(XP_TAG);
     }
 
-    /**
-     * 获取储罐中存储的经验值
-     */
+    
     public static int getXpStoredFromNBT(ItemStack stack) {
         if (stack == null) return 0;
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         return data != null ? data.getInteger(XP_KEY) : 0;
     }
 
-    /**
-     * 获取储罐的容量等级
-     */
+    
     public static int getCapacityLevelsFromNBT(ItemStack stack) {
         if (stack == null) return DEFAULT_RETAIN_LEVEL;
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         return data != null && data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
     }
 
-    /**
-     * 获取储罐的最大容量
-     * 对于特殊储罐（100级、500级、1000级、2000级），使用其固定容量
-     * 对于普通储罐，使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
-     */
+    
     public static int getMaxXpFromNBT(ItemStack stack) {
         if (stack == null) {
             return (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, DEFAULT_RETAIN_LEVEL - 1));
         }
         
-        // 检查是否为特殊储罐
         if (stack.getItem() instanceof ItemExperienceTank100) {
-            return 30970; // 100级所需经验
+            return 30970;
         } else if (stack.getItem() instanceof ItemExperienceTank500) {
-            return 1045970; // 500级所需经验
+            return 1045970;
         } else if (stack.getItem() instanceof ItemExperienceTank1000) {
-            return 4339720; // 1000级所需经验
+            return 4339720;
         } else if (stack.getItem() instanceof ItemExperienceTank2000) {
-            return 17677220; // 2000级所需经验
+            return 17677220;
         }
         
-        // 普通储罐使用原来的计算方法
         int capacityLevels = getCapacityLevelsFromNBT(stack);
 
         try {
@@ -115,11 +97,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         }
     }
 
-    /**
-     * 构造函数 - 创建经验储罐
-     * @param registryName 注册名
-     * @param translationKey 翻译键
-     */
+    
     public ItemExperiencePump(String registryName, String translationKey) {
         super();
         setTranslationKey(translationKey);
@@ -128,9 +106,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         setCreativeTab(CreativeTabs.MISC);
     }
 
-    /**
-     * 默认构造函数 - 创建基础经验泵
-     */
+    
     public ItemExperiencePump() {
         this("experience_pump", "rsring.experience_pump");
     }
@@ -140,67 +116,68 @@ public class ItemExperiencePump extends Item implements IBauble {
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         if (data == null) {
-            // 即使没有NBT数据也要显示基础信息
-            int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL; // 1级容量 = 1000 mb
+            int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL;
             tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "1");
-            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + initialCapacity + " mb");
+            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY
+                + " / " + initialCapacity + " mb");
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
                 tooltip.add("");
                 tooltip.add(TextFormatting.GOLD + "功能介绍:");
-                tooltip.add(TextFormatting.GRAY + "  · 吸收周围经验球");
-                tooltip.add(TextFormatting.GRAY + "  · 存储经验 (需配合经验泵控制器使用)");
-                tooltip.add(TextFormatting.GRAY + "  · 自动修复附魔装备");
+                tooltip.add(TextFormatting.GRAY + "  - 吸收附近经验球");
+                tooltip.add(TextFormatting.GRAY + "  - 存储经验（需配合经验泵控制器使用）");
+                tooltip.add(TextFormatting.GRAY + "  - 自动修复附魔装备");
                 tooltip.add(TextFormatting.GOLD + "使用方法:");
-                tooltip.add(TextFormatting.GRAY + "  · 与经验泵控制器配合使用");
+                tooltip.add(TextFormatting.GRAY + "  - 与经验泵控制器配合使用");
             } else {
-                tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看详细信息");
+                tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
+                    + TextFormatting.DARK_GRAY + " 查看详细信息");
             }
             return;
         }
 
         int xp = data.getInteger(XP_KEY);
         int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
-        // 使用指数增长公式：BASE_XP_PER_LEVEL * 2^(capacityLevels-1)
         int max = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1));
 
-        // 基础信息显示
         tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + capacityLevels);
-        tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
+        tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY
+            + " / " + max + " mb");
 
-        // 详细信息（Shift显示）
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
-            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看详细信息");
+            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
+                + TextFormatting.DARK_GRAY + " 查看详细信息");
         } else {
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "功能介绍:");
-            tooltip.add(TextFormatting.GRAY + "  · 自动吸收周围经验球和经验瓶");
-            tooltip.add(TextFormatting.GRAY + "  · 智能经验存储和溢出处理");
-            tooltip.add(TextFormatting.GRAY + "  · 自动修复附魔装备 (经验修补)");
-            tooltip.add(TextFormatting.GRAY + "  · 与经验泵控制器协同工作");
+            tooltip.add(TextFormatting.GRAY + "  - 自动吸收附近经验球和经验瓶");
+            tooltip.add(TextFormatting.GRAY + "  - 智能经验存储与溢出处理");
+            tooltip.add(TextFormatting.GRAY + "  - 自动修复附魔装备（经验修补）");
+            tooltip.add(TextFormatting.GRAY + "  - 与经验泵控制器协同工作");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "配置信息:");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取速率: " + TextFormatting.AQUA + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/刻");
-            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
-            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.rsring.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
+            tooltip.add(TextFormatting.GRAY + "  - 抽取速度: " + TextFormatting.AQUA
+                + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/秒");
+            tooltip.add(TextFormatting.GRAY + "  - 抽取范围: " + TextFormatting.AQUA
+                + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
+            tooltip.add(TextFormatting.GRAY + "  - 溢出保护: "
+                + (com.rsring.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启"
+                : TextFormatting.RED + "关闭"));
         }
     }
 
-    /**
-     * 获取模式文本描述
-     */
+    
     private static String getModeText(int mode) {
         switch (mode) {
-            case IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER: return TextFormatting.AQUA + "从玩家泵入";
-            case IExperiencePumpCapability.MODE_PUMP_TO_PLAYER: return TextFormatting.GOLD + "向玩家泵出";
+            case IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER: return TextFormatting.AQUA + "从玩家抽取";
+            case IExperiencePumpCapability.MODE_PUMP_TO_PLAYER: return TextFormatting.GOLD + "向玩家注入";
             default: return TextFormatting.GRAY + "关闭";
         }
     }
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
-        // 直接检查NBT标签是否存在，避免不必要的计算
         if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
             return false;
         }
@@ -208,15 +185,12 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (data == null) {
             return false;
         }
-
-        // 使用getMaxXpFromNBT方法获取容量，支持特殊储罐的固定容量
         int maxCapacity = getMaxXpFromNBT(stack);
         return maxCapacity > 0;
     }
 
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
-        // 直接检查NBT标签是否存在，避免不必要的计算
         if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
             return 1.0;
         }
@@ -224,8 +198,6 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (data == null) {
             return 1.0;
         }
-
-        // 使用getMaxXpFromNBT方法获取容量，支持特殊储罐的固定容量
         int maxCapacity = getMaxXpFromNBT(stack);
         if (maxCapacity <= 0) {
             return 1.0;
@@ -236,7 +208,7 @@ public class ItemExperiencePump extends Item implements IBauble {
 
     @Override
     public int getRGBDurabilityForDisplay(ItemStack stack) {
-        return 0x80FF20; // 绿色
+        return 0x80FF20;
     }
 
     @Override
@@ -248,15 +220,11 @@ public class ItemExperiencePump extends Item implements IBauble {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
-
-        // 服务器端：显示储罐容量信息到聊天栏
         if (!world.isRemote) {
-            // 从NBT读取数据（确保准确性）
             int xpStored = getXpStoredFromNBT(stack);
             int capacityLevels = getCapacityLevelsFromNBT(stack);
             int maxXp = getMaxXpFromNBT(stack);
 
-            // 构造消息：等级 X - Y / Z mb
             String message = TextFormatting.AQUA + "等级 " + capacityLevels +
                            TextFormatting.GRAY + " - " +
                            TextFormatting.GREEN + xpStored +
@@ -266,17 +234,10 @@ public class ItemExperiencePump extends Item implements IBauble {
 
             player.sendMessage(new TextComponentString(message));
         }
-
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
-    /**
-     * 将指定等级数的经验存储到储罐中
-     * @param stack 储罐物品
-     * @param player 玩家实例
-     * @param levelsToStore 要存储的等级数
-     * @return 实际存储的经验点数
-     */
+    
     public static int storeExperienceLevels(ItemStack stack, EntityPlayer player, int levelsToStore) {
         if (levelsToStore <= 0) {
             return 0;
@@ -300,13 +261,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return actualStored;
     }
 
-    /**
-     * 从储罐中提取指定等级数的经验
-     * @param stack 储罐物品
-     * @param player 玩家实例
-     * @param levelsToExtract 要提取的等级数
-     * @return 实际提取的经验点数
-     */
+    
     public static int extractExperienceLevels(ItemStack stack, EntityPlayer player, int levelsToExtract) {
         if (levelsToExtract <= 0) {
             return 0;
@@ -334,12 +289,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return actualExtracted;
     }
 
-    /**
-     * 存储玩家的所有经验
-     * @param stack 储罐物品
-     * @param player 玩家实例
-     * @return 实际存储的经验点数
-     */
+    
     public static int storeAllExperience(ItemStack stack, EntityPlayer player) {
         IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
         if (cap == null) {
@@ -360,12 +310,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return actualStored;
     }
 
-    /**
-     * 提取储罐中的所有经验
-     * @param stack 储罐物品
-     * @param player 玩家实例
-     * @return 实际提取的经验点数
-     */
+    
     public static int extractAllExperience(ItemStack stack, EntityPlayer player) {
         IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
         if (cap == null) {
@@ -386,9 +331,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return actualExtracted;
     }
 
-    /**
-     * 同步能力数据到物品NBT
-     */
+    
     public static void syncCapabilityToStack(ItemStack stack, IExperiencePumpCapability cap) {
         if (cap == null || ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY == null) return;
         net.minecraft.nbt.NBTBase nbt = ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY.getStorage()
@@ -433,64 +376,46 @@ public class ItemExperiencePump extends Item implements IBauble {
         return provider;
     }
 
-    /**
-     * 手持/佩戴时每 tick 调用：统一的经验储罐工作流程
-     * 工作流程：前置校验 → 抽取经验 → 存储经验 → 经验泵送 → 自动修补
-     */
+    
     public void onWornTick(ItemStack stack, EntityLivingBase entity) {
         if (entity == null || entity.world == null || entity.world.isRemote || !(entity instanceof EntityPlayer)) return;
 
         EntityPlayer player = (EntityPlayer) entity;
-        if (player.world == null) return; // 额外安全检查
-
+        if (player.world == null) return;
         IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
         if (cap == null) return;
 
-        // 前置校验：储罐激活、配置有效、抽取速率>0
         if (!isUpgradeActive(stack, cap) || getExtractionRate() <= 0) {
             return;
         }
 
-        // 工作流程：1. 抽取周围经验 → 2. 存储抽取的经验 → 3. 若开启修补，自动修补装备
         int extractedXp = 0;
-
-        // 步骤1：抽取周围经验（使用配置的间隔）
         if (player.ticksExisted % com.rsring.config.ExperienceTankConfig.tank.extractionInterval == 0) {
             extractedXp = extractXpFromSurroundings(player, stack, cap);
         }
 
-        // 步骤2：存储抽取的经验（含溢出处理）
         if (extractedXp > 0) {
             storeExtractedXp(player, stack, cap, extractedXp);
         }
 
-        // 步骤3：经验泵送（即时执行每 tick），仅当储罐不在控制器管理下且模式不是关闭时启用
+        int pumpInterval = Math.max(1, com.rsring.config.ExperienceTankConfig.tank.pumpingInterval);
         if (com.rsring.config.ExperienceTankConfig.tank.enableAutoPumping &&
-            cap.getMode() != IExperiencePumpCapability.MODE_OFF) {
-            // 如果被控制器管理则跳过自动泵送
+            cap.getMode() != IExperiencePumpCapability.MODE_OFF && player.ticksExisted % pumpInterval == 0) {
             com.rsring.experience.ExperiencePumpController controller = com.rsring.experience.ExperiencePumpController.getInstance();
             if (!controller.isTankManagedByController(stack)) {
                 pumpExperienceBetweenPlayerAndTank(player, stack, cap);
             }
         }
 
-        // 步骤4：自动修补（使用配置的间隔）
         if (com.rsring.config.ExperienceTankConfig.tank.mendingOn && cap.isUseForMending() &&
             cap.getXpStored() > 0 && player.ticksExisted % com.rsring.config.ExperienceTankConfig.tank.mendingInterval == 0) {
             tryRepairMending(player, stack, cap);
         }
 
-        // 同步状态到NBT（确保持久化）
         syncCapabilityToStack(stack, cap);
     }
 
-    /**
-     * 存储抽取的经验，自动处理溢出：超过最大存储时，生成经验瓶掉落
-     * @param player 玩家实例
-     * @param stack 储罐物品
-     * @param cap 储罐能力
-     * @param xpAmount 待存储的经验值
-     */
+    
     private void storeExtractedXp(EntityPlayer player, ItemStack stack, IExperiencePumpCapability cap, int xpAmount) {
         if (xpAmount <= 0) return;
 
@@ -498,13 +423,12 @@ public class ItemExperiencePump extends Item implements IBauble {
         int maxXp = cap.getMaxXp();
         int newXp = currentXp + xpAmount;
 
-        // 处理溢出：超过最大存储则计算溢出量，生成经验瓶
         if (newXp > maxXp) {
             int overflowXp = newXp - maxXp;
-            int overflowBottles = overflowXp / XP_PER_BOTTLE;
+            int xpPerBottle = getXpPerBottle();
+            int overflowBottles = overflowXp / xpPerBottle;
 
             if (overflowBottles > 0 && com.rsring.config.ExperienceTankConfig.tank.enableOverflowBottles) {
-                // 生成经验瓶物品实体，掉落至玩家位置
                 ItemStack overflowStack = new ItemStack(Items.EXPERIENCE_BOTTLE, overflowBottles);
                 net.minecraft.entity.item.EntityItem itemEntity = new net.minecraft.entity.item.EntityItem(
                     player.world,
@@ -514,38 +438,30 @@ public class ItemExperiencePump extends Item implements IBauble {
                     overflowStack
                 );
                 player.world.spawnEntity(itemEntity);
-
-                // 剩余经验填充至最大存储
+                newXp = maxXp;
+            } else {
                 newXp = maxXp;
             }
         }
 
-        // 保存经验至capability
         cap.setXpStored(newXp);
-
-        // 同步至NBT（确保持久化）
         syncCapabilityToStack(stack, cap);
     }
 
-    /**
-     * 在玩家和经验储罐之间泵送经验
-     * 支持主动从玩家抽取经验（根据保留等级）
-     */
+    
     private void pumpExperienceBetweenPlayerAndTank(EntityPlayer player, ItemStack stack, IExperiencePumpCapability cap) {
-        // 检查是否被控制器管理，如果是则跳过自动泵送
         com.rsring.experience.ExperiencePumpController controller = com.rsring.experience.ExperiencePumpController.getInstance();
         if (controller.isTankManagedByController(stack)) {
-            return; // 控制器正在管理，跳过自动泵送
+            return;
         }
 
         int retain = cap.getRetainLevel();
         int playerTotal = getPlayerTotalXp(player);
-        int targetXp = getTotalXpForLevel(retain); // 使用精确的等级到经验转换
+        int targetXp = getTotalXpForLevel(retain);
 
         if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
-            // 从玩家泵入：立即抽取玩家超过保留等级的全部可用经验到储罐（不再受每-tick 限制）
-            if (playerTotal > targetXp && cap.getXpStored() < cap.getMaxXp()) {
-                int excess = playerTotal - targetXp;
+            int excess = playerTotal - targetXp;
+            if (excess > 0) {
                 int canStore = cap.getMaxXp() - cap.getXpStored();
                 int take = Math.min(excess, canStore);
                 if (take > 0) {
@@ -555,10 +471,8 @@ public class ItemExperiencePump extends Item implements IBauble {
                 }
             }
         } else if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-            // 向玩家泵出：补足玩家至保留等级，但限制每 tick 最大泵送量以平滑体验
-            if (playerTotal < targetXp && cap.getXpStored() > 0) {
-                int need = targetXp - playerTotal;
-                // 限制每 tick 最大泵送量，避免一次性大幅度改动玩家经验
+            int need = targetXp - playerTotal;
+            if (need > 0) {
                 int perTickLimit = Math.max(1, getExtractionRate());
                 int toTake = Math.min(need, perTickLimit);
                 int give = cap.takeXp(toTake);
@@ -570,55 +484,50 @@ public class ItemExperiencePump extends Item implements IBauble {
         }
     }
 
-    /**
-     * 校验储罐是否激活：配置启用、储罐未损坏、玩家有效
-     */
+    
     private boolean isUpgradeActive(ItemStack stack, IExperiencePumpCapability cap) {
         return stack != null && !stack.isEmpty() &&
                com.rsring.config.ExperienceTankConfig.tank.enabled &&
                cap != null;
     }
 
-    /**
-     * 获取当前配置的抽取速率
-     */
+    
     private int getExtractionRate() {
         return com.rsring.config.ExperienceTankConfig.tank.xpExtractionRate;
     }
 
-    /**
-     * 获取最大存储容量
-     */
+    private int getXpPerBottle() {
+        double efficiency = com.rsring.config.ExperienceTankConfig.tank.xpToBottleEfficiency;
+        if (efficiency <= 0) efficiency = 1.0;
+        int xpPerBottle = (int) Math.round(XP_PER_BOTTLE * efficiency);
+        return Math.max(1, xpPerBottle);
+    }
+
+    
     private int getMaxStorage(IExperiencePumpCapability cap) {
         return cap.getMaxXp();
     }
 
-    /**
-     * 从周围环境中抽取经验：经验球（优先）+ 经验瓶物品实体
-     * @return 实际抽取的经验值
-     */
+    
     private int extractXpFromSurroundings(EntityPlayer player, ItemStack stack, IExperiencePumpCapability cap) {
-        // 当经验储罐已满时停止吸收
         if (cap.getXpStored() >= cap.getMaxXp()) {
-            return 0; // 已满，不再吸收
+            return 0;
         }
 
-        int maxExtract = getExtractionRate();
+        int baseRate = getExtractionRate();
+        int interval = Math.max(1, com.rsring.config.ExperienceTankConfig.tank.extractionInterval);
+        int maxExtract = baseRate * interval;
         int extractedTotal = 0;
         double range = com.rsring.config.ExperienceTankConfig.tank.xpExtractionRange;
 
-        // 构建抽取范围AABB（玩家为中心，向四周延伸指定格数）
         net.minecraft.util.math.AxisAlignedBB extractArea = player.getEntityBoundingBox().grow(range);
 
-        // 第一步：抽取经验球（MC原版核心经验源，优先处理）
         extractedTotal = extractXpFromOrbs(player, extractArea, maxExtract, cap);
 
-        // 第二步：抽取经验瓶物品（可选，兼容玩家掉落的经验瓶）
         if (extractedTotal < maxExtract && com.rsring.config.ExperienceTankConfig.tank.extractXpBottles) {
             extractedTotal += extractXpFromBottleItems(player, extractArea, maxExtract, extractedTotal, cap);
         }
 
-        // 第三步：吸收投掷中的经验瓶实体（EntityExpBottle），将其视为一个完整的经验瓶
         if (extractedTotal < maxExtract && com.rsring.config.ExperienceTankConfig.tank.extractXpBottles) {
             extractedTotal += extractXpFromThrownBottles(player, extractArea, maxExtract, extractedTotal, cap);
         }
@@ -626,14 +535,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return extractedTotal;
     }
 
-    /**
-     * 从经验球实体中抽取经验
-     * @param player 玩家
-     * @param extractArea 抽取区域
-     * @param maxExtract 最大抽取量
-     * @param cap 经验储罐能力
-     * @return 抽取的经验值
-     */
+    
     private int extractXpFromOrbs(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
                                   int maxExtract, IExperiencePumpCapability cap) {
         int extractedTotal = 0;
@@ -642,17 +544,18 @@ public class ItemExperiencePump extends Item implements IBauble {
             player.world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityXPOrb.class, extractArea);
 
         for (net.minecraft.entity.item.EntityXPOrb orb : xpOrbs) {
-            if (orb.isDead || orb.xpValue <= 0 || extractedTotal >= maxExtract) {
+            if (extractedTotal >= maxExtract) {
                 break;
             }
+            if (orb.isDead || orb.xpValue <= 0) {
+                continue;
+            }
 
-            // 计算单次抽取量：不超过剩余可抽、不超过经验球总经验、不超过储罐剩余容量
             int currentStored = cap.getXpStored();
             int maxCanStore = cap.getMaxXp() - currentStored;
             int extractAmount = Math.min(maxExtract - extractedTotal, Math.min(orb.xpValue, maxCanStore));
 
             if (extractAmount > 0) {
-                // 抽取经验：扣除经验球经验，若经验球空则移除
                 orb.xpValue -= extractAmount;
                 if (orb.xpValue <= 0) {
                     orb.setDead();
@@ -664,20 +567,12 @@ public class ItemExperiencePump extends Item implements IBauble {
         return extractedTotal;
     }
 
-    /**
-     * 从经验瓶物品实体中抽取经验
-     * @param player 玩家
-     * @param extractArea 抽取区域
-     * @param maxExtract 最大抽取量
-     * @param currentExtracted 当前已抽取量
-     * @param cap 经验储罐能力
-     * @return 额外抽取的经验值
-     */
+    
     private int extractXpFromBottleItems(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
                                          int maxExtract, int currentExtracted, IExperiencePumpCapability cap) {
         int extractedTotal = currentExtracted;
+        int xpPerBottle = getXpPerBottle();
 
-        // 获取区域内的所有物品实体，再手动筛选经验瓶，兼容性更好
         java.util.List<net.minecraft.entity.item.EntityItem> xpBottleItems = player.world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityItem.class, extractArea);
 
         for (net.minecraft.entity.item.EntityItem itemEntity : xpBottleItems) {
@@ -694,30 +589,27 @@ public class ItemExperiencePump extends Item implements IBauble {
             int currentStored = cap.getXpStored();
             int maxCanStore = cap.getMaxXp() - currentStored;
 
-            // 优化：优先将经验瓶按储罐剩余容量全部转换，提升吞噬速度（不再严格受 extractionRate 限制）
-            if (maxCanStore > 0) {
-                int maxBottlesFromCapacity = maxCanStore / XP_PER_BOTTLE;
-                // 如果剩余容量不足一个整瓶也允许部分转换为该部分经验
-                int partialBottleXp = maxCanStore % XP_PER_BOTTLE;
+            if (maxCanStore <= 0) {
+                break;
+            }
 
-                int bottlesToConvert = Math.min(bottleCount, maxBottlesFromCapacity);
-                if (bottlesToConvert > 0) {
-                    extractedTotal += bottlesToConvert * XP_PER_BOTTLE;
-                    // 消耗物品
-                    bottleStack.shrink(bottlesToConvert);
-                    bottleCount -= bottlesToConvert;
-                    maxCanStore -= bottlesToConvert * XP_PER_BOTTLE;
-                }
+            int maxBottlesFromCapacity = maxCanStore / xpPerBottle;
+            int partialBottleXp = maxCanStore % xpPerBottle;
 
-                // 若有剩余的部分容量且还有瓶子，也从一个瓶子中取出部分经验值
-                if (partialBottleXp > 0 && bottleCount > 0 && maxCanStore > 0) {
-                    int takeXp = Math.min(partialBottleXp, maxCanStore);
-                    extractedTotal += takeXp;
-                    // 视为消耗一个瓶子
-                    bottleStack.shrink(1);
-                    bottleCount--;
-                    maxCanStore -= takeXp;
-                }
+            int bottlesToConvert = Math.min(bottleCount, maxBottlesFromCapacity);
+            if (bottlesToConvert > 0) {
+                extractedTotal += bottlesToConvert * xpPerBottle;
+                bottleStack.shrink(bottlesToConvert);
+                bottleCount -= bottlesToConvert;
+                maxCanStore -= bottlesToConvert * xpPerBottle;
+            }
+
+            if (partialBottleXp > 0 && bottleCount > 0 && maxCanStore > 0) {
+                int takeXp = Math.min(partialBottleXp, maxCanStore);
+                extractedTotal += takeXp;
+                bottleStack.shrink(1);
+                bottleCount--;
+                maxCanStore -= takeXp;
             }
 
             if (bottleStack.isEmpty() || bottleStack.getCount() <= 0) {
@@ -730,18 +622,11 @@ public class ItemExperiencePump extends Item implements IBauble {
         return extractedTotal - currentExtracted;
     }
 
-    /**
-     * 从投掷的经验瓶实体中抽取经验
-     * @param player 玩家
-     * @param extractArea 抽取区域
-     * @param maxExtract 最大抽取量
-     * @param currentExtracted 当前已抽取量
-     * @param cap 经验储罐能力
-     * @return 额外抽取的经验值
-     */
+    
     private int extractXpFromThrownBottles(EntityPlayer player, net.minecraft.util.math.AxisAlignedBB extractArea,
                                            int maxExtract, int currentExtracted, IExperiencePumpCapability cap) {
         int extractedTotal = currentExtracted;
+        int xpPerBottle = getXpPerBottle();
 
         java.util.List<EntityExpBottle> thrownBottles = player.world.getEntitiesWithinAABB(EntityExpBottle.class, extractArea);
         for (EntityExpBottle thrown : thrownBottles) {
@@ -750,10 +635,9 @@ public class ItemExperiencePump extends Item implements IBauble {
 
             int currentStored = cap.getXpStored();
             int maxCanStore = cap.getMaxXp() - currentStored;
-            int canTakeForThis = Math.min(XP_PER_BOTTLE, Math.min(maxExtract - extractedTotal, maxCanStore));
+            int canTakeForThis = Math.min(xpPerBottle, Math.min(maxExtract - extractedTotal, maxCanStore));
             if (canTakeForThis > 0) {
                 extractedTotal += canTakeForThis;
-                // 标记为已处理，防止其继续存在并在破碎时产生经验球
                 thrown.setDead();
             }
         }
@@ -762,22 +646,17 @@ public class ItemExperiencePump extends Item implements IBauble {
     }
 
 
-    /**
-     * 若开启修补开关，使用存储的经验修补玩家背包中的受损装备
-     * 修补规则：1经验=2耐久，优先修补耐久损失比例最高的装备
-     */
+    
     private void tryRepairMending(EntityPlayer player, ItemStack pump, IExperiencePumpCapability cap) {
         if (player == null || pump == null || cap == null || !com.rsring.config.ExperienceTankConfig.tank.mendPlayerItems) return;
 
         int availableXp = cap.getXpStored();
         if (availableXp <= 0) return;
 
-        // 第一步：修补储罐本身（若储罐有耐久损失）
         if (pump.isItemDamaged()) {
             availableXp = mendSingleItem(pump, availableXp, cap);
         }
 
-        // 第二步：修补玩家背包中的受损装备（按损失比例从高到低）
         if (availableXp > 0 && player.inventory != null && player.inventory.mainInventory != null) {
             for (ItemStack stack : player.inventory.mainInventory) {
                 if (stack == null || availableXp <= 0) break;
@@ -785,55 +664,49 @@ public class ItemExperiencePump extends Item implements IBauble {
                     availableXp = mendSingleItem(stack, availableXp, cap);
                 }
             }
+        }
 
-            // 修补副手装备
+        if (availableXp > 0) {
             ItemStack off = player.getHeldItemOffhand();
-            if (availableXp > 0 && off != null && !off.isEmpty() && off.isItemDamaged() &&
+            if (off != null && !off.isEmpty() && off.isItemDamaged() &&
                 net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, off) > 0) {
                 mendSingleItem(off, availableXp, cap);
             }
         }
 
-        // 同步状态
         syncCapabilityToStack(pump, cap);
     }
 
-    /**
-     * 修补单个受损物品，遵循MC原版规则：1经验值修复2点耐久
-     * @return 修补后剩余的经验值
-     */
+    
     private int mendSingleItem(ItemStack stack, int availableXp, IExperiencePumpCapability cap) {
         if (stack == null || cap == null || availableXp <= 0) {
-            return availableXp; // 返回原始可用经验
+            return availableXp;
         }
 
-        // 检查物品是否可修复
         if (!stack.isItemDamaged()) {
-            return availableXp; // 物品未损坏，返回所有可用经验
+            return availableXp;
         }
 
         int damage = stack.getItemDamage();
         int maxDurability = stack.getMaxDamage();
 
-        // 安全检查：确保maxDurability大于0
         if (maxDurability <= 0) {
-            return availableXp; // 无法修复，返回所有可用经验
+            return availableXp;
         }
 
-        int needRepair = damage; // 需修复的耐久值
-        int needXp = (int) Math.ceil((double) needRepair / 2); // 需消耗的经验值（1经验=2耐久）
-
-        // 计算实际消耗的经验和修复的耐久
+        int needRepair = damage;
+        double efficiency = com.rsring.config.ExperienceTankConfig.tank.xpMendingEfficiency;
+        if (efficiency <= 0) efficiency = 1.0;
+        int needXp = (int) Math.ceil(needRepair / (2.0 * efficiency));
         int consumeXp = Math.min(needXp, availableXp);
-        int repairDurability = consumeXp * 2;
+        int repairDurability = (int) Math.floor(consumeXp * 2.0 * efficiency);
+        if (consumeXp > 0 && repairDurability <= 0) {
+            repairDurability = 1;
+        }
         int newDamage = Math.max(damage - repairDurability, 0);
 
-        // 应用修补
         stack.setItemDamage(newDamage);
-
-        // 从能力中扣除经验
         cap.takeXp(consumeXp);
-
         return availableXp - consumeXp;
     }
 
@@ -859,25 +732,17 @@ public class ItemExperiencePump extends Item implements IBauble {
         com.rsring.util.XpHelper.removeExperienceFromPlayer(player, take);
     }
 
-    /** 有经验时显示附魔瓶材质（从 NBT 读，与耐久条一致） */
+    
     public static boolean hasXp(ItemStack stack) {
         return getXpStoredFromNBT(stack) > 0;
     }
 
-    /**
-     * 获取经验储罐的填充等级（0-4），用于选择对应的纹理
-     * 0 = 0% (空)
-     * 1 = 1-25%
-     * 2 = 26-50%
-     * 3 = 51-75%
-     * 4 = 76-100% (满)
-     */
+    
     public static int getXpFillLevel(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return FILL_LEVEL_EMPTY;
         }
 
-        // 首选 NBT 数据（确保基于持久化数据），只有当NBT不可用时才回退到 capability
         int stored = 0;
         int max = 0;
 
@@ -886,7 +751,6 @@ public class ItemExperiencePump extends Item implements IBauble {
             stored = data.getInteger(XP_KEY);
             max = getMaxXpFromNBT(stack);
         } else {
-            // NBT 不可用时，回退到 capability
             IExperiencePumpCapability cap = null;
             try {
                 cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
@@ -907,16 +771,11 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (stored <= 0 || max <= 0) return FILL_LEVEL_EMPTY;
         if (stored >= max) return FILL_LEVEL_FULL;
 
-        // 使用精确的整数比例判断以避免浮点舍入问题
-        // 计算实际填充百分比，使用长整型避免溢出
-        // 精确判断填充等级
-        long fillRatio = (long) stored * 10000 / max; // 计算到小数点后两位，提高精度
+        long fillRatio = (long) stored * 10000 / max;
         
-        // 优化边界条件判断，使材质选择更加合理
-        // 使用更平滑的过渡范围，避免在边界点附近频繁切换材质
-        if (fillRatio < 3000) return FILL_LEVEL_QUARTER;     // 0.01-29.99% → 25%材质
-        if (fillRatio < 6000) return FILL_LEVEL_HALF;        // 30.00-59.99% → 50%材质
-        if (fillRatio < 9000) return FILL_LEVEL_THREE_QUARTERS; // 60.00-89.99% → 75%材质
-        return FILL_LEVEL_FULL;                                   // 90.00-100% → 100%材质
+        if (fillRatio < 3000) return FILL_LEVEL_QUARTER;
+        if (fillRatio < 6000) return FILL_LEVEL_HALF;
+        if (fillRatio < 9000) return FILL_LEVEL_THREE_QUARTERS;
+        return FILL_LEVEL_FULL;
     }
 }

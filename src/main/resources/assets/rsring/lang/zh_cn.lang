@@ -1,23 +1,21 @@
-#PARSE_ESCAPES
+﻿#PARSE_ESCAPES
 #items
 item.rsring.item_absorb_ring.name=物品吸收戒指
 item.rsring.experience_pump.name=经验泵
 item.rsring.experience_pump_controller.name=经验泵控制器
-item.rsring.experience_tank_100.name=经验储罐 - 100级
-item.rsring.experience_tank_500.name=经验储罐 - 500级
-item.rsring.experience_tank_1000.name=经验储罐 - 1000级
-item.rsring.experience_tank_2000.name=经验储罐 - 2000级
-
+item.rsring.experience_tank_100.name=经验储罐 - 100 级
+item.rsring.experience_tank_500.name=经验储罐 - 500 级
+item.rsring.experience_tank_1000.name=经验储罐 - 1000 级
+item.rsring.experience_tank_2000.name=经验储罐 - 2000 级
 #keys
 key.rsring.toggle.desc=切换戒指功能
 key.categories.rsring=戒指
 
 #messages
 message.rsring.ring_not_found=未找到戒指
-
 # Configuration
-config.rsring.gui.title=RS戒指模组配置
-config.rsring.ring=物品吸收戒指设置
+config.rsring.gui.title=RsRing 模组配置
+config.rsring.ring=吸收戒指设置
 config.rsring.ring.defaultBlacklistItems=默认黑名单物品
 config.rsring.ring.defaultWhitelistItems=默认白名单物品
 config.rsring.ring.useBlacklistModeByDefault=默认使用黑名单模式
@@ -51,19 +49,5 @@ config.rsring.tank.xpToBottleEfficiency=经验瓶转换效率
 config.rsring.tank.xpMendingEfficiency=经验修补效率
 
 # 经验泵控制器配置
-config.rsring.controller=经验泵控制器设置
+config.rsring.controller=泵控制器设置
 config.rsring.controller.maxManagedTanks=最大管理储罐数量
-
-# 通用配置
-config.rsring.general=通用设置
-config.rsring.general.enableBaublesIntegration=启用Baubles集成
-config.rsring.general.enableSoundEffects=启用声音效果
-config.rsring.general.enableParticleEffects=启用粒子效果
-config.rsring.general.debugMode=调试模式
-config.rsring.general.autoSaveInterval=自动保存间隔
-
-# 网络配置
-config.rsring.network=网络设置
-config.rsring.network.packetSendFrequency=数据包发送频率
-config.rsring.network.packetSizeLimit=数据包大小限制
-config.rsring.network.enableNetworkCompression=启用网络压缩

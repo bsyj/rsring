@@ -36,8 +36,6 @@ import com.rsring.proxy.CommonProxy;
 import com.rsring.config.ConfigRegistry;
 import com.rsring.config.RsRingConfig;
 import com.rsring.config.ExperienceTankConfig;
-import com.rsring.config.GeneralConfig;
-import com.rsring.config.NetworkConfig;
 import net.minecraftforge.fml.common.SidedProxy;
 import com.rsring.experience.InventoryChangeHandler;
 import com.rsring.experience.ExperienceTankManager;
@@ -79,8 +77,6 @@ public class RsRingMod
         // 注册配置处理器
         ConfigRegistry.register(new RsRingConfig());
         ConfigRegistry.register(new ExperienceTankConfig());
-        ConfigRegistry.register(new GeneralConfig());
-        ConfigRegistry.register(new NetworkConfig());
         ConfigRegistry.syncAllConfig();
 
         // Register absorb ring
@@ -91,15 +87,17 @@ public class RsRingMod
         experiencePumpController = new com.rsring.item.ItemExperiencePumpController();
         ForgeRegistries.ITEMS.register(experiencePumpController);
         
-        // Register custom experience tanks
-        experienceTank100 = new ItemExperienceTank100();
-        ForgeRegistries.ITEMS.register(experienceTank100);
-        experienceTank500 = new ItemExperienceTank500();
-        ForgeRegistries.ITEMS.register(experienceTank500);
-        experienceTank1000 = new ItemExperienceTank1000();
-        ForgeRegistries.ITEMS.register(experienceTank1000);
-        experienceTank2000 = new ItemExperienceTank2000();
-        ForgeRegistries.ITEMS.register(experienceTank2000);
+        // Register custom experience tanks (configurable)
+        if (ExperienceTankConfig.tank.enableSpecialTanks) {
+            experienceTank100 = new ItemExperienceTank100();
+            ForgeRegistries.ITEMS.register(experienceTank100);
+            experienceTank500 = new ItemExperienceTank500();
+            ForgeRegistries.ITEMS.register(experienceTank500);
+            experienceTank1000 = new ItemExperienceTank1000();
+            ForgeRegistries.ITEMS.register(experienceTank1000);
+            experienceTank2000 = new ItemExperienceTank2000();
+            ForgeRegistries.ITEMS.register(experienceTank2000);
+        }
 
         CapabilityManager.INSTANCE.register(IExperiencePumpCapability.class, new ExperiencePumpCapability.Storage(), ExperiencePumpCapability::new);
         CapabilityManager.INSTANCE.register(IRsRingCapability.class, new RsRingCapability.RsRingStorage(), RsRingCapability::new);

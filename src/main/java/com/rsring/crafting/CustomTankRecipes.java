@@ -1,25 +1,29 @@
 package com.rsring.crafting;
 
-import com.rsring.item.ItemExperienceTank100;
-import com.rsring.item.ItemExperienceTank500;
-import com.rsring.item.ItemExperienceTank1000;
-import com.rsring.item.ItemExperienceTank2000;
+import com.rsring.config.ExperienceTankConfig;
 import com.rsring.rsring.RsRingMod;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 /**
- * 自定义储罐合成表注册类
- * 按照铁、金、绿宝石、钻石的顺序合成不同等级的储罐
+ * 特殊经验储罐配方注册。
  */
 public class CustomTankRecipes {
 
     /**
-     * 注册所有自定义储罐的合成表
+     * 注册特殊储罐的合成配方。
      */
     public static void registerRecipes() {
-        // 100级储罐合成表（铁锭 + 基础储罐）
+        if (!ExperienceTankConfig.tank.enableSpecialTanks) {
+            return;
+        }
+        if (RsRingMod.experienceTank100 == null || RsRingMod.experienceTank500 == null ||
+            RsRingMod.experienceTank1000 == null || RsRingMod.experienceTank2000 == null) {
+            return;
+        }
+
+        // 100级经验储罐：铁锭 + 经验泵
         GameRegistry.addShapedRecipe(
             new net.minecraft.util.ResourceLocation("rsring", "experience_tank_100"),
             null,
@@ -28,10 +32,10 @@ public class CustomTankRecipes {
             "ITI",
             "III",
             'I', Items.IRON_INGOT,
-            'T', RsRingMod.experiencePump // 基础经验储罐
+            'T', RsRingMod.experiencePump
         );
 
-        // 500级储罐合成表（金锭 + 100级储罐）
+        // 500级经验储罐：金锭 + 100级储罐
         GameRegistry.addShapedRecipe(
             new net.minecraft.util.ResourceLocation("rsring", "experience_tank_500"),
             null,
@@ -40,10 +44,10 @@ public class CustomTankRecipes {
             "GTG",
             "GGG",
             'G', Items.GOLD_INGOT,
-            'T', RsRingMod.experienceTank100 // 100级经验储罐
+            'T', RsRingMod.experienceTank100
         );
 
-        // 1000级储罐合成表（绿宝石 + 500级储罐）
+        // 1000级经验储罐：绿宝石 + 500级储罐
         GameRegistry.addShapedRecipe(
             new net.minecraft.util.ResourceLocation("rsring", "experience_tank_1000"),
             null,
@@ -52,10 +56,10 @@ public class CustomTankRecipes {
             "ETE",
             "EEE",
             'E', Items.EMERALD,
-            'T', RsRingMod.experienceTank500 // 500级经验储罐
+            'T', RsRingMod.experienceTank500
         );
 
-        // 2000级储罐合成表（钻石 + 1000级储罐）
+        // 2000级经验储罐：钻石 + 1000级储罐
         GameRegistry.addShapedRecipe(
             new net.minecraft.util.ResourceLocation("rsring", "experience_tank_2000"),
             null,
@@ -64,7 +68,7 @@ public class CustomTankRecipes {
             "DTD",
             "DDD",
             'D', Items.DIAMOND,
-            'T', RsRingMod.experienceTank1000 // 1000级经验储罐
+            'T', RsRingMod.experienceTank1000
         );
     }
 }

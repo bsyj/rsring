@@ -36,6 +36,23 @@ public class ItemExperiencePumpController extends Item {
         setCreativeTab(CreativeTabs.MISC);
     }
 
+    private static int getDefaultMode() {
+        int mode = com.rsring.config.ExperienceTankConfig.tank.defaultPumpMode;
+        if (mode < IExperiencePumpCapability.MODE_OFF || mode > IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
+            mode = IExperiencePumpCapability.MODE_OFF;
+        }
+        return mode;
+    }
+
+    private static int getDefaultRetainLevel() {
+        int level = com.rsring.config.ExperienceTankConfig.tank.defaultRetainLevel;
+        return Math.max(0, level);
+    }
+
+    private static boolean getDefaultMending() {
+        return com.rsring.config.ExperienceTankConfig.tank.defaultMendingMode;
+    }
+
     /**
      * 获取控制器的配置数据
      * @param stack 控制器物品栈
@@ -89,9 +106,9 @@ public class ItemExperiencePumpController extends Item {
         NBTTagCompound data = getControllerData(stack);
         if (data == null) {
             data = new NBTTagCompound();
-            data.setInteger("mode", IExperiencePumpCapability.MODE_OFF);
-            data.setInteger("retainLevel", 10);
-            data.setBoolean("mending", false);
+            data.setInteger("mode", getDefaultMode());
+            data.setInteger("retainLevel", getDefaultRetainLevel());
+            data.setBoolean("mending", getDefaultMending());
         }
 
         data.setInteger("extractLevels", extractLevels);
@@ -127,7 +144,7 @@ public class ItemExperiencePumpController extends Item {
      */
     public static int getMode(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
-        return data != null ? data.getInteger("mode") : IExperiencePumpCapability.MODE_OFF;
+        return data != null ? data.getInteger("mode") : getDefaultMode();
     }
 
     /**
@@ -137,7 +154,7 @@ public class ItemExperiencePumpController extends Item {
      */
     public static int getRetainLevel(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
-        return data != null && data.hasKey("retainLevel") ? data.getInteger("retainLevel") : 10;
+        return data != null && data.hasKey("retainLevel") ? data.getInteger("retainLevel") : getDefaultRetainLevel();
     }
 
     /**
@@ -147,7 +164,7 @@ public class ItemExperiencePumpController extends Item {
      */
     public static boolean isUseForMending(ItemStack stack) {
         NBTTagCompound data = getControllerData(stack);
-        return data != null && data.getBoolean("mending");
+        return data != null ? data.getBoolean("mending") : getDefaultMending();
     }
 
     @Override
@@ -157,8 +174,8 @@ public class ItemExperiencePumpController extends Item {
         NBTTagCompound data = getControllerData(stack);
         if (data != null) {
             int mode = data.getInteger("mode");
-            int retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : 10;
-            boolean mending = data.getBoolean("mending");
+            int retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : getDefaultRetainLevel();
+            boolean mending = data.hasKey("mending") ? data.getBoolean("mending") : getDefaultMending();
 
             tooltip.add(TextFormatting.GOLD + "当前配置:");
             tooltip.add(TextFormatting.GRAY + "  · 模式: " + getModeText(mode));

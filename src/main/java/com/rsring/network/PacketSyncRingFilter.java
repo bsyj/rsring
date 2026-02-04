@@ -68,6 +68,7 @@ public class PacketSyncRingFilter implements IMessage {
 
                 IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
                 if (cap == null) return;
+                if (!com.rsring.config.RsRingConfig.absorbRing.allowCustomFilters) return;
 
                 cap.setWhitelistMode(msg.whitelistMode);
                 for (int i = 0; i < 9; i++) {
@@ -86,4 +87,3 @@ public class PacketSyncRingFilter implements IMessage {
         }
     }
 }
-

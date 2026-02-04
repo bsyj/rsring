@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Central controller for experience extraction, injection, and tank management.
+ *用于经验提取、注入和罐管理的中央控制器。
  * 参考精妙背包设计：统一的经验管理控制器，提供配置驱动的经验操作
  * 
  * 核心功能：
@@ -20,7 +20,7 @@ import java.util.List;
  * 3. 与储罐的协调工作（避免冲突）
  * 4. 配置驱动的行为控制
  * 
- * Implements Requirements 3.1, 3.2, 3.3, 3.4 for comprehensive experience pump controller functionality.
+ * 实施要求 3.1、3.2、3.3、3.4，以全面体验泵控制器功能。
  */
 public class ExperiencePumpController {
     
@@ -54,8 +54,8 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Initializes the experience pump controller.
-     * Should be called during mod initialization.
+     *初始化体验泵控制器。
+     *应该在 mod 初始化期间调用。
      */
     public static void initialize() {
         getInstance(); // Ensure instance is created
@@ -63,11 +63,11 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Scans all inventory types for experience tanks.
-     * Implements Requirements 3.1, 3.2, 3.3 for comprehensive tank detection.
-     * 
-     * @param player The player to scan
-     * @return TankScanResult containing all detected tanks with location information
+     *扫描所有库存类型以查找经验罐。
+     *实施全面储罐检测的要求 3.1、3.2、3.3。
+     *
+     *@param player 要扫描的播放器
+     *@return TankScanResult 包含所有检测到的坦克及其位置信息
      */
     public TankScanResult scanAllInventories(EntityPlayer player) {
         if (player == null) {
@@ -87,11 +87,11 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Calculates the total capacity of all detected tanks.
-     * Implements Requirement 3.4 for total capacity calculation and display.
-     * 
-     * @param player The player to calculate total capacity for
-     * @return The total capacity of all tanks in XP points
+     *计算所有检测到的储罐的总容量。
+     *实现总容量计算和显示的要求3.4。
+     *
+     *@param player 计算总容量的播放器
+     *@return 所有坦克的总容量（XP点）
      */
     public int calculateTotalCapacity(EntityPlayer player) {
         if (player == null) {
@@ -107,10 +107,10 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Calculates the total stored experience across all tanks.
-     * 
-     * @param player The player to calculate total stored XP for
-     * @return The total stored XP across all tanks
+     *计算所有坦克的总存储经验。
+     *
+     *@param player 计算总存储 XP 的玩家
+     *@return 所有坦克存储的 XP 总量
      */
     public int calculateTotalStored(EntityPlayer player) {
         if (player == null) {
@@ -126,10 +126,10 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Gets the total remaining capacity across all tanks.
-     * 
-     * @param player The player to calculate remaining capacity for
-     * @return The total remaining capacity in XP points
+     *获取所有储罐的总剩余容量。
+     *
+     *@param player 计算剩余容量的播放器
+     *@return 总剩余容量（XP点）
      */
     public int calculateTotalRemainingCapacity(EntityPlayer player) {
         if (player == null) {
@@ -143,20 +143,20 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Processes scroll wheel input for fine-tuning controls.
-     * Implements Requirements 3.6, 3.7 for scroll wheel fine-tuned adjustment controls.
-     * 
-     * @param scrollDelta The scroll wheel delta (positive for up, negative for down)
-     * @param isExtraction True if this is for extraction operations, false for injection
-     * @param baseAmount The base amount to adjust
-     * @return The adjusted amount based on scroll input
+     *处理滚轮输入以进行微调控制。
+     *实施滚轮微调控制的要求 3.6、3.7。
+     *
+     *@paramscrollDelta 滚轮增量（向上为正，向下为负）
+     *@param isExtraction 如果用于提取操作则为 true，如果用于注入则为 false
+     *@param baseAmount 要调整的基本金额
+     *@return 根据滚动输入调整的金额
      */
     public int processScrollInput(int scrollDelta, boolean isExtraction, int baseAmount) {
         if (scrollDelta == 0) {
             return baseAmount;
         }
         
-        // Fine-tuning: scroll wheel adjusts by 10% of base amount, minimum 1 XP
+        //微调：滚轮调整基本量的 10%，最小 1 XP
         int adjustment = Math.max(1, baseAmount / 10);
         
         if (scrollDelta > 0) {
@@ -382,7 +382,7 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Gets the player's total experience points.
+     * 获取玩家的总经验值。
      * 现在委托给 XpHelper 工具类，使用精确的计算方法
      * 
      * @param player The player
@@ -397,7 +397,7 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Gets the XP required to reach the next level from the current level.
+     * 获取从当前级别达到下一个级别所需的 XPlevel.
      * 现在委托给 XpHelper 工具类
      *
      * @param currentLevel The current level
@@ -531,6 +531,10 @@ public class ExperiencePumpController {
         if (tanks == null) {
             return;
         }
+        int limit = com.rsring.config.ExperienceTankConfig.controller.maxManagedTanks;
+        if (limit > 0 && tanks.size() > limit) {
+            tanks = tanks.subList(0, limit);
+        }
         
         for (ItemStack tank : tanks) {
             setTankManagedState(tank, managed);
@@ -539,11 +543,11 @@ public class ExperiencePumpController {
         LOGGER.debug("Set managed state for {} tanks: {}", tanks.size(), managed);
     }
     
-    /**
-     * Refreshes the inventory state for a player.
-     * Should be called when inventory changes are detected.
-     * 
-     * @param player The player whose inventory state should be refreshed
+   /**
+     *刷新玩家的库存状态。
+     *当检测到库存变化时应调用。
+     *
+     *@paramplayer 需要刷新库存状态的玩家
      */
     public void refreshInventoryState(EntityPlayer player) {
         if (player == null) {
@@ -554,11 +558,11 @@ public class ExperiencePumpController {
         inventoryLayer.refreshInventoryState(player);
     }
     
-    /**
-     * Gets diagnostic information about the controller state.
-     * 
-     * @param player The player to get diagnostics for
-     * @return Diagnostic information map
+/**
+     *获取有关控制器状态的诊断信息。
+     *
+     *@param player 要获取诊断的玩家
+     *@return 诊断信息图
      */
     public java.util.Map<String, Object> getDiagnostics(EntityPlayer player) {
         java.util.Map<String, Object> diagnostics = new java.util.LinkedHashMap<>();
@@ -586,27 +590,27 @@ public class ExperiencePumpController {
     }
     
     /**
-     * Formats experience amount for display showing both XP points and equivalent levels.
-     * Implements Requirement 6.3 for experience display format.
-     * 现在委托给 XpHelper 工具类
-     * 
-     * @param xp The XP amount to format
-     * @return Formatted string showing XP and levels
+     *格式化经验值以显示 XP 点和同等级别。
+     *实施经验显示格式的要求 6.3。
+     *现在委托给XpHelper工具类
+     *
+     *@param xp 要格式化的 XP 数量
+     *@return 显示 XP 和等级的格式化字符串
      */
     public String formatExperienceDisplay(int xp) {
         return com.rsring.util.XpHelper.formatExperience(xp);
     }
     
     /**
-     * Calculates XP amount for level-based extraction operations.
-     * Implements Requirement 6.4 for level-based extraction calculation.
-     * 
-     * 参考 XP-Tome 项目的实现，确保等级基础的经验抽取计算准确
-     * 避免出现 10.99999 级这样的精度问题
+     *计算基于级别的提取操作的 XP 量。
+     *实施基于级别的提取计算的要求 6.4。
      *
-     * @param player The player performing the extraction
-     * @param targetLevel The level to extract down to
-     * @return The amount of XP that can be extracted
+     *参考 XP-Tome 项目的实现，确保等级基础的经验抽取计算准确
+     *避免出现 10.99999 级这样的精度问题
+     *
+     *@param player 执行提取的玩家
+     *@param targetLevel 提取到的级别
+     *@return 可提取的XP数量
      */
     public int calculateLevelBasedExtraction(EntityPlayer player, int targetLevel) {
         if (player == null || targetLevel < 0) {
@@ -617,9 +621,9 @@ public class ExperiencePumpController {
         // 计算目标等级的精确经验值，包括小数部分
         int targetXP = convertLevelToXP(targetLevel);
 
-        // Ensure targetXP doesn't exceed currentXP to avoid negative extraction
+        //确保目标XP不超过当前XP以避免负提取
         if (currentXP <= targetXP) {
-            return 0; // Player doesn't have enough XP to extract
+            return 0; //玩家没有足够的 XP 来提取
         }
 
         int extractableXP = currentXP - targetXP;

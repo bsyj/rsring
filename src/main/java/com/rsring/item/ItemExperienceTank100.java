@@ -118,9 +118,9 @@ public class ItemExperienceTank100 extends ItemExperiencePump implements IBauble
             data.setInteger("capacityLevels", 11); // 对应原系统的11级
             data.setInteger("fixedMaxXp", DEFAULT_CAPACITY); // 100级储罐固定容量
             data.setInteger("xp", 0);
-            data.setInteger("mode", 0);
-            data.setInteger("retainLevel", 1);
-            data.setBoolean("mending", false);
+            data.setInteger("mode", com.rsring.config.ExperienceTankConfig.tank.defaultPumpMode);
+            data.setInteger("retainLevel", com.rsring.config.ExperienceTankConfig.tank.defaultRetainLevel);
+            data.setBoolean("mending", com.rsring.config.ExperienceTankConfig.tank.defaultMendingMode);
         } else if (!data.hasKey("fixedMaxXp")) {
             // 迁移：旧版特殊储罐无 fixedMaxXp，补充以便 capability.getMaxXp() 正确
             data.setInteger("fixedMaxXp", DEFAULT_CAPACITY);

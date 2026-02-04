@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
-/** 客户端 -> 服务器：经验泵 GUI 按钮操作 */
+/** Handles pump controller actions. */
 public class PacketPumpAction implements IMessage {
 
     public static final int ACTION_MODE = 0;
@@ -32,8 +32,7 @@ public class PacketPumpAction implements IMessage {
 
     private int handOrdinal;
     private int action;
-    private int value; // 用于 RETAIN 或 TAKE_ONE/STORE_ONE 的级数
-
+    private int value; // Used for retain/take/store amount
     public PacketPumpAction() {}
 
     public PacketPumpAction(EnumHand hand, int action) {
@@ -63,8 +62,8 @@ public class PacketPumpAction implements IMessage {
     }
 
     public static class Handler implements IMessageHandler<PacketPumpAction, IMessage> {
-        @Override
-        public IMessage onMessage(PacketPumpAction msg, MessageContext ctx) {
+    @Override
+    public IMessage onMessage(PacketPumpAction msg, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().player;
             EnumHand hand = msg.handOrdinal == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
             player.getServerWorld().addScheduledTask(() -> {
@@ -75,18 +74,17 @@ public class PacketPumpAction implements IMessage {
                 }
 
                 java.util.List<ItemStack> tankStacks = findAllExperienceTanks(player);
-                // 记录储罐位置信息，用于后续同步
+                // Record tank locations for sync-back
                 java.util.Map<ItemStack, TankLocationInfo> tankLocations = new java.util.HashMap<>();
                 recordTankLocations(player, tankStacks, tankLocations);
                 if (tankStacks.isEmpty()) {
                     if (msg.action == ACTION_MENDING) {
                         player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                            net.minecraft.util.text.TextFormatting.RED + "未找到经验储罐！"));
+                            net.minecraft.util.text.TextFormatting.RED + "未找到经验储罐"));
                     }
                     return;
                 }
 
-                // 构建优先级列表：存入优先空罐，取出优先非空罐
                 java.util.List<ItemStack> prioritized = new java.util.ArrayList<>();
                 if (msg.action == ACTION_STORE_ONE || msg.action == ACTION_STORE_ALL) {
                     for (ItemStack t : tankStacks) {
@@ -109,7 +107,6 @@ public class PacketPumpAction implements IMessage {
                 } else {
                     prioritized.addAll(tankStacks);
                 }
-                // 过滤出由控制器管理的储罐并移至优先/次序中，以使控制器管理下的储罐按控制器逻辑工作
                 java.util.List<ItemStack> controllerManaged = new java.util.ArrayList<>();
                 java.util.List<ItemStack> unmanaged = new java.util.ArrayList<>();
                 com.rsring.experience.ExperiencePumpController pumpController = com.rsring.experience.ExperiencePumpController.getInstance();
@@ -117,7 +114,6 @@ public class PacketPumpAction implements IMessage {
                     if (pumpController.isTankManagedByController(t)) controllerManaged.add(t);
                     else unmanaged.add(t);
                 }
-                // 将控制器管理的储罐放在前面，确保它们优先按控制器策略处理
                 prioritized.clear();
                 prioritized.addAll(controllerManaged);
                 prioritized.addAll(unmanaged);
@@ -162,7 +158,7 @@ public class PacketPumpAction implements IMessage {
                             switch (msg.action) {
                                 case ACTION_MODE:
                                     cap.setMode((cap.getMode() + 1) % 3);
-                                    // 模式切换后立即执行一次泵送操作
+                                    // Apply once after mode switch
                                     pumpExperienceBetweenPlayerAndTank(player, cap);
                                     break;
                                 case ACTION_RETAIN_UP:
@@ -181,7 +177,7 @@ public class PacketPumpAction implements IMessage {
                         break;
 
                     case ACTION_TAKE_ALL: {
-                        // 提取所有经验：从储罐中提取所有经验
+                        // Extract all XP
                         int totalExtracted = 0;
                         
                         for (ItemStack tankStack : prioritized) {
@@ -195,11 +191,9 @@ public class PacketPumpAction implements IMessage {
                     }
 
                     case ACTION_TAKE_ONE: {
-                        // 取出N级：从储罐中提取指定等级数的经验
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
                         if (levelsToTake <= 0) break;
                         
-                        // 计算需要的总经验数（基于玩家当前等级）
                         int currentLevel = player.experienceLevel;
                         int targetLevel = currentLevel + levelsToTake;
                         int totalXPNeeded = com.rsring.util.XpHelper.getExperienceBetweenLevels(currentLevel, targetLevel);
@@ -210,7 +204,6 @@ public class PacketPumpAction implements IMessage {
                         for (ItemStack tankStack : prioritized) {
                             if (totalXPNeeded <= 0) break;
                             
-                            // 从当前储罐中提取经验
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
                             
@@ -231,7 +224,7 @@ public class PacketPumpAction implements IMessage {
                     }
 
                     case ACTION_STORE_ALL: {
-                        // 存储所有经验：将玩家的所有经验存储到储罐中
+                        // Store all XP
                         int totalStored = 0;
                         
                         for (ItemStack tankStack : prioritized) {
@@ -245,17 +238,15 @@ public class PacketPumpAction implements IMessage {
                     }
 
                     case ACTION_STORE_ONE: {
-                        // 存入N级：将指定等级数的经验存储到储罐中
+                        // Store N levels (default 1)
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
                         
-                        // 计算需要存储的总经验数（基于玩家当前等级）
                         int currentLevel = player.experienceLevel;
                         int targetLevel = Math.max(0, currentLevel - levelsToStore);
                         int totalXPToStore = com.rsring.util.XpHelper.getExperienceBetweenLevels(targetLevel, currentLevel);
                         if (totalXPToStore <= 0) break;
                         
-                        // 确保不超过玩家实际拥有的经验
                         int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
                         int targetTotalXP = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
                         if (playerTotalXP <= targetTotalXP) break;
@@ -267,7 +258,6 @@ public class PacketPumpAction implements IMessage {
                         for (ItemStack tankStack : prioritized) {
                             if (totalXPToStore <= 0) break;
                             
-                            // 向当前储罐中存储经验
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
                             
@@ -298,8 +288,8 @@ public class PacketPumpAction implements IMessage {
             return null;
         }
 
-        /** 查找玩家身上的经验储罐 */
-        private ItemStack findExperienceTank(EntityPlayer player) {
+        
+    private ItemStack findExperienceTank(EntityPlayer player) {
             if (player == null) return net.minecraft.item.ItemStack.EMPTY;
             if (BaublesHelper.isBaublesLoaded()) {
                 Object handler = BaublesHelper.getBaublesHandler(player);
@@ -330,36 +320,33 @@ public class PacketPumpAction implements IMessage {
 
 
 
-        /** 在玩家和经验储罐之间泵送经验 */
-        private void pumpExperienceBetweenPlayerAndTank(EntityPlayer player, IExperiencePumpCapability cap) {
+        
+    private void pumpExperienceBetweenPlayerAndTank(EntityPlayer player, IExperiencePumpCapability cap) {
             int retain = cap.getRetainLevel();
             int playerTotal = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
-            int targetXp = com.rsring.util.XpHelper.getExperienceForLevel(retain); // 使用精确的等级到经验转换
+            int targetXp = com.rsring.util.XpHelper.getExperienceForLevel(retain);
 
             if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
-                // 从玩家泵入：玩家高于保留等级时抽取
-                if (playerTotal > targetXp) {
-                    int take = Math.min(playerTotal - targetXp, cap.getMaxXp() - cap.getXpStored());
-                    if (take > 0) {
-                        com.rsring.util.XpHelper.removeExperienceFromPlayer(player, take);
-                        cap.addXp(take);
-                    }
+                int take = Math.min(playerTotal - targetXp, cap.getMaxXp() - cap.getXpStored());
+                if (take > 0) {
+                    com.rsring.util.XpHelper.removeExperienceFromPlayer(player, take);
+                    cap.addXp(take);
                 }
             } else if (cap.getMode() == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-                // 向玩家泵出：维持玩家达到保留等级，如果不足则从储罐泵送经验
-                if (playerTotal < targetXp && cap.getXpStored() > 0) {
-                    int need = targetXp - playerTotal;
-                    int give = cap.takeXp(Math.min(need, 100));
-                    if (give > 0) com.rsring.util.XpHelper.addExperienceToPlayer(player, give);
+                int need = targetXp - playerTotal;
+                int give = cap.takeXp(Math.min(need, 100));
+                if (give > 0) {
+                    com.rsring.util.XpHelper.addExperienceToPlayer(player, give);
                 }
             }
         }
 
 
         
-        /** 查找玩家身上的所有经验储罐（简化版，返回ItemStack列表） */
-        private List<ItemStack> findAllExperienceTanks(EntityPlayer player) {
+        
+    private List<ItemStack> findAllExperienceTanks(EntityPlayer player) {
             List<ItemStack> tanks = new ArrayList<>();
+            java.util.Set<ItemStack> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
             if (player == null) return tanks;
 
             if (BaublesHelper.isBaublesLoaded()) {
@@ -368,7 +355,9 @@ public class PacketPumpAction implements IMessage {
                 for (int i = 0; i < size; i++) {
                     ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
                     if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                        tanks.add(stack);
+                        if (seen.add(stack)) {
+                            tanks.add(stack);
+                        }
                     }
                 }
             }
@@ -376,23 +365,31 @@ public class PacketPumpAction implements IMessage {
             for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
                 ItemStack stack = player.inventory.getStackInSlot(i);
                 if (!stack.isEmpty() && stack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                    tanks.add(stack);
+                    if (seen.add(stack)) {
+                        tanks.add(stack);
+                    }
                 }
             }
 
             for (EnumHand h : EnumHand.values()) {
                 ItemStack heldStack = player.getHeldItem(h);
                 if (!heldStack.isEmpty() && heldStack.getItem() instanceof com.rsring.item.ItemExperiencePump) {
-                    tanks.add(heldStack);
+                    if (seen.add(heldStack)) {
+                        tanks.add(heldStack);
+                    }
                 }
             }
 
+            int maxManaged = com.rsring.config.ExperienceTankConfig.controller.maxManagedTanks;
+            if (maxManaged > 0 && tanks.size() > maxManaged) {
+                return new java.util.ArrayList<>(tanks.subList(0, maxManaged));
+            }
             return tanks;
         }
 
 
-        /** 储罐位置信息 */
-        private static class TankLocationInfo {
+        
+    private static class TankLocationInfo {
             final String locationType; // "baubles", "inventory", "hand"
             final int slotIndex;
             final Object inventory;
@@ -404,8 +401,8 @@ public class PacketPumpAction implements IMessage {
             }
         }
         
-        /** 记录储罐位置信息 */
-        private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
+        
+    private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
             java.util.Set<ItemStack> mapped = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
             // Check baubles
@@ -446,8 +443,8 @@ public class PacketPumpAction implements IMessage {
         }
 
         
-        /** 同步储罐回原位置，并发送客户端同步包（解决饰品栏/背包储罐存取后客户端不同步） */
-        private void syncTankBack(ItemStack tank, TankLocationInfo location, EntityPlayerMP player) {
+        
+    private void syncTankBack(ItemStack tank, TankLocationInfo location, EntityPlayerMP player) {
             if (location == null) {
                 return;
             }
@@ -469,3 +466,4 @@ public class PacketPumpAction implements IMessage {
 
     }
 }
+

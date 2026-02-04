@@ -40,24 +40,21 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.io.IOException;
 
 /**
- * 物品吸收戒指黑白名单过滤GUI（使用 GuiContainer）
- * 完全参考 Cyclic 的 GuiItemPump 和 GuiBaseContainer 实现
+ * 閻椻晛鎼ч崥鍛婃暪閹存帗瀵氭鎴犳閸氬秴宕熸潻鍥ㄦ姢GUI閿涘牅濞囬悽?GuiContainer閿? * 鐎瑰苯鍙忛崣鍌濃偓?Cyclic 閻?GuiItemPump 閸?GuiBaseContainer 鐎圭偟骞?
  */
 @SideOnly(Side.CLIENT)
 public class GuiRingFilterContainer extends GuiContainer {
 
-    // 参考 Cyclic 的常量定义
-    private static final int SQ = 18; // Const.SQ - 槽位大小
-    private static final int PAD = 8; // Const.PAD - 边距
+private static final int SQ = 18;
+
+private static final int PAD = 8;
     private static final int SLOT_COUNT = 9;
     private static final int TOGGLE_BTN_WIDTH = 20;
     private static final int TOGGLE_BTN_HEIGHT = 20;
 
-    // 完全参考 Cyclic 的 ContainerItemPump 槽位布局
     private static final int SLOTX_START = PAD;
     private static final int SLOTY = SQ + PAD * 4;
     
-    // 纹理资源（使用 Cyclic 的材质）
     private static final ResourceLocation GUI_BACKGROUND = new ResourceLocation("rsring", "textures/gui/table.png");
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/inventory_slot.png");
     private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/buttons.png");
@@ -73,7 +70,7 @@ public class GuiRingFilterContainer extends GuiContainer {
         this.title = title;
         this.capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
         this.xSize = 176;
-        this.ySize = 166;  // 保持原有高度不变
+        this.ySize = 166;
     }
 
     @Override
@@ -83,6 +80,10 @@ public class GuiRingFilterContainer extends GuiContainer {
 
     private void refreshCapability() {
         if (capability == null) capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+    }
+
+    private boolean isCustomFiltersAllowed() {
+        return com.rsring.config.RsRingConfig.absorbRing.allowCustomFilters;
     }
 
     @Override
@@ -117,14 +118,14 @@ public class GuiRingFilterContainer extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         
-        // 绘制标题 - RGB 跑马灯效果
-        String titleText = title;
+String titleText = title;
         long t = System.currentTimeMillis();
-        int titlePeriod = 2000; // 2秒一个周期
+
+        int titlePeriod = 2000;
         float titleHue = ((t % titlePeriod) / (float) titlePeriod) % 1.0f;
-        // 添加额外的色相偏移，产生更炫酷的双重彩虹效果
-        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 额外的波动
-        int titleColor = hsvToRgbInt((titleHue + hueOffset) % 1.0f, 1.0f, 1.0f); // 饱和度和明度都是最大，色彩鲜艳
+
+        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f;
+        int titleColor = hsvToRgbInt((titleHue + hueOffset) % 1.0f, 1.0f, 1.0f);
         int titleX = (this.xSize - this.fontRenderer.getStringWidth(titleText)) / 2;
         this.fontRenderer.drawStringWithShadow(titleText, titleX, 6, titleColor);
         
@@ -132,11 +133,10 @@ public class GuiRingFilterContainer extends GuiContainer {
     }
     
     /**
-     * 将 HSV 颜色转换为 RGB 整数值
-     * @param hue 色相 (0.0-1.0)
-     * @param saturation 饱和度 (0.0-1.0)
-     * @param value 明度 (0.0-1.0)
-     * @return RGB 颜色的整数值 (0xRRGGBB)
+     * 鐏?HSV 妫版粏澹婃潪顒佸床娑?RGB 閺佸瓨鏆熼崐?     * @param hue 閼硅尙娴?(0.0-1.0)
+     * @param saturation 妤楀崬鎷版惔?(0.0-1.0)
+     * @param value 閺勫骸瀹?(0.0-1.0)
+     * @return RGB 妫版粏澹婇惃鍕殻閺佹澘鈧?(0xRRGGBB)
      */
     private int hsvToRgbInt(float hue, float saturation, float value) {
         int r = 0, g = 0, b = 0;
@@ -247,6 +247,7 @@ public class GuiRingFilterContainer extends GuiContainer {
 
     private void drawCustomTooltips(int mouseX, int mouseY) {
         if (capability == null) return;
+        boolean customAllowed = isCustomFiltersAllowed();
         int relativeX = mouseX - this.guiLeft;
         int relativeY = mouseY - this.guiTop;
         for (int i = 0; i < SLOT_COUNT; i++) {
@@ -256,11 +257,10 @@ public class GuiRingFilterContainer extends GuiContainer {
                 String itemName = capability.getFilterSlot(i);
                 if (itemName == null || itemName.isEmpty()) {
                     this.drawHoveringText(java.util.Arrays.asList(
-                        TextFormatting.GRAY + "点击添加过滤物品",
-                        TextFormatting.DARK_GRAY + "仅读取，不消耗"
+                        TextFormatting.GRAY + "Click to add filter item",
+                        TextFormatting.DARK_GRAY + "Read-only when locked"
                     ), mouseX, mouseY);
                 } else {
-                    // 显示物品名称
                     try {
                         ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
                         if (!display.isEmpty()) {
@@ -268,7 +268,6 @@ public class GuiRingFilterContainer extends GuiContainer {
                             this.drawHoveringText(tooltip, mouseX, mouseY);
                         }
                     } catch (Exception e) {
-                        // 如果无法获取物品，显示原始名称
                         this.drawHoveringText(java.util.Arrays.asList(itemName), mouseX, mouseY);
                     }
                 }
@@ -278,16 +277,20 @@ public class GuiRingFilterContainer extends GuiContainer {
         int btnX = 150;
         int btnY = PAD / 2;
         if (isMouseOverButton(relativeX, relativeY, btnX, btnY)) {
-            // 为按钮悬停提示添加 RGB 跑马灯效果
+            if (!customAllowed) {
+                java.util.List<String> tooltip = new java.util.ArrayList<>();
+                tooltip.add(TextFormatting.RED + "Locked by config");
+                this.drawHoveringText(tooltip, mouseX, mouseY);
+                return;
+            }
+
             long t = System.currentTimeMillis();
-            int period = 2000; // 2秒一个周期
+            int period = 2000;
             float hue = ((t % period) / (float) period) % 1.0f;
-            
-            // 创建带RGB颜色的文本
+
             java.util.List<String> tooltip = new java.util.ArrayList<>();
-            String mode = capability.isWhitelistMode() ? "白名单模式" : "黑名单模式";
-            
-            // 使用TextFormatting的颜色代码，通过HUE值循环切换颜色
+            String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
+
             net.minecraft.util.text.TextFormatting[] colors = {
                 net.minecraft.util.text.TextFormatting.RED,
                 net.minecraft.util.text.TextFormatting.GOLD,
@@ -298,16 +301,16 @@ public class GuiRingFilterContainer extends GuiContainer {
                 net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
                 net.minecraft.util.text.TextFormatting.DARK_PURPLE
             };
-            
+
             int colorIndex = (int)(hue * colors.length) % colors.length;
             net.minecraft.util.text.TextFormatting modeColor = colors[colorIndex];
-            
+
             int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
             net.minecraft.util.text.TextFormatting hintColor = colors[hintColorIndex];
-            
+
             tooltip.add(modeColor + mode);
-            tooltip.add(hintColor + "点击切换过滤模式");
-            
+            tooltip.add(hintColor + "Click to toggle mode");
+
             this.drawHoveringText(tooltip, mouseX, mouseY);
         }
     }
@@ -315,7 +318,6 @@ public class GuiRingFilterContainer extends GuiContainer {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         refreshCapability();
-        // 完全照抄 Cyclic GuiBaseContainer：先 super（背包槽位/拖放），再处理过滤槽与按钮
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (capability == null) return;
         int relativeX = mouseX - this.guiLeft;
@@ -323,16 +325,17 @@ public class GuiRingFilterContainer extends GuiContainer {
         int btnX = 150;
         int btnY = PAD / 2;
         if (isMouseOverButton(relativeX, relativeY, btnX, btnY)) {
+            if (!isCustomFiltersAllowed()) {
+                return;
+            }
             boolean oldMode = capability.isWhitelistMode();
             capability.setWhitelistMode(!oldMode);
-            String newModeText = capability.isWhitelistMode() ? "白名单模式" : "黑名单模式";
+            String newModeText = capability.isWhitelistMode() ? "白名单" : "黑名单";
 
-            // 发送切换模式的消息给玩家
             this.mc.player.sendMessage(new net.minecraft.util.text.TextComponentString(
-                net.minecraft.util.text.TextFormatting.GOLD + "模式切换为: " +
+                net.minecraft.util.text.TextFormatting.GOLD + "已切换过滤模式: " +
                 net.minecraft.util.text.TextFormatting.AQUA + newModeText
             ));
-
             RsRingCapability.syncCapabilityToStack(ringStack, capability);
             String[] slots = new String[SLOT_COUNT];
             for (int i = 0; i < SLOT_COUNT; i++) slots[i] = capability.getFilterSlot(i);
@@ -352,6 +355,7 @@ public class GuiRingFilterContainer extends GuiContainer {
     
     private void mouseClickedWrapper(int slotIndex) {
         if (capability == null) return;
+        if (!isCustomFiltersAllowed()) return;
         ItemStack stackInMouse = this.mc.player.inventory.getItemStack();
         
         String currentFilter = capability.getFilterSlot(slotIndex);
@@ -366,7 +370,6 @@ public class GuiRingFilterContainer extends GuiContainer {
                 stackInMouse.getItem().getRegistryName().toString() : "";
             if (!name.isEmpty()) {
                 capability.setFilterSlot(slotIndex, name);
-                // 过滤器仅读取不消耗：不清空鼠标，保留物品在玩家手中
             }
         }
         
@@ -393,3 +396,4 @@ public class GuiRingFilterContainer extends GuiContainer {
         return false;
     }
 }
+

@@ -205,9 +205,9 @@ public class GuiExperiencePumpController extends GuiScreen {
             if (data != null) {
                 xpStored = data.getInteger("xp");
                 capacityLevels = data.hasKey("capacityLevels") ? data.getInteger("capacityLevels") : 1;  // 默认1级
-                mode = data.getInteger("mode");
-                retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : 10;
-                useForMending = data.getBoolean("mending");
+                mode = data.hasKey("mode") ? data.getInteger("mode") : com.rsring.config.ExperienceTankConfig.tank.defaultPumpMode;
+                retainLevel = data.hasKey("retainLevel") ? data.getInteger("retainLevel") : com.rsring.config.ExperienceTankConfig.tank.defaultRetainLevel;
+                useForMending = data.hasKey("mending") ? data.getBoolean("mending") : com.rsring.config.ExperienceTankConfig.tank.defaultMendingMode;
                 maxXp = ItemExperiencePump.getMaxXpFromNBT(firstTank);
             }
         } else {

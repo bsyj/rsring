@@ -49,17 +49,3 @@ config.rsring.tank.xpMendingEfficiency=XP Mending Efficiency
 # Pump Controller Configuration
 config.rsring.controller=Pump Controller Settings
 config.rsring.controller.maxManagedTanks=Maximum Managed Tanks
-
-# General Configuration
-config.rsring.general=General Settings
-config.rsring.general.enableBaublesIntegration=Enable Baubles Integration
-config.rsring.general.enableSoundEffects=Enable Sound Effects
-config.rsring.general.enableParticleEffects=Enable Particle Effects
-config.rsring.general.debugMode=Debug Mode
-config.rsring.general.autoSaveInterval=Auto-save Interval
-
-# Network Configuration
-config.rsring.network=Network Settings
-config.rsring.network.packetSendFrequency=Packet Send Frequency
-config.rsring.network.packetSizeLimit=Packet Size Limit
-config.rsring.network.enableNetworkCompression=Enable Network Compression

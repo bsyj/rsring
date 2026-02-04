@@ -34,7 +34,6 @@ public class RingDetectionService {
         
         // Try to find any ring type by checking common ring classes
         // This approach allows for extensibility with new ring types
-        // ç§»é¤å¯¹ItemRsRingçå¼ç¨ï¼å ä¸ºRSææå·²è¢«å é¤
         ItemStack result = ItemStack.EMPTY;
         if (!result.isEmpty()) {
             return result;
@@ -75,7 +74,6 @@ public class RingDetectionService {
         // Search in priority order
         ItemStack result;
         
-        // 1. Check hands (main hand â?off hand)
         result = findInHands(player, ringClass);
         if (!result.isEmpty()) {
             logSearchResult("hands", true, result);

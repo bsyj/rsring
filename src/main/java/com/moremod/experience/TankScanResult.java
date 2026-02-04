@@ -4,21 +4,21 @@ import net.minecraft.item.ItemStack;
 import java.util.*;
 
 /**
- * Result of scanning for experience tanks across different inventory locations.
- * Provides comprehensive information about detected tanks for the Experience Pump Controller.
+ * 跨不同物品栏位置扫描经验储罐的结果。
+ * 为经验泵控制器提供关于检测到的储罐的综合信息。
  * 
- * Supports Requirements 3.1, 3.2, 3.3, 3.4 for comprehensive tank detection and capacity calculation.
+ * 支持需求 3.1、3.2、3.3、3.4 的全面储罐检测和容量计算。
  */
 public class TankScanResult {
     
     /**
-     * Enumeration of inventory types where tanks can be found.
+     * 可以找到储罐的物品栏类型枚举。
      */
     public enum InventoryType {
-        PLAYER_INVENTORY("Player Inventory"),
-        HOTBAR("Hotbar"),
-        BAUBLES("Baubles Slots"),
-        OFFHAND("Off Hand");
+        PLAYER_INVENTORY("玩家物品栏"),
+        HOTBAR("快捷栏"),
+        BAUBLES("Baubles 槽位"),
+        OFFHAND("副手");
         
         private final String displayName;
         
@@ -38,7 +38,7 @@ public class TankScanResult {
     private final long scanTimestamp;                          // When the scan was performed
     
     /**
-     * Creates a new tank scan result.
+     * 创建新的储罐扫描结果。
      */
     public TankScanResult(List<ItemStack> allTanks, 
                          Map<InventoryType, List<ItemStack>> tanksByLocation) {
@@ -59,7 +59,7 @@ public class TankScanResult {
     }
     
     /**
-     * Creates an empty scan result.
+     * 创建空的扫描结果。
      */
     public static TankScanResult empty() {
         return new TankScanResult(Collections.emptyList(), Collections.emptyMap());
@@ -94,14 +94,14 @@ public class TankScanResult {
     // Utility methods
     
     /**
-     * Gets the number of tanks found.
+     * 获取找到的储罐数量。
      */
     public int getTankCount() {
         return allTanks.size();
     }
     
     /**
-     * Gets the number of tanks in a specific location.
+     * 获取特定位置的储罐数量。
      */
     public int getTankCount(InventoryType location) {
         List<ItemStack> tanks = tanksByLocation.get(location);
@@ -109,7 +109,7 @@ public class TankScanResult {
     }
     
     /**
-     * Gets tanks from a specific location.
+     * 从特定位置获取储罐。
      */
     public List<ItemStack> getTanksFromLocation(InventoryType location) {
         List<ItemStack> tanks = tanksByLocation.get(location);
@@ -117,35 +117,35 @@ public class TankScanResult {
     }
     
     /**
-     * Checks if any tanks were found.
+     * 检查是否找到任何储罐。
      */
     public boolean hasTanks() {
         return !allTanks.isEmpty();
     }
     
     /**
-     * Checks if tanks were found in a specific location.
+     * 检查是否在特定位置找到储罐。
      */
     public boolean hasTanksInLocation(InventoryType location) {
         return getTankCount(location) > 0;
     }
     
     /**
-     * Gets the remaining total capacity across all tanks.
+     * 获取所有储罐的剩余总容量。
      */
     public int getTotalRemainingCapacity() {
         return totalCapacity - totalStored;
     }
     
     /**
-     * Gets the overall fill percentage (0.0 to 1.0).
+     * 获取总体填充百分比（0.0 到 1.0）。
      */
     public double getOverallFillPercentage() {
         return totalCapacity > 0 ? (double) totalStored / totalCapacity : 0.0;
     }
     
     /**
-     * Gets a summary of tanks by location for display purposes.
+     * 获取按位置分类的储罐摘要，用于显示目的。
      */
     public Map<String, Integer> getLocationSummary() {
         Map<String, Integer> summary = new LinkedHashMap<>();
@@ -163,7 +163,7 @@ public class TankScanResult {
     // Private helper methods
     
     /**
-     * Calculates the total capacity of all tanks.
+     * 计算所有储罐的总容量。
      */
     private int calculateTotalCapacity() {
         int total = 0;
@@ -180,7 +180,7 @@ public class TankScanResult {
     }
     
     /**
-     * Calculates the total stored experience across all tanks.
+     * 计算所有储罐中存储的总经验值。
      */
     private int calculateTotalStored() {
         int total = 0;
@@ -197,8 +197,8 @@ public class TankScanResult {
     }
     
     /**
-     * Gets the capacity of a single tank.
-     * Uses the existing ItemExperiencePump methods for compatibility.
+     * 获取单个储罐的容量。
+     * 使用现有的 ItemExperiencePump 方法以保持兼容性。
      */
     private int getTankCapacity(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof com.moremod.item.ItemExperiencePump)) {
@@ -209,8 +209,8 @@ public class TankScanResult {
     }
     
     /**
-     * Gets the stored XP of a single tank.
-     * Uses the existing ItemExperiencePump methods for compatibility.
+     * 获取单个储罐存储的经验值。
+     * 使用现有的 ItemExperiencePump 方法以保持兼容性。
      */
     private int getTankStoredXP(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof com.moremod.item.ItemExperiencePump)) {
@@ -228,7 +228,7 @@ public class TankScanResult {
     }
     
     /**
-     * Builder class for creating TankScanResult instances.
+     * 用于创建 TankScanResult 实例的构建器类。
      */
     public static class Builder {
         private final List<ItemStack> allTanks = new ArrayList<>();

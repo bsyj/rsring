@@ -1,69 +1,49 @@
 package com.moremod.config;
 
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.moremod.rsring.RsRingMod;
+import net.minecraftforge.common.config.Configuration;
 
-@Config(modid = RsRingMod.MODID, name = "rsring/general_config")
-public class GeneralConfig {
-
-    @Config.Comment({
-        "通用配置",
-        "General Configuration"
-    })
-    @Config.Name("General Settings")
-    public static GeneralSettings general = new GeneralSettings();
+public class GeneralConfig implements IHasConfig {
 
     public static class GeneralSettings {
-        
-        @Config.Comment({
-            "启用/禁用Baubles集成",
-            "Enable/disable Baubles integration"
-        })
-        @Config.Name("Enable Baubles Integration")
         public boolean enableBaublesIntegration = true;
-
-        @Config.Comment({
-            "启用/禁用声音效果",
-            "Enable/disable sound effects"
-        })
-        @Config.Name("Enable Sound Effects")
         public boolean enableSoundEffects = true;
-
-        @Config.Comment({
-            "启用/禁用粒子效果",
-            "Enable/disable particle effects"
-        })
-        @Config.Name("Enable Particle Effects")
         public boolean enableParticleEffects = true;
-
-        @Config.Comment({
-            "调试模式",
-            "Debug mode"
-        })
-        @Config.Name("Debug Mode")
         public boolean debugMode = false;
-
-        @Config.Comment({
-            "自动保存间隔（秒）",
-            "Auto-save interval (seconds)"
-        })
-        @Config.Name("Auto-save Interval")
-        @Config.RangeInt(min = 60, max = 3600)
         public int autoSaveInterval = 300;
     }
 
-    @Mod.EventBusSubscriber(modid = RsRingMod.MODID)
-    public static class EventHandler {
+    public static GeneralSettings general = new GeneralSettings();
 
-        @SubscribeEvent
-        public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-            if (event.getModID().equals(RsRingMod.MODID)) {
-                ConfigManager.sync(RsRingMod.MODID, Config.Type.INSTANCE);
-            }
-        }
+    @Override
+    public void syncConfig(Configuration config) {
+        config.addCustomCategoryComment(RsRingMod.MODID + ".general", "General Configuration");
+        
+        general.enableBaublesIntegration = config.getBoolean("enableBaublesIntegration", 
+            RsRingMod.MODID + ".general", 
+            true, 
+            "Enable/disable Baubles integration");
+            
+        general.enableSoundEffects = config.getBoolean("enableSoundEffects", 
+            RsRingMod.MODID + ".general", 
+            true, 
+            "Enable/disable sound effects");
+            
+        general.enableParticleEffects = config.getBoolean("enableParticleEffects", 
+            RsRingMod.MODID + ".general", 
+            true, 
+            "Enable/disable particle effects");
+            
+        general.debugMode = config.getBoolean("debugMode", 
+            RsRingMod.MODID + ".general", 
+            false, 
+            "Debug mode");
+            
+        general.autoSaveInterval = config.getInt("autoSaveInterval", 
+            RsRingMod.MODID + ".general", 
+            300, 
+            60, 
+            3600, 
+            "Auto-save interval (seconds)");
     }
 }

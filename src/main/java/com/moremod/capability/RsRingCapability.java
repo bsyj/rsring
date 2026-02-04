@@ -15,7 +15,6 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraft.item.ItemStack;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class RsRingCapability implements IRsRingCapability {
 
@@ -27,9 +26,9 @@ public class RsRingCapability implements IRsRingCapability {
     private boolean enabled = false;
 
     // 黑白名单相关
-    private java.util.List<String> blacklistItems = new java.util.ArrayList<>();
+    private List<String> blacklistItems = new ArrayList<>();
     // 默认使用配置中的模式设置
-    private boolean whitelistMode = com.moremod.config.RsRingConfig.absorbRing.useBlacklistModeByDefault ? false : true;
+    private boolean whitelistMode = !com.moremod.config.RsRingConfig.absorbRing.useBlacklistModeByDefault;
 
     // 构造函数
     public RsRingCapability() {
@@ -169,7 +168,7 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setFilterSlot(int slot, String itemRegistryName) {
-        // Allow slots 0..8 (9 slots)
+        // 允许槽位 0..8（共9个槽位）
         if (slot < 0 || slot > 8) return;
         while (blacklistItems.size() <= slot) blacklistItems.add("");
         blacklistItems.set(slot, itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName);

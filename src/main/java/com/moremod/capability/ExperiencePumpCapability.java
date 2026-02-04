@@ -13,9 +13,8 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
     public static final Capability<IExperiencePumpCapability> EXPERIENCE_PUMP_CAPABILITY = null;
 
     // 常量定义
-    private static final int DEFAULT_CAPACITY_LEVELS = 1;  // 初始容量1级（1000 mB）
-    private static final int LEVELS_PER_PEARL = 1;  // 每次升级增加1级（1000 mB）
-    // 最大容量等级：25级 => 1000 * 2^(25-1) = 16,777,216,000 mB
+    private static final int DEFAULT_CAPACITY_LEVELS = 1;
+    private static final int LEVELS_PER_PEARL = 1;
     private static final int MAX_CAPACITY_LEVELS = 25;
     private static final int MIN_RETAIN_LEVEL = 0;
     private static final int MIN_CAPACITY_LEVELS = 1;

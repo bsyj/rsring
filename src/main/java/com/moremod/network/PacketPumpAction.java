@@ -6,12 +6,16 @@ import com.moremod.item.ItemExperiencePump;
 import com.moremod.network.PacketSyncTankSlots;
 import com.moremod.rsring.RsRingMod;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /** 客户端 -> 服务器：经验泵 GUI 按钮操作 */
 public class PacketPumpAction implements IMessage {
@@ -38,18 +42,6 @@ public class PacketPumpAction implements IMessage {
     }
 
     public PacketPumpAction(EnumHand hand, int action, int value) {
-        this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
-        this.action = action;
-        this.value = value;
-    }
-
-    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack) {
-        this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
-        this.action = action;
-        this.value = 0;
-    }
-
-    public PacketPumpAction(EnumHand hand, int action, net.minecraft.item.ItemStack tankStack, int value) {
         this.handOrdinal = hand == EnumHand.MAIN_HAND ? 0 : 1;
         this.action = action;
         this.value = value;
@@ -306,13 +298,13 @@ public class PacketPumpAction implements IMessage {
         }
 
         /** 查找玩家身上的经验储罐 */
-        private ItemStack findExperienceTank(net.minecraft.entity.player.EntityPlayer player) {
+        private ItemStack findExperienceTank(EntityPlayer player) {
             if (player == null) return net.minecraft.item.ItemStack.EMPTY;
             // 优先检查饰品栏（Baubles），再检查主手/副手，最后检查背包
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
                     Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
+                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
                     if (handler instanceof net.minecraft.inventory.IInventory) {
                         net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
                         for (int i = 0; i < baubles.getSizeInventory(); i++) {
@@ -345,7 +337,7 @@ public class PacketPumpAction implements IMessage {
 
 
         /** 在玩家和经验储罐之间泵送经验 */
-        private void pumpExperienceBetweenPlayerAndTank(net.minecraft.entity.player.EntityPlayer player, IExperiencePumpCapability cap) {
+        private void pumpExperienceBetweenPlayerAndTank(EntityPlayer player, IExperiencePumpCapability cap) {
             int retain = cap.getRetainLevel();
             int playerTotal = com.moremod.util.XpHelper.getPlayerTotalExperience(player);
             int targetXp = com.moremod.util.XpHelper.getExperienceForLevel(retain); // 使用精确的等级到经验转换
@@ -372,14 +364,14 @@ public class PacketPumpAction implements IMessage {
 
         
         /** 查找玩家身上的所有经验储罐（简化版，返回ItemStack列表） */
-        private java.util.List<ItemStack> findAllExperienceTanks(net.minecraft.entity.player.EntityPlayer player) {
-            java.util.List<ItemStack> tanks = new java.util.ArrayList<>();
+        private List<ItemStack> findAllExperienceTanks(EntityPlayer player) {
+            List<ItemStack> tanks = new ArrayList<>();
             if (player == null) return tanks;
             // 优先检查饰品栏（Baubles）
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
                     Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
+                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
                     if (handler instanceof net.minecraft.inventory.IInventory) {
                         net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
                         for (int i = 0; i < baubles.getSizeInventory(); i++) {
@@ -410,7 +402,7 @@ public class PacketPumpAction implements IMessage {
 
             return tanks;
         }
-        
+
         /** 储罐位置信息 */
         private static class TankLocationInfo {
             final String locationType; // "baubles", "inventory", "hand"
@@ -425,12 +417,12 @@ public class PacketPumpAction implements IMessage {
         }
         
         /** 记录储罐位置信息 */
-        private void recordTankLocations(net.minecraft.entity.player.EntityPlayer player, java.util.List<ItemStack> tanks, java.util.Map<ItemStack, TankLocationInfo> locations) {
+        private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
             // 检查饰品栏
             if (net.minecraftforge.fml.common.Loader.isModLoaded("baubles")) {
                 try {
                     Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-                    Object handler = apiClass.getMethod("getBaublesHandler", net.minecraft.entity.player.EntityPlayer.class).invoke(null, player);
+                    Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
                     if (handler instanceof net.minecraft.inventory.IInventory) {
                         net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
                         for (int i = 0; i < baubles.getSizeInventory(); i++) {

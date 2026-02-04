@@ -363,7 +363,7 @@ public class RingDetectionSystem {
     }
     
     /**
-     * Activates chest ring functionality.
+     * Activates absorb ring functionality.
      */
     private void activateAbsorbRing(EntityPlayer player, ItemStack ringStack) {
         try {

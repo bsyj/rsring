@@ -845,9 +845,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         return com.moremod.util.XpHelper.getExperienceForLevel(level);
     }
 
-    private static int levelToTotalXp(int level) {
-        return getTotalXpForLevel(level);
-    }
+    
 
     private static void addPlayerXp(EntityPlayer player, int amount) {
         if (amount == 0) return;

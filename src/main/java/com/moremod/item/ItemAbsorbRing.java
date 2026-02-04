@@ -26,8 +26,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -181,7 +179,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             return false;
         }
         
-        // Use the RingDetectionSystem to find any chest ring in player's inventory
+        // Use the RingDetectionSystem to find any absorb ring in player's inventory
         com.moremod.service.RingDetectionSystem ringSystem = com.moremod.service.RingDetectionSystem.getInstance();
         com.moremod.experience.RingDetectionResult result = ringSystem.scanForRings(player);
         
@@ -337,6 +335,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 data = stack.getTagCompound().getCompoundTag("RsRingData");
             } else if (stack.getTagCompound().hasKey("ForgeCaps")) {
                 net.minecraft.nbt.NBTTagCompound caps = stack.getTagCompound().getCompoundTag("ForgeCaps");
+                // 检查旧的命名以保持向后兼容性
                 if (caps.hasKey("rsring:chestring")) data = caps.getCompoundTag("rsring:chestring");
                 else if (caps.hasKey("rsring:rsring")) data = caps.getCompoundTag("rsring:rsring");
             }

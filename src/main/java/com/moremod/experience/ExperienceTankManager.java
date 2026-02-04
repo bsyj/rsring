@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Manages experience tank operations including upgrades, capacity validation, and overflow handling.
- * Integrates with the crafting event system to preserve experience during tank upgrades.
+ * 管理经验储罐操作，包括升级、容量验证和溢出处理。
+ * 与合成事件系统集成，在储罐升级期间保留经验。
  * 
- * Supports Requirements 1.1, 1.3, 1.4 for experience tank upgrade preservation and capacity management.
+ * 支持需求 1.1、1.3、1.4 中的经验储罐升级保留和容量管理。
  */
 public class ExperienceTankManager {
     
@@ -34,14 +34,14 @@ public class ExperienceTankManager {
     public static final int MAX_TIER = 10; // Maximum tank tier
     
     /**
-     * Private constructor for singleton pattern.
+     * 单例模式的私有构造函数。
      */
     private ExperienceTankManager() {
-        // No event registration needed as crafting is handled by CraftingUpgradeHandler
+        // 不需要注册事件，因为合成由 CraftingUpgradeHandler 处理
     }
     
     /**
-     * Gets the singleton instance.
+     * 获取单例实例。
      */
     public static ExperienceTankManager getInstance() {
         if (instance == null) {
@@ -51,21 +51,21 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Initializes the experience tank manager.
-     * Should be called during mod initialization.
+     * 初始化经验储罐管理器。
+     * 应在模组初始化期间调用。
      */
     public static void initialize() {
-        getInstance(); // Ensure instance is created and registered
-        LOGGER.info("Experience tank manager initialized");
+        getInstance(); // 确保实例被创建和注册
+        LOGGER.info("经验储罐管理器初始化完成");
     }
     
     /**
-     * Preserves experience when upgrading a tank from old to new.
-     * This is the core method for Requirements 1.1 and 1.3.
+     * 在储罐从旧到新升级时保留经验。
+     * 这是需求 1.1 和 1.3 的核心方法。
      * 
-     * @param oldTank The original tank being upgraded
-     * @param newTank The new tank after upgrade
-     * @return The new tank with preserved experience
+     * @param oldTank 正在升级的原始储罐
+     * @param newTank 升级后的新储罐
+     * @return 保留了经验的新储罐
      */
     public ItemStack preserveExperienceOnUpgrade(ItemStack oldTank, ItemStack newTank) {
         if (oldTank.isEmpty() || newTank.isEmpty()) {
@@ -108,12 +108,12 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Validates that stored XP doesn't exceed tank capacity.
-     * Implements Requirement 1.4 for capacity overflow handling.
+     * 验证存储的经验值不超过储罐容量。
+     * 实现需求 1.4 的容量溢出处理。
      * 
-     * @param storedXP The amount of XP to validate
-     * @param maxCapacity The maximum capacity of the tank
-     * @return The validated XP amount (capped at capacity)
+     * @param storedXP 要验证的经验值数量
+     * @param maxCapacity 储罐的最大容量
+     * @return 验证后的经验值数量（限制在容量范围内）
      */
     public int validateCapacity(int storedXP, int maxCapacity) {
         if (storedXP < 0) {
@@ -135,10 +135,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Gets the stored experience from a tank ItemStack.
+     * 从储罐物品栈获取存储的经验值。
      * 
-     * @param tank The tank ItemStack
-     * @return The amount of stored experience
+     * @param tank 储罐物品栈
+     * @return 存储的经验值数量
      */
     public int getStoredExperience(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump)) {
@@ -162,10 +162,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Sets the stored experience in a tank ItemStack.
+     * 在储罐物品栈中设置存储的经验值。
      * 
-     * @param tank The tank ItemStack
-     * @param experience The amount of experience to store
+     * @param tank 储罐物品栈
+     * @param experience 要存储的经验值数量
      */
     public void setStoredExperience(ItemStack tank, int experience) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump)) {
@@ -201,10 +201,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Gets the capacity of a tank based on its tier.
+     * 根据储罐等级获取其容量。
      * 
-     * @param tank The tank ItemStack
-     * @return The tank's capacity
+     * @param tank 储罐物品栈
+     * @return 储罐的容量
      */
     public int getTankCapacity(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump)) {
@@ -224,10 +224,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Gets the tier of a tank.
+     * 获取储罐的等级。
      * 
-     * @param tank The tank ItemStack
-     * @return The tank's tier
+     * @param tank 储罐物品栈
+     * @return 储罐的等级
      */
     public int getTankTier(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump)) {
@@ -255,10 +255,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Calculates the capacity for a given tier.
+     * 计算给定等级的容量。
      * 
-     * @param tier The tank tier
-     * @return The capacity for that tier
+     * @param tier 储罐等级
+     * @return 该等级的容量
      */
     public int calculateCapacityForTier(int tier) {
         tier = Math.max(1, Math.min(tier, MAX_TIER));
@@ -266,10 +266,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Calculates the tier from a given capacity.
+     * 从给定容量计算等级。
      * 
-     * @param capacity The tank capacity
-     * @return The tier for that capacity
+     * @param capacity 储罐容量
+     * @return 该容量对应的等级
      */
     public int calculateTierFromCapacity(int capacity) {
         if (capacity <= BASE_CAPACITY) {
@@ -281,10 +281,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Preserves tank properties (mode, retain level, mending) during upgrade.
+     * 在升级期间保留储罐属性（模式、保留等级、经验修补）。
      * 
-     * @param oldTank The original tank
-     * @param newTank The new tank
+     * @param oldTank 原始储罐
+     * @param newTank 新储罐
      */
     private void preserveTankProperties(ItemStack oldTank, ItemStack newTank) {
         IExperiencePumpCapability oldCap = oldTank.getCapability(
@@ -307,10 +307,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Preserves NBT properties when capabilities are not available.
+     * 当能力不可用时保留 NBT 属性。
      * 
-     * @param oldTank The original tank
-     * @param newTank The new tank
+     * @param oldTank 原始储罐
+     * @param newTank 新储罐
      */
     private void preserveNBTProperties(ItemStack oldTank, ItemStack newTank) {
         if (!oldTank.hasTagCompound() || !oldTank.getTagCompound().hasKey(ItemExperiencePump.XP_TAG)) {
@@ -342,12 +342,12 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Handles overflow when adding experience to a tank.
-     * Returns the amount that couldn't be added.
+     * 处理向储罐添加经验时的溢出。
+     * 返回无法添加的数量。
      * 
-     * @param tank The tank to add experience to
-     * @param amount The amount of experience to add
-     * @return The amount that couldn't be added (overflow)
+     * @param tank 要添加经验的储罐
+     * @param amount 要添加的经验值数量
+     * @return 无法添加的数量（溢出）
      */
     public int handleExperienceOverflow(ItemStack tank, int amount) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump) || amount <= 0) {
@@ -374,11 +374,11 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Finds all experience tanks in a player's inventory.
-     * Used for comprehensive tank management across all inventory types.
+     * 查找玩家物品栏中的所有经验储罐。
+     * 用于跨所有物品栏类型的综合储罐管理。
      * 
-     * @param player The player to scan
-     * @return List of all experience tanks found
+     * @param player 要扫描的玩家
+     * @return 找到的所有经验储罐列表
      */
     public List<ItemStack> findAllTanks(EntityPlayer player) {
         List<ItemStack> tanks = new ArrayList<>();
@@ -408,10 +408,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Finds experience tanks in Baubles slots.
+     * 在 Baubles 槽位中查找经验储罐。
      * 
-     * @param player The player to scan
-     * @return List of tanks found in Baubles slots
+     * @param player 要扫描的玩家
+     * @return 在 Baubles 槽位中找到的储罐列表
      */
     private List<ItemStack> findBaublesTanks(EntityPlayer player) {
         List<ItemStack> tanks = new ArrayList<>();
@@ -438,10 +438,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Calculates the total capacity of all tanks for a player.
+     * 计算玩家所有储罐的总容量。
      * 
-     * @param player The player to calculate for
-     * @return The total capacity of all tanks
+     * @param player 要计算的玩家
+     * @return 所有储罐的总容量
      */
     public int calculateTotalCapacity(EntityPlayer player) {
         List<ItemStack> tanks = findAllTanks(player);
@@ -451,10 +451,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Calculates the total stored experience across all tanks for a player.
+     * 计算玩家所有储罐中存储的总经验值。
      * 
-     * @param player The player to calculate for
-     * @return The total stored experience
+     * @param player 要计算的玩家
+     * @return 存储的总经验值
      */
     public int calculateTotalStored(EntityPlayer player) {
         List<ItemStack> tanks = findAllTanks(player);
@@ -465,10 +465,10 @@ public class ExperienceTankManager {
     
     
     /**
-     * Creates a new ExperienceTankData from an ItemStack.
+     * 从物品栈创建新的 ExperienceTankData。
      * 
-     * @param tank The tank ItemStack
-     * @return ExperienceTankData representing the tank
+     * @param tank 储罐物品栈
+     * @return 表示储罐的 ExperienceTankData
      */
     public ExperienceTankData createTankData(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump)) {
@@ -483,10 +483,10 @@ public class ExperienceTankManager {
     }
     
     /**
-     * Applies ExperienceTankData to an ItemStack.
+     * 将 ExperienceTankData 应用到物品栈。
      * 
-     * @param tank The tank ItemStack to modify
-     * @param data The data to apply
+     * @param tank 要修改的储罐物品栈
+     * @param data 要应用的数据
      */
     public void applyTankData(ItemStack tank, ExperienceTankData data) {
         if (tank.isEmpty() || !(tank.getItem() instanceof ItemExperiencePump) || data == null) {

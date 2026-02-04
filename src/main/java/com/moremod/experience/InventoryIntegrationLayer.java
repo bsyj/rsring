@@ -11,11 +11,11 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 
 /**
- * Provides unified access to different inventory systems for experience tank detection.
- * Supports player inventory, hotbar, and Baubles accessory slots with comprehensive
- * error handling and graceful degradation when mods are not available.
+ * 为经验储罐检测提供不同物品栏系统的统一访问。
+ * 支持玩家物品栏、快捷栏和 Baubles 饰品槽位，具有全面的
+ * 错误处理和当模组不可用时的优雅降级。
  * 
- * Implements Requirements 3.1, 3.2, 3.3, 7.1 for comprehensive inventory integration.
+ * 实现需求 3.1、3.2、3.3、7.1 的全面物品栏集成。
  */
 public class InventoryIntegrationLayer {
     
@@ -28,14 +28,14 @@ public class InventoryIntegrationLayer {
     private Boolean baublesAvailable = null;
     
     /**
-     * Private constructor for singleton pattern.
+     * 单例模式的私有构造函数。
      */
     private InventoryIntegrationLayer() {
-        LOGGER.debug("InventoryIntegrationLayer initialized");
+        LOGGER.debug("InventoryIntegrationLayer 初始化完成");
     }
     
     /**
-     * Gets the singleton instance.
+     * 获取单例实例。
      */
     public static InventoryIntegrationLayer getInstance() {
         if (instance == null) {
@@ -45,22 +45,22 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Initializes the inventory integration layer.
-     * Should be called during mod initialization.
+     * 初始化物品栏集成层。
+     * 应在模组初始化期间调用。
      */
     public static void initialize() {
-        getInstance(); // Ensure instance is created
-        LOGGER.info("Inventory integration layer initialized");
+        getInstance(); // 确保实例被创建
+        LOGGER.info("物品栏集成层初始化完成");
     }
     
     /**
-     * Scans player inventory slots for experience tanks.
-     * Excludes hotbar slots to avoid double-counting.
+     * 扫描玩家物品栏槽位以查找经验储罐。
+     * 排除快捷栏槽位以避免重复计数。
      * 
-     * Implements Requirement 3.1: Player inventory scanning
+     * 实现需求 3.1：玩家物品栏扫描
      * 
-     * @param player The player to scan
-     * @return List of experience tanks found in player inventory (excluding hotbar)
+     * @param player 要扫描的玩家
+     * @return 在玩家物品栏中找到的经验储罐列表（不包括快捷栏）
      */
     public List<ItemStack> getPlayerInventoryTanks(EntityPlayer player) {
         List<ItemStack> tanks = new ArrayList<>();
@@ -87,12 +87,12 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Scans hotbar slots for experience tanks.
+     * 扫描快捷栏槽位以查找经验储罐。
      * 
-     * Implements Requirement 3.2: Hotbar scanning
+     * 实现需求 3.2：快捷栏扫描
      * 
-     * @param player The player to scan
-     * @return List of experience tanks found in hotbar slots
+     * @param player 要扫描的玩家
+     * @return 在快捷栏槽位中找到的经验储罐列表
      */
     public List<ItemStack> getHotbarTanks(EntityPlayer player) {
         List<ItemStack> tanks = new ArrayList<>();
@@ -125,13 +125,13 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Scans Baubles accessory slots for experience tanks.
-     * Gracefully handles cases where Baubles mod is not available.
+     * 扫描 Baubles 饰品槽位以查找经验储罐。
+     * 优雅处理 Baubles 模组不可用的情况。
      * 
-     * Implements Requirement 3.3: Baubles API integration for accessory slots
+     * 实现需求 3.3：Baubles API 集成饰品槽位
      * 
-     * @param player The player to scan
-     * @return List of experience tanks found in Baubles slots
+     * @param player 要扫描的玩家
+     * @return 在 Baubles 槽位中找到的经验储罐列表
      */
     public List<ItemStack> getBaublesTanks(EntityPlayer player) {
         List<ItemStack> tanks = new ArrayList<>();
@@ -197,13 +197,13 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Performs a comprehensive scan across all inventory types.
-     * Returns a detailed result with tanks categorized by location.
+     * 对所有物品栏类型执行全面扫描。
+     * 返回按位置分类的详细储罐结果。
      * 
-     * Implements Requirements 3.1, 3.2, 3.3 for comprehensive tank detection
+     * 实现需求 3.1、3.2、3.3 的全面储罐检测
      * 
-     * @param player The player to scan
-     * @return TankScanResult containing all detected tanks with location information
+     * @param player 要扫描的玩家
+     * @return 包含所有检测到的储罐及其位置信息的 TankScanResult
      */
     public TankScanResult scanAllInventories(EntityPlayer player) {
         if (player == null) {
@@ -236,12 +236,12 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Refreshes cached inventory state for a player.
-     * Useful when external code knows inventory changes have occurred.
+     * 刷新玩家的缓存物品栏状态。
+     * 当外部代码知道物品栏发生变化时很有用。
      * 
-     * Implements Requirement 7.1: Cross-inventory integration
+     * 实现需求 7.1：跨物品栏集成
      * 
-     * @param player The player whose inventory state should be refreshed
+     * @param player 要刷新物品栏状态的玩家
      */
     public void refreshInventoryState(EntityPlayer player) {
         if (player == null) {
@@ -266,10 +266,10 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Gets the total number of experience tanks across all inventory types.
+     * 获取所有物品栏类型中的经验储罐总数。
      * 
-     * @param player The player to count tanks for
-     * @return Total number of experience tanks found
+     * @param player 要计数储罐的玩家
+     * @return 找到的经验储罐总数
      */
     public int getTotalTankCount(EntityPlayer player) {
         if (player == null) {
@@ -281,10 +281,10 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Gets the total capacity of all experience tanks across all inventory types.
+     * 获取所有物品栏类型中所有经验储罐的总容量。
      * 
-     * @param player The player to calculate total capacity for
-     * @return Total capacity in XP points
+     * @param player 要计算总容量的玩家
+     * @return 总容量（经验值）
      */
     public int getTotalCapacity(EntityPlayer player) {
         if (player == null) {
@@ -296,10 +296,10 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Gets the total stored experience across all tanks in all inventory types.
+     * 获取所有物品栏类型中所有储罐存储的总经验值。
      * 
-     * @param player The player to calculate total stored XP for
-     * @return Total stored XP points
+     * @param player 要计算总存储经验值的玩家
+     * @return 总存储经验值
      */
     public int getTotalStoredExperience(EntityPlayer player) {
         if (player == null) {
@@ -311,11 +311,11 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Finds the first available tank with remaining capacity across all inventories.
-     * Searches in priority order: Hotbar -> Player Inventory -> Baubles
+     * 查找所有物品栏中第一个有剩余容量的储罐。
+     * 按优先级顺序搜索：快捷栏 -> 玩家物品栏 -> Baubles
      * 
-     * @param player The player to search
-     * @return The first tank with available capacity, or ItemStack.EMPTY if none found
+     * @param player 要搜索的玩家
+     * @return 第一个有可用容量的储罐，如果未找到则返回 ItemStack.EMPTY
      */
     public ItemStack findFirstAvailableTank(EntityPlayer player) {
         if (player == null) {
@@ -356,10 +356,10 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Finds all tanks with available capacity across all inventories.
+     * 查找所有物品栏中有可用容量的所有储罐。
      * 
-     * @param player The player to search
-     * @return List of tanks with available capacity
+     * @param player 要搜索的玩家
+     * @return 有可用容量的储罐列表
      */
     public List<ItemStack> findAllAvailableTanks(EntityPlayer player) {
         List<ItemStack> availableTanks = new ArrayList<>();
@@ -385,20 +385,20 @@ public class InventoryIntegrationLayer {
     // Private helper methods
     
     /**
-     * Checks if an ItemStack is an experience tank.
+     * 检查物品栈是否是经验储罐。
      * 
-     * @param stack The ItemStack to check
-     * @return True if the stack is an experience tank
+     * @param stack 要检查的物品栈
+     * @return 如果栈是经验储罐则返回 true
      */
     private boolean isExperienceTank(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof ItemExperiencePump;
     }
     
     /**
-     * Checks if a tank has available capacity for storing more experience.
+     * 检查储罐是否有存储更多经验的可用容量。
      * 
-     * @param tank The tank to check
-     * @return True if the tank has available capacity
+     * @param tank 要检查的储罐
+     * @return 如果储罐有可用容量则返回 true
      */
     private boolean hasAvailableCapacity(ItemStack tank) {
         if (!isExperienceTank(tank)) {
@@ -412,10 +412,10 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Checks if the Baubles mod is available and accessible.
-     * Uses caching to avoid repeated reflection calls.
+     * 检查 Baubles 模组是否可用且可访问。
+     * 使用缓存避免重复反射调用。
      * 
-     * @return True if Baubles is available
+     * @return 如果 Baubles 可用则返回 true
      */
     private boolean isBaublesAvailable() {
         if (baublesAvailable == null) {
@@ -425,9 +425,9 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Performs the actual Baubles availability check using reflection.
+     * 使用反射执行实际的 Baubles 可用性检查。
      * 
-     * @return True if Baubles is available and accessible
+     * @return 如果 Baubles 可用且可访问则返回 true
      */
     private boolean checkBaublesAvailability() {
         if (!Loader.isModLoaded("baubles")) {
@@ -446,11 +446,11 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Gets the Baubles inventory for a player using reflection.
+     * 使用反射获取玩家的 Baubles 物品栏。
      * 
-     * @param player The player to get Baubles inventory for
-     * @return The Baubles inventory, or null if not available
-     * @throws Exception If reflection fails
+     * @param player 要获取 Baubles 物品栏的玩家
+     * @return Baubles 物品栏，如果不可用则返回 null
+     * @throws Exception 如果反射失败
      */
     private IInventory getBaublesInventory(EntityPlayer player) throws Exception {
         Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
@@ -470,8 +470,8 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Resets the Baubles availability cache.
-     * Useful for testing or when mod state changes.
+     * 重置 Baubles 可用性缓存。
+     * 对测试或当模组状态变化时有用。
      */
     public void resetBaublesCache() {
         baublesAvailable = null;
@@ -479,11 +479,11 @@ public class InventoryIntegrationLayer {
     }
     
     /**
-     * Gets diagnostic information about the inventory integration layer.
-     * Useful for debugging and monitoring.
+     * 获取物品栏集成层的诊断信息。
+     * 对调试和监控有用。
      * 
-     * @param player The player to get diagnostics for
-     * @return Map containing diagnostic information
+     * @param player 要获取诊断信息的玩家
+     * @return 包含诊断信息的映射
      */
     public Map<String, Object> getDiagnostics(EntityPlayer player) {
         Map<String, Object> diagnostics = new LinkedHashMap<>();

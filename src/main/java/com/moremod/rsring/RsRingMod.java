@@ -16,7 +16,6 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.Logger;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import com.moremod.capability.IExperiencePumpCapability;
 import com.moremod.capability.ExperiencePumpCapability;
@@ -34,6 +33,7 @@ import com.moremod.crafting.CustomTankRecipes;
 import com.moremod.network.PacketPumpAction;
 import com.moremod.network.PacketPumpData;
 import com.moremod.proxy.CommonProxy;
+import com.moremod.config.ConfigRegistry;
 import com.moremod.config.RsRingConfig;
 import com.moremod.config.ExperienceTankConfig;
 import com.moremod.config.GeneralConfig;
@@ -71,9 +71,18 @@ public class RsRingMod
     {
         logger = event.getModLog();
 
-        // 配置已经在 RsRingConfig 类中通过 @Config 注解设置，不需要手动创建 Configuration 对象
+        // 初始化配置系统
+        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
+        ConfigRegistry.init(config);
+        
+        // 注册配置处理器
+        ConfigRegistry.register(new RsRingConfig());
+        ConfigRegistry.register(new ExperienceTankConfig());
+        ConfigRegistry.register(new GeneralConfig());
+        ConfigRegistry.register(new NetworkConfig());
+        ConfigRegistry.syncAllConfig();
 
-        // Register absorb ring (replaces old chest ring)
+        // Register absorb ring
         absorbRing = new ItemAbsorbRing();
         ForgeRegistries.ITEMS.register(absorbRing);
         experiencePump = new ItemExperiencePump();

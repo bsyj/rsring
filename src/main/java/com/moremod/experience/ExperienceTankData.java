@@ -4,37 +4,37 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.UUID;
 
 /**
- * Core data structure for experience tank management.
- * Handles storage, capacity, and serialization of experience tank data.
+ * 经验储罐管理的核心数据结构。
+ * 处理经验储罐数据的存储、容量和序列化。
  * 
- * This class provides the foundation for experience tank upgrade preservation
- * and cross-inventory tank management as specified in Requirements 1.1, 1.3, 7.1.
+ * 此类为经验储罐升级保留和跨物品栏储罐管理提供基础，
+ * 如需求 1.1、1.3、7.1 中所指定。
  */
 public class ExperienceTankData {
     
-    private int storedExperience;     // Current XP stored
-    private int maxCapacity;          // Maximum XP capacity  
-    private int tankTier;             // Tank upgrade tier
-    private UUID tankId;              // Unique identifier
+    private int storedExperience;     // 当前存储的经验值
+    private int maxCapacity;          // 最大经验容量  
+    private int tankTier;             // 储罐升级等级
+    private UUID tankId;              // 唯一标识符
     
-    // NBT keys for serialization
+    // 序列化用的 NBT 键
     private static final String NBT_STORED_XP = "storedExperience";
     private static final String NBT_MAX_CAPACITY = "maxCapacity";
     private static final String NBT_TANK_TIER = "tankTier";
     private static final String NBT_TANK_ID = "tankId";
     
     /**
-     * Creates a new experience tank data with default values.
+     * 创建具有默认值的新经验储罐数据。
      */
     public ExperienceTankData() {
         this.storedExperience = 0;
-        this.maxCapacity = 1000; // Default 10 levels * 100 XP per level
+        this.maxCapacity = 1000; // 默认 10 级 * 每级 100 经验值
         this.tankTier = 1;
         this.tankId = UUID.randomUUID();
     }
     
     /**
-     * Creates a new experience tank data with specified values.
+     * 创建具有指定值的新经验储罐数据。
      */
     public ExperienceTankData(int storedExperience, int maxCapacity, int tankTier) {
         this.storedExperience = Math.max(0, Math.min(storedExperience, maxCapacity));
@@ -44,7 +44,7 @@ public class ExperienceTankData {
     }
     
     /**
-     * Copy constructor for creating tank data from existing data.
+     * 从现有数据创建储罐数据的复制构造函数。
      */
     public ExperienceTankData(ExperienceTankData other) {
         this.storedExperience = other.storedExperience;
@@ -92,35 +92,35 @@ public class ExperienceTankData {
     // Utility methods
     
     /**
-     * Checks if the tank is full.
+     * 检查储罐是否已满。
      */
     public boolean isFull() {
         return storedExperience >= maxCapacity;
     }
     
     /**
-     * Checks if the tank is empty.
+     * 检查储罐是否为空。
      */
     public boolean isEmpty() {
         return storedExperience <= 0;
     }
     
     /**
-     * Gets the remaining capacity.
+     * 获取剩余容量。
      */
     public int getRemainingCapacity() {
         return maxCapacity - storedExperience;
     }
     
     /**
-     * Gets the fill percentage (0.0 to 1.0).
+     * 获取填充百分比（0.0 到 1.0）。
      */
     public double getFillPercentage() {
         return maxCapacity > 0 ? (double) storedExperience / maxCapacity : 0.0;
     }
     
     /**
-     * Adds experience to the tank, returning the amount actually added.
+     * 向储罐添加经验，返回实际添加的数量。
      */
     public int addExperience(int amount) {
         if (amount <= 0) return 0;
@@ -131,7 +131,7 @@ public class ExperienceTankData {
     }
     
     /**
-     * Removes experience from the tank, returning the amount actually removed.
+     * 从储罐移除经验，返回实际移除的数量。
      */
     public int removeExperience(int amount) {
         if (amount <= 0) return 0;
@@ -144,8 +144,8 @@ public class ExperienceTankData {
     // NBT Serialization methods
     
     /**
-     * Writes the tank data to NBT format.
-     * Supports Requirements 1.1 and 1.3 for upgrade preservation.
+     * 将储罐数据写入 NBT 格式。
+     * 支持需求 1.1 和 1.3 中的升级保留。
      */
     public NBTTagCompound writeToNBT() {
         NBTTagCompound nbt = new NBTTagCompound();
@@ -162,45 +162,45 @@ public class ExperienceTankData {
     }
     
     /**
-     * Reads the tank data from NBT format.
-     * Provides backward compatibility and validation.
+     * 从 NBT 格式读取储罐数据。
+     * 提供向后兼容性和验证。
      */
     public void readFromNBT(NBTTagCompound nbt) {
         if (nbt == null) return;
         
-        // Read stored experience with validation
+        // 读取存储的经验值并验证
         if (nbt.hasKey(NBT_STORED_XP)) {
             this.storedExperience = Math.max(0, nbt.getInteger(NBT_STORED_XP));
         }
         
-        // Read max capacity with validation
+        // 读取最大容量并验证
         if (nbt.hasKey(NBT_MAX_CAPACITY)) {
             this.maxCapacity = Math.max(1, nbt.getInteger(NBT_MAX_CAPACITY));
         }
         
-        // Read tank tier with validation
+        // 读取储罐等级并验证
         if (nbt.hasKey(NBT_TANK_TIER)) {
             this.tankTier = Math.max(1, nbt.getInteger(NBT_TANK_TIER));
         }
         
-        // Read tank ID with validation
+        // 读取储罐 ID 并验证
         if (nbt.hasKey(NBT_TANK_ID)) {
             try {
                 this.tankId = UUID.fromString(nbt.getString(NBT_TANK_ID));
             } catch (IllegalArgumentException e) {
-                // Invalid UUID, generate new one
+                // 无效的 UUID，生成新的
                 this.tankId = UUID.randomUUID();
             }
         } else {
             this.tankId = UUID.randomUUID();
         }
         
-        // Ensure stored XP doesn't exceed capacity after reading
+        // 确保读取后存储的经验值不超过容量
         this.storedExperience = Math.min(this.storedExperience, this.maxCapacity);
     }
     
     /**
-     * Creates a new ExperienceTankData from NBT.
+     * 从 NBT 创建新的 ExperienceTankData。
      */
     public static ExperienceTankData fromNBT(NBTTagCompound nbt) {
         ExperienceTankData data = new ExperienceTankData();

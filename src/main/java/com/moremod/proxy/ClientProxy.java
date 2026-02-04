@@ -100,7 +100,7 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
-        // Register model for absorb ring (formerly chest ring)
+        // Register model for absorb ring
         ModelLoader.setCustomModelResourceLocation(
             RsRingMod.absorbRing, 0, new ModelResourceLocation(RsRingMod.absorbRing.getRegistryName(), "inventory"));
 

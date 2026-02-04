@@ -35,110 +35,110 @@ public class ExperienceTankConfig implements IHasConfig {
 
     @Override
     public void syncConfig(Configuration config) {
-        config.addCustomCategoryComment(RsRingMod.MODID + ".tank", "Experience Tank Configuration");
-        config.addCustomCategoryComment(RsRingMod.MODID + ".controller", "Experience Pump Controller Configuration");
-        
-        tank.enabled = config.getBoolean("enabled", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Enable/disable experience tank functionality");
-            
-        tank.xpExtractionRate = config.getInt("xpExtractionRate", 
-            RsRingMod.MODID + ".tank", 
-            20, 
-            1, 
-            1000, 
-            "Maximum XP extraction per tick");
-            
-        tank.xpExtractionRange = config.get(RsRingMod.MODID + ".tank", "xpExtractionRange", 5.0D, "XP extraction range (blocks)").getDouble();
-            
-        tank.extractXpBottles = config.getBoolean("extractXpBottles", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Extract XP bottles and convert to experience");
-            
-        tank.mendingOn = config.getBoolean("mendingOn", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Default mending enabled");
-            
-        tank.mendPlayerItems = config.getBoolean("mendPlayerItems", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Mend player inventory items");
-            
-        tank.enableOverflowBottles = config.getBoolean("enableOverflowBottles", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Generate XP bottles when tank is full");
-            
-        tank.enableAutoPumping = config.getBoolean("enableAutoPumping", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Enable auto pumping functionality");
-            
-        tank.pumpingInterval = config.getInt("pumpingInterval", 
-            RsRingMod.MODID + ".tank", 
-            5, 
-            1, 
-            100, 
-            "Pumping interval (ticks)");
-            
-        tank.mendingInterval = config.getInt("mendingInterval", 
-            RsRingMod.MODID + ".tank", 
-            20, 
-            1, 
-            100, 
-            "Mending interval (ticks)");
-            
-        tank.extractionInterval = config.getInt("extractionInterval", 
-            RsRingMod.MODID + ".tank", 
-            4, 
-            1, 
-            100, 
-            "Extraction interval (ticks)");
-            
-        tank.defaultPumpMode = config.getInt("defaultPumpMode", 
-            RsRingMod.MODID + ".tank", 
-            0, 
-            0, 
-            2, 
-            "Default pump mode (0=off, 1=pump from player, 2=pump to player)");
-            
-        tank.defaultRetainLevel = config.getInt("defaultRetainLevel", 
-            RsRingMod.MODID + ".tank", 
-            1, 
-            0, 
-            100, 
-            "Default retain level");
-            
-        tank.defaultMendingMode = config.getBoolean("defaultMendingMode", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Default mending mode");
-            
-        tank.maxTankLevelLimit = config.getInt("maxTankLevelLimit", 
-            RsRingMod.MODID + ".tank", 
-            20, 
-            5, 
-            100, 
-            "Maximum tank level limit");
-            
-        tank.enableSpecialTanks = config.getBoolean("enableSpecialTanks", 
-            RsRingMod.MODID + ".tank", 
-            true, 
-            "Enable special tanks");
-            
-        tank.xpToBottleEfficiency = config.get(RsRingMod.MODID + ".tank", "xpToBottleEfficiency", 1.0D, "XP to bottle conversion efficiency").getDouble();
-            
-        tank.xpMendingEfficiency = config.get(RsRingMod.MODID + ".tank", "xpMendingEfficiency", 1.0D, "XP mending efficiency").getDouble();
-            
-        controller.maxManagedTanks = config.getInt("maxManagedTanks", 
-            RsRingMod.MODID + ".controller", 
-            32, 
-            1, 
-            32, 
-            "Maximum number of tanks the controller can manage");
+        config.addCustomCategoryComment(RsRingMod.MODID + ".tank", "config.rsring.tank");
+        config.addCustomCategoryComment(RsRingMod.MODID + ".controller", "config.rsring.controller");
+
+        tank.enabled = config.getBoolean("enabled",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.enabled");
+
+        tank.xpExtractionRate = config.getInt("xpExtractionRate",
+            RsRingMod.MODID + ".tank",
+            20,
+            1,
+            1000,
+            "config.rsring.tank.xpExtractionRate");
+
+        tank.xpExtractionRange = config.get(RsRingMod.MODID + ".tank", "xpExtractionRange", 5.0D, "config.rsring.tank.xpExtractionRange").getDouble();
+
+        tank.extractXpBottles = config.getBoolean("extractXpBottles",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.extractXpBottles");
+
+        tank.mendingOn = config.getBoolean("mendingOn",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.mendingOn");
+
+        tank.mendPlayerItems = config.getBoolean("mendPlayerItems",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.mendPlayerItems");
+
+        tank.enableOverflowBottles = config.getBoolean("enableOverflowBottles",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.enableOverflowBottles");
+
+        tank.enableAutoPumping = config.getBoolean("enableAutoPumping",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.enableAutoPumping");
+
+        tank.pumpingInterval = config.getInt("pumpingInterval",
+            RsRingMod.MODID + ".tank",
+            5,
+            1,
+            100,
+            "config.rsring.tank.pumpingInterval");
+
+        tank.mendingInterval = config.getInt("mendingInterval",
+            RsRingMod.MODID + ".tank",
+            20,
+            1,
+            100,
+            "config.rsring.tank.mendingInterval");
+
+        tank.extractionInterval = config.getInt("extractionInterval",
+            RsRingMod.MODID + ".tank",
+            4,
+            1,
+            100,
+            "config.rsring.tank.extractionInterval");
+
+        tank.defaultPumpMode = config.getInt("defaultPumpMode",
+            RsRingMod.MODID + ".tank",
+            0,
+            0,
+            2,
+            "config.rsring.tank.defaultPumpMode");
+
+        tank.defaultRetainLevel = config.getInt("defaultRetainLevel",
+            RsRingMod.MODID + ".tank",
+            1,
+            0,
+            100,
+            "config.rsring.tank.defaultRetainLevel");
+
+        tank.defaultMendingMode = config.getBoolean("defaultMendingMode",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.defaultMendingMode");
+
+        tank.maxTankLevelLimit = config.getInt("maxTankLevelLimit",
+            RsRingMod.MODID + ".tank",
+            20,
+            5,
+            100,
+            "config.rsring.tank.maxTankLevelLimit");
+
+        tank.enableSpecialTanks = config.getBoolean("enableSpecialTanks",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.enableSpecialTanks");
+
+        tank.xpToBottleEfficiency = config.get(RsRingMod.MODID + ".tank", "xpToBottleEfficiency", 1.0D, "config.rsring.tank.xpToBottleEfficiency").getDouble();
+
+        tank.xpMendingEfficiency = config.get(RsRingMod.MODID + ".tank", "xpMendingEfficiency", 1.0D, "config.rsring.tank.xpMendingEfficiency").getDouble();
+
+        controller.maxManagedTanks = config.getInt("maxManagedTanks",
+            RsRingMod.MODID + ".controller",
+            32,
+            1,
+            32,
+            "config.rsring.controller.maxManagedTanks");
     }
 
     public static String getConfigSummary() {

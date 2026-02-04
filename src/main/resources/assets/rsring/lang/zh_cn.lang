@@ -16,42 +16,42 @@ key.categories.rsring=戒指
 message.rsring.ring_not_found=未找到戒指
 
 # Configuration
-config.rsring.absorbRing=物品吸收戒指设置
-config.rsring.absorbRing.defaultBlacklistItems=默认黑名单物品
-config.rsring.absorbRing.defaultWhitelistItems=默认白名单物品
-config.rsring.absorbRing.useBlacklistModeByDefault=默认使用黑名单模式
-config.rsring.absorbRing.absorptionRange=吸收范围
-config.rsring.absorbRing.energyCostPerItem=每个物品能量消耗
-config.rsring.absorbRing.maxEnergyCapacity=最大能量容量
-config.rsring.absorbRing.allowCustomFilters=允许自定义过滤
-config.rsring.absorbRing.absorptionInterval=吸收间隔
-config.rsring.absorbRing.initialEnergy=初始能量
-config.rsring.absorbRing.energyCostMultiplier=能量消耗倍率
+config.rsring.ring=物品吸收戒指设置
+config.rsring.ring.defaultBlacklistItems=默认黑名单物品
+config.rsring.ring.defaultWhitelistItems=默认白名单物品
+config.rsring.ring.useBlacklistModeByDefault=默认使用黑名单模式
+config.rsring.ring.absorptionRange=吸收范围
+config.rsring.ring.energyCostPerItem=每个物品能量消耗
+config.rsring.ring.maxEnergyCapacity=最大能量容量
+config.rsring.ring.allowCustomFilters=允许自定义过滤
+config.rsring.ring.absorptionInterval=吸收间隔
+config.rsring.ring.initialEnergy=初始能量
+config.rsring.ring.energyCostMultiplier=能量消耗倍率
 
 # 经验储罐配置
-config.rsring.experienceTank=经验储罐设置
-config.rsring.experienceTank.enabled=启用
-config.rsring.experienceTank.xpExtractionRate=经验抽取速率
-config.rsring.experienceTank.xpExtractionRange=经验抽取范围
-config.rsring.experienceTank.extractXpBottles=抽取经验瓶
-config.rsring.experienceTank.mendingOn=启用修补
-config.rsring.experienceTank.mendPlayerItems=修补玩家物品
-config.rsring.experienceTank.enableOverflowBottles=启用溢出经验瓶
-config.rsring.experienceTank.enableAutoPumping=启用自动泵送
-config.rsring.experienceTank.pumpingInterval=泵送间隔
-config.rsring.experienceTank.mendingInterval=修补间隔
-config.rsring.experienceTank.extractionInterval=抽取间隔
-config.rsring.experienceTank.defaultPumpMode=默认泵送模式
-config.rsring.experienceTank.defaultRetainLevel=默认保留等级
-config.rsring.experienceTank.defaultMendingMode=默认修补模式
-config.rsring.experienceTank.maxTankLevelLimit=最大储罐等级限制
-config.rsring.experienceTank.enableSpecialTanks=启用特殊储罐
-config.rsring.experienceTank.xpToBottleEfficiency=经验瓶转换效率
-config.rsring.experienceTank.xpMendingEfficiency=经验修补效率
+config.rsring.tank=经验储罐设置
+config.rsring.tank.enabled=启用
+config.rsring.tank.xpExtractionRate=经验抽取速率
+config.rsring.tank.xpExtractionRange=经验抽取范围
+config.rsring.tank.extractXpBottles=抽取经验瓶
+config.rsring.tank.mendingOn=启用修补
+config.rsring.tank.mendPlayerItems=修补玩家物品
+config.rsring.tank.enableOverflowBottles=启用溢出经验瓶
+config.rsring.tank.enableAutoPumping=启用自动泵送
+config.rsring.tank.pumpingInterval=泵送间隔
+config.rsring.tank.mendingInterval=修补间隔
+config.rsring.tank.extractionInterval=抽取间隔
+config.rsring.tank.defaultPumpMode=默认泵送模式
+config.rsring.tank.defaultRetainLevel=默认保留等级
+config.rsring.tank.defaultMendingMode=默认修补模式
+config.rsring.tank.maxTankLevelLimit=最大储罐等级限制
+config.rsring.tank.enableSpecialTanks=启用特殊储罐
+config.rsring.tank.xpToBottleEfficiency=经验瓶转换效率
+config.rsring.tank.xpMendingEfficiency=经验修补效率
 
 # 经验泵控制器配置
 config.rsring.controller=经验泵控制器设置
-config.rsring.controller.controllerRange=控制器范围
+config.rsring.controller.maxManagedTanks=最大管理储罐数量
 
 # 通用配置
 config.rsring.general=通用设置

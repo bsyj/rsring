@@ -15,25 +15,25 @@ public class NetworkConfig implements IHasConfig {
 
     @Override
     public void syncConfig(Configuration config) {
-        config.addCustomCategoryComment(RsRingMod.MODID + ".network", "Network Configuration");
-        
-        network.packetSendFrequency = config.getInt("packetSendFrequency", 
-            RsRingMod.MODID + ".network", 
-            10, 
-            1, 
-            30, 
-            "Packet send frequency (ticks)");
-            
-        network.packetSizeLimit = config.getInt("packetSizeLimit", 
-            RsRingMod.MODID + ".network", 
-            4096, 
-            1024, 
-            16384, 
-            "Packet size limit (bytes)");
-            
-        network.enableNetworkCompression = config.getBoolean("enableNetworkCompression", 
-            RsRingMod.MODID + ".network", 
-            true, 
-            "Enable/disable network compression");
+        config.addCustomCategoryComment(RsRingMod.MODID + ".network", "config.rsring.network");
+
+        network.packetSendFrequency = config.getInt("packetSendFrequency",
+            RsRingMod.MODID + ".network",
+            10,
+            1,
+            30,
+            "config.rsring.network.packetSendFrequency");
+
+        network.packetSizeLimit = config.getInt("packetSizeLimit",
+            RsRingMod.MODID + ".network",
+            4096,
+            1024,
+            16384,
+            "config.rsring.network.packetSizeLimit");
+
+        network.enableNetworkCompression = config.getBoolean("enableNetworkCompression",
+            RsRingMod.MODID + ".network",
+            true,
+            "config.rsring.network.enableNetworkCompression");
     }
 }

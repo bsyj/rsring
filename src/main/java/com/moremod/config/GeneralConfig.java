@@ -17,33 +17,33 @@ public class GeneralConfig implements IHasConfig {
 
     @Override
     public void syncConfig(Configuration config) {
-        config.addCustomCategoryComment(RsRingMod.MODID + ".general", "General Configuration");
-        
-        general.enableBaublesIntegration = config.getBoolean("enableBaublesIntegration", 
-            RsRingMod.MODID + ".general", 
-            true, 
-            "Enable/disable Baubles integration");
-            
-        general.enableSoundEffects = config.getBoolean("enableSoundEffects", 
-            RsRingMod.MODID + ".general", 
-            true, 
-            "Enable/disable sound effects");
-            
-        general.enableParticleEffects = config.getBoolean("enableParticleEffects", 
-            RsRingMod.MODID + ".general", 
-            true, 
-            "Enable/disable particle effects");
-            
-        general.debugMode = config.getBoolean("debugMode", 
-            RsRingMod.MODID + ".general", 
-            false, 
-            "Debug mode");
-            
-        general.autoSaveInterval = config.getInt("autoSaveInterval", 
-            RsRingMod.MODID + ".general", 
-            300, 
-            60, 
-            3600, 
-            "Auto-save interval (seconds)");
+        config.addCustomCategoryComment(RsRingMod.MODID + ".general", "config.rsring.general");
+
+        general.enableBaublesIntegration = config.getBoolean("enableBaublesIntegration",
+            RsRingMod.MODID + ".general",
+            true,
+            "config.rsring.general.enableBaublesIntegration");
+
+        general.enableSoundEffects = config.getBoolean("enableSoundEffects",
+            RsRingMod.MODID + ".general",
+            true,
+            "config.rsring.general.enableSoundEffects");
+
+        general.enableParticleEffects = config.getBoolean("enableParticleEffects",
+            RsRingMod.MODID + ".general",
+            true,
+            "config.rsring.general.enableParticleEffects");
+
+        general.debugMode = config.getBoolean("debugMode",
+            RsRingMod.MODID + ".general",
+            false,
+            "config.rsring.general.debugMode");
+
+        general.autoSaveInterval = config.getInt("autoSaveInterval",
+            RsRingMod.MODID + ".general",
+            300,
+            60,
+            3600,
+            "config.rsring.general.autoSaveInterval");
     }
 }

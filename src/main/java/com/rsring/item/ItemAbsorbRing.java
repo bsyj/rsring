@@ -167,24 +167,24 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
-    
+
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, 
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
         return EnumActionResult.PASS;
     }
-    
+
     /**
-     * Provides improved GUI access for absorb rings regardless of their inventory location.
-     * Implements Requirements 2.1, 2.2, 2.3, 2.4 for enhanced ring GUI access.
+     * 提供改进的吸收戒指GUI访问，无论其在物品栏中的位置如何。
+     * 实现需求 2.1、2.2、2.3、2.4 以增强戒指GUI访问。
      *
-     * This method allows accessing the absorb ring GUI from any valid inventory location:
-     * - When held in main hand or off hand
-     * - When equipped in Baubles ring slots
-     * - When stored in player inventory or hotbar
+     * 此方法允许从任何有效的物品栏位置访问吸收戒指GUI：
+     * - 当握在主手或副手中时
+     * - 当装备在Baubles戒指槽中时
+     * - 当存储在玩家物品栏或快捷栏中时
      *
-     * @param player The player attempting to access the ring GUI
-     * @return true if GUI was successfully opened, false otherwise
+     * @param player 尝试访问戒指GUI的玩家
+     * @return 如果GUI成功打开则返回true，否则返回false
      */
     public static boolean tryOpenAbsorbRingGui(EntityPlayer player) {
         if (player == null) {
@@ -228,12 +228,12 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         return true;
     }
-    
+
     /**
-     * Finds the first absorb ring in the detection results.
+     * 在检测结果中找到第一个吸收戒指。
      *
-     * @param result The ring detection result
-     * @return The first absorb ring found, or ItemStack.EMPTY if none found
+     * @param result 戒指检测结果
+     * @return 找到的第一个吸收戒指，如果没有找到则返回ItemStack.EMPTY
      */
     private static ItemStack findAbsorbRingInResults(com.rsring.experience.RingDetectionResult result) {
         for (ItemStack ring : result.getFoundRings()) {
@@ -243,51 +243,51 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
         return ItemStack.EMPTY;
     }
-    
+
     /**
-     * Finds the location of a specific ring in the detection results.
-     * 
-     * @param result The ring detection result
-     * @param targetRing The ring to find the location for
-     * @return The location of the ring, or null if not found
+     * 在检测结果中找到特定戒指的位置。
+     *
+     * @param result 戒指检测结果
+     * @param targetRing 要查找位置的戒指
+     * @return 戒指的位置，如果未找到则返回null
      */
     private static com.rsring.experience.RingDetectionResult.InventoryLocation findRingLocation(
             com.rsring.experience.RingDetectionResult result, ItemStack targetRing) {
-        
+
         // Check each location for the target ring
-        for (com.rsring.experience.RingDetectionResult.InventoryLocation location : 
+        for (com.rsring.experience.RingDetectionResult.InventoryLocation location :
              com.rsring.experience.RingDetectionResult.InventoryLocation.values()) {
-            
+
             for (ItemStack ring : result.getRingsFromLocation(location)) {
                 if (ring == targetRing) {
                     return location;
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     /**
-     * Alternative GUI access method that can be triggered by key bindings or other events.
-     * Implements Requirements 2.1, 2.2, 2.3 for multiple access methods.
+     * 可以通过按键绑定或其他事件触发的替代GUI访问方法。
+     * 实现需求 2.1、2.2、2.3 以支持多种访问方法。
      *
-     * This method provides an alternative way to access the absorb ring GUI without
-     * requiring the player to hold the ring and right-click air.
+     * 此方法提供了一种替代方法来访问吸收戒指GUI，而无需
+     * 要求玩家握住戒指并右键点击空气。
      *
-     * @param player The player attempting to access the ring GUI
-     * @return true if GUI was successfully opened, false otherwise
+     * @param player 尝试访问戒指GUI的玩家
+     * @return 如果GUI成功打开则返回true，否则返回false
      */
     public static boolean openAbsorbRingGuiFromAnyLocation(EntityPlayer player) {
         return tryOpenAbsorbRingGui(player);
     }
 
     /**
-     * Checks if the player has any accessible absorb rings in their inventory.
-     * Implements Requirement 2.4 for location-independent ring access.
+     * 检查玩家的物品栏中是否有任何可访问的吸收戒指。
+     * 实现需求 2.4 以支持位置无关的戒指访问。
      *
-     * @param player The player to check
-     * @return true if the player has accessible absorb rings, false otherwise
+     * @param player 要检查的玩家
+     * @return 如果玩家有可访问的吸收戒指则返回true，否则返回false
      */
     public static boolean hasAccessibleAbsorbRing(EntityPlayer player) {
         if (player == null) {
@@ -376,8 +376,8 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
     }
 
-    
-    
+
+
     private void absorbItemsToChest(EntityPlayer player, IRsRingCapability capability) {
         if (capability == null || !capability.isBound()) return;
         if (capability.isWhitelistMode() && !hasAnyFilter(capability)) return;
@@ -434,7 +434,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
     }
 
-    
+
     private boolean hasAnyFilter(IRsRingCapability capability) {
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);

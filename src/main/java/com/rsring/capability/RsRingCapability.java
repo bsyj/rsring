@@ -33,16 +33,17 @@ public class RsRingCapability implements IRsRingCapability {
         loadDefaultFilterList();
         this.energyStorage = createEnergyStorage(getConfiguredInitialEnergy());
     }
-    
+
     /**
-     * 娴犲酣鍘ょ純顔煎鏉炰粙绮拋銈堢箖濠娿倕鍨悰?     */
+     * 加载默认过滤列表
+     */
     private void loadDefaultFilterList() {
         blacklistItems.clear();
-        
-        String[] items = com.rsring.config.RsRingConfig.absorbRing.useBlacklistModeByDefault 
+
+        String[] items = com.rsring.config.RsRingConfig.absorbRing.useBlacklistModeByDefault
             ? com.rsring.config.RsRingConfig.absorbRing.defaultBlacklistItems
             : com.rsring.config.RsRingConfig.absorbRing.defaultWhitelistItems;
-        
+
         for (String item : items) {
             if (item != null && !item.trim().isEmpty()) {
                 String formattedItem = item.trim();
@@ -299,13 +300,13 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
             }
         }
     }
-    
+
     public static class RsRingCapabilityProvider implements ICapabilitySerializable<NBTTagCompound> {
         private IRsRingCapability capability = new RsRingCapability();
 
         public RsRingCapabilityProvider() {}
 
-        /** 娴?NBT 閸掓繂顫愰崠鏍电礉閻劋绨悧鈺佹惂缁夎濮╅弮鑸典划婢跺秵鏆熼幑?*/
+        /** 从NBT初始化能力数据 */
         public void initFromNBT(NBTTagCompound nbt) {
             if (nbt != null && !nbt.getKeySet().isEmpty() && RS_RING_CAPABILITY != null) {
                 RS_RING_CAPABILITY.getStorage().readNBT(RS_RING_CAPABILITY, capability, null, nbt);

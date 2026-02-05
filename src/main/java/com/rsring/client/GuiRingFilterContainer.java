@@ -40,7 +40,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.io.IOException;
 
 /**
- * 閻椻晛鎼ч崥鍛婃暪閹存帗瀵氭鎴犳閸氬秴宕熸潻鍥ㄦ姢GUI閿涘牅濞囬悽?GuiContainer閿? * 鐎瑰苯鍙忛崣鍌濃偓?Cyclic 閻?GuiItemPump 閸?GuiBaseContainer 鐎圭偟骞?
+ * 物品吸收戒指过滤器GUI界面，继承自GuiContainer
+ * 完全参考 Cyclic 的 GuiItemPump 和 GuiBaseContainer 实现
  */
 @SideOnly(Side.CLIENT)
 public class GuiRingFilterContainer extends GuiContainer {
@@ -54,7 +55,7 @@ private static final int PAD = 8;
 
     private static final int SLOTX_START = PAD;
     private static final int SLOTY = SQ + PAD * 4;
-    
+
     private static final ResourceLocation GUI_BACKGROUND = new ResourceLocation("rsring", "textures/gui/table.png");
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("rsring", "textures/gui/inventory_slot.png");
     private static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation("rsring", "textures/gui/buttons.png");
@@ -117,7 +118,7 @@ private static final int PAD = 8;
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        
+
 String titleText = title;
         long t = System.currentTimeMillis();
 
@@ -128,15 +129,16 @@ String titleText = title;
         int titleColor = hsvToRgbInt((titleHue + hueOffset) % 1.0f, 1.0f, 1.0f);
         int titleX = (this.xSize - this.fontRenderer.getStringWidth(titleText)) / 2;
         this.fontRenderer.drawStringWithShadow(titleText, titleX, 6, titleColor);
-        
+
         drawCustomButtons(mouseX, mouseY);
     }
-    
+
     /**
-     * 鐏?HSV 妫版粏澹婃潪顒佸床娑?RGB 閺佸瓨鏆熼崐?     * @param hue 閼硅尙娴?(0.0-1.0)
-     * @param saturation 妤楀崬鎷版惔?(0.0-1.0)
-     * @param value 閺勫骸瀹?(0.0-1.0)
-     * @return RGB 妫版粏澹婇惃鍕殻閺佹澘鈧?(0xRRGGBB)
+     * 将HSV (h: 0..1, s:0..1, v:0..1) 转换为RGB整数
+     * @param hue 色相(0.0-1.0)
+     * @param saturation 饱和度(0.0-1.0)
+     * @param value 亮度(0.0-1.0)
+     * @return RGB 整数值 (0xRRGGBB)
      */
     private int hsvToRgbInt(float hue, float saturation, float value) {
         int r = 0, g = 0, b = 0;
@@ -148,7 +150,7 @@ String titleText = title;
             float p = value * (1.0f - saturation);
             float q = value * (1.0f - saturation * f);
             float t = value * (1.0f - (saturation * (1.0f - f)));
-            
+
             switch ((int)h) {
                 case 0:
                     r = Math.round(value * 255);
@@ -220,9 +222,9 @@ String titleText = title;
         int hoverState = isMouseOverButton(mouseX, mouseY, x, y) ? 2 : 1;
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(
-            GlStateManager.SourceFactor.SRC_ALPHA, 
-            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, 
-            GlStateManager.SourceFactor.ONE, 
+            GlStateManager.SourceFactor.SRC_ALPHA,
+            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ZERO);
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         this.mc.getTextureManager().bindTexture(VANILLA_BUTTON_TEXTURE);
@@ -239,9 +241,9 @@ String titleText = title;
         }
         this.drawTexturedModalRect(x + 2, y + 2, texX, texY, sizeBtnTexture, sizeBtnTexture);
     }
-    
+
     private boolean isMouseOverButton(int mouseX, int mouseY, int btnX, int btnY) {
-        return mouseX >= btnX && mouseX < btnX + TOGGLE_BTN_WIDTH && 
+        return mouseX >= btnX && mouseX < btnX + TOGGLE_BTN_WIDTH &&
                mouseY >= btnY && mouseY < btnY + TOGGLE_BTN_HEIGHT;
     }
 
@@ -352,27 +354,27 @@ String titleText = title;
             }
         }
     }
-    
+
     private void mouseClickedWrapper(int slotIndex) {
         if (capability == null) return;
         if (!isCustomFiltersAllowed()) return;
         ItemStack stackInMouse = this.mc.player.inventory.getItemStack();
-        
+
         String currentFilter = capability.getFilterSlot(slotIndex);
         if (stackInMouse.isEmpty() && (currentFilter == null || currentFilter.isEmpty())) {
             return;
         }
-        
+
         if (stackInMouse.isEmpty()) {
             capability.setFilterSlot(slotIndex, "");
         } else {
-            String name = stackInMouse.getItem().getRegistryName() != null ? 
+            String name = stackInMouse.getItem().getRegistryName() != null ?
                 stackInMouse.getItem().getRegistryName().toString() : "";
             if (!name.isEmpty()) {
                 capability.setFilterSlot(slotIndex, name);
             }
         }
-        
+
         RsRingCapability.syncCapabilityToStack(ringStack, capability);
         String[] slots = new String[SLOT_COUNT];
         for (int j = 0; j < SLOT_COUNT; j++) {
@@ -396,4 +398,3 @@ String titleText = title;
         return false;
     }
 }
-

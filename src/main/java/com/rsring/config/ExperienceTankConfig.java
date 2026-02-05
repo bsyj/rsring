@@ -39,6 +39,7 @@ public class ExperienceTankConfig implements IHasConfig {
         config.setCategoryLanguageKey(RsRingMod.MODID + ".tank", "config.rsring.tank");
         config.addCustomCategoryComment(RsRingMod.MODID + ".controller", "config.rsring.controller");
         config.setCategoryLanguageKey(RsRingMod.MODID + ".controller", "config.rsring.controller");
+        // 设置默认黑名单物品列表
 
         tank.enabled = config.getBoolean("enabled",
             RsRingMod.MODID + ".tank",

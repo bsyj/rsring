@@ -2,7 +2,6 @@ package com.rsring.capability;
 
 /**
  * 经验泵饰品能力：存储经验、泵入/泵出、保留等级、经验修补。
- * 容量以"经验等级"为单位，默认10级，每级按1000经验点计算；1经验球=1 mb（1点）。
  */
 public interface IExperiencePumpCapability {
 

@@ -5,11 +5,20 @@ import net.minecraftforge.common.config.Configuration;
 
 public class RsRingConfig implements IHasConfig {
 
+    /**
+     * 配置类，用于存储吸能环的各种参数设置
+     * 包含黑名单/白名单物品、吸收范围、能量消耗等配置项
+     */
     public static class AbsorbRingConfig {
+        // 默认黑名单物品列表，初始为空数组
         public String[] defaultBlacklistItems = new String[]{};
+        // 默认白名单物品列表，初始为空数组
         public String[] defaultWhitelistItems = new String[]{};
+        // 默认是否使用黑名单模式，true表示使用黑名单模式
         public boolean useBlacklistModeByDefault = true;
+        // 吸能环的吸收范围，单位为方块，默认为8
         public int absorptionRange = 8;
+        // 每个物品吸收所需的能量点数，默认为1
         public int energyCostPerItem = 1;
         public int maxEnergyCapacity = 10000000;
         public boolean allowCustomFilters = true;
@@ -20,8 +29,13 @@ public class RsRingConfig implements IHasConfig {
 
     public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
 
+    /**
+     * 同步配置方法，用于从配置文件中读取并设置吸收戒指的各项参数
+     * @param config 配置对象，用于获取和设置配置值
+     */
     @Override
     public void syncConfig(Configuration config) {
+        // 添加自定义配置类别注释和语言键
         config.addCustomCategoryComment(RsRingMod.MODID + ".ring", "config.rsring.ring");
         config.setCategoryLanguageKey(RsRingMod.MODID + ".ring", "config.rsring.ring");
 

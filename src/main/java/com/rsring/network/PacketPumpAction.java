@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
-/** Handles pump controller actions. */
+/** 处理泵控制器操作。 */
 public class PacketPumpAction implements IMessage {
 
     public static final int ACTION_MODE = 0;
@@ -179,7 +179,7 @@ public class PacketPumpAction implements IMessage {
                     case ACTION_TAKE_ALL: {
                         // Extract all XP
                         int totalExtracted = 0;
-                        
+
                         for (ItemStack tankStack : prioritized) {
                             int extracted = ItemExperiencePump.extractAllExperience(tankStack, player);
                             if (extracted > 0) {
@@ -193,23 +193,23 @@ public class PacketPumpAction implements IMessage {
                     case ACTION_TAKE_ONE: {
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
                         if (levelsToTake <= 0) break;
-                        
+
                         int currentLevel = player.experienceLevel;
                         int targetLevel = currentLevel + levelsToTake;
                         int totalXPNeeded = com.rsring.util.XpHelper.getExperienceBetweenLevels(currentLevel, targetLevel);
                         if (totalXPNeeded <= 0) break;
-                        
+
                         int totalExtracted = 0;
-                        
+
                         for (ItemStack tankStack : prioritized) {
                             if (totalXPNeeded <= 0) break;
-                            
+
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
-                            
+
                             int available = cap.getXpStored();
                             if (available <= 0) continue;
-                            
+
                             int take = Math.min(available, totalXPNeeded);
                             int extracted = cap.takeXp(take);
                             if (extracted > 0) {
@@ -226,7 +226,7 @@ public class PacketPumpAction implements IMessage {
                     case ACTION_STORE_ALL: {
                         // Store all XP
                         int totalStored = 0;
-                        
+
                         for (ItemStack tankStack : prioritized) {
                             int stored = ItemExperiencePump.storeAllExperience(tankStack, player);
                             if (stored > 0) {
@@ -241,29 +241,29 @@ public class PacketPumpAction implements IMessage {
                         // Store N levels (default 1)
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
-                        
+
                         int currentLevel = player.experienceLevel;
                         int targetLevel = Math.max(0, currentLevel - levelsToStore);
                         int totalXPToStore = com.rsring.util.XpHelper.getExperienceBetweenLevels(targetLevel, currentLevel);
                         if (totalXPToStore <= 0) break;
-                        
+
                         int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
                         int targetTotalXP = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
                         if (playerTotalXP <= targetTotalXP) break;
                         totalXPToStore = Math.min(totalXPToStore, playerTotalXP - targetTotalXP);
                         if (totalXPToStore <= 0) break;
-                        
+
                         int totalStored = 0;
-                        
+
                         for (ItemStack tankStack : prioritized) {
                             if (totalXPToStore <= 0) break;
-                            
+
                             IExperiencePumpCapability cap = tankStack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
                             if (cap == null) continue;
-                            
+
                             int availableSpace = cap.getMaxXp() - cap.getXpStored();
                             if (availableSpace <= 0) continue;
-                            
+
                             int store = Math.min(availableSpace, totalXPToStore);
                             int stored = cap.addXp(store);
                             if (stored > 0) {
@@ -288,7 +288,7 @@ public class PacketPumpAction implements IMessage {
             return null;
         }
 
-        
+
     private ItemStack findExperienceTank(EntityPlayer player) {
             if (player == null) return net.minecraft.item.ItemStack.EMPTY;
             if (BaublesHelper.isBaublesLoaded()) {
@@ -320,7 +320,7 @@ public class PacketPumpAction implements IMessage {
 
 
 
-        
+
     private void pumpExperienceBetweenPlayerAndTank(EntityPlayer player, IExperiencePumpCapability cap) {
             int retain = cap.getRetainLevel();
             int playerTotal = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
@@ -342,8 +342,8 @@ public class PacketPumpAction implements IMessage {
         }
 
 
-        
-        
+
+
     private List<ItemStack> findAllExperienceTanks(EntityPlayer player) {
             List<ItemStack> tanks = new ArrayList<>();
             java.util.Set<ItemStack> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
@@ -388,20 +388,20 @@ public class PacketPumpAction implements IMessage {
         }
 
 
-        
+
     private static class TankLocationInfo {
             final String locationType; // "baubles", "inventory", "hand"
             final int slotIndex;
             final Object inventory;
-            
+
             TankLocationInfo(String locationType, int slotIndex, Object inventory) {
                 this.locationType = locationType;
                 this.slotIndex = slotIndex;
                 this.inventory = inventory;
             }
         }
-        
-        
+
+
     private void recordTankLocations(EntityPlayer player, List<ItemStack> tanks, Map<ItemStack, TankLocationInfo> locations) {
             java.util.Set<ItemStack> mapped = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
@@ -442,8 +442,8 @@ public class PacketPumpAction implements IMessage {
             }
         }
 
-        
-        
+
+
     private void syncTankBack(ItemStack tank, TankLocationInfo location, EntityPlayerMP player) {
             if (location == null) {
                 return;
@@ -462,7 +462,7 @@ public class PacketPumpAction implements IMessage {
             // Hand items sync automatically
         }
 
-        
+
 
     }
 }

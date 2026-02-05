@@ -9,164 +9,164 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Centralized ring detection service that provides unified ring detection logic
- * across all inventory locations with robust error handling and comprehensive logging.
- * 
- * Search priority: main hand â?off hand â?Baubles slots â?inventory
+ * 集中的戒指检测服务，提供统一的戒指检测逻辑
+ * 跨所有物品栏位置，具有强大的错误处理和全面的日志记录。
+ *
+ * 搜索优先级：主手 → 副手 → Baubles 槽位 → 物品栏
  */
 public class RingDetectionService {
     private static final Logger LOGGER = LogManager.getLogger(RingDetectionService.class);
-    
+
     /**
-     * Finds any ring type in the player's inventory locations.
-     * Searches in priority order: main hand â?off hand â?Baubles â?inventory
-     * 
-     * @param player The player to search
-     * @return The first ring found, or ItemStack.EMPTY if none found
+     * 在玩家的物品栏位置中查找任何类型的戒指。
+     * 按优先顺序搜索：主手 → 副手 → Baubles → 物品栏
+     *
+     * @param player 要搜索的玩家
+     * @return 找到的第一个戒指，如果没有找到则返回 ItemStack.EMPTY
      */
     public static ItemStack findAnyRing(EntityPlayer player) {
         if (player == null) {
             LOGGER.debug("Player is null, cannot search for rings");
             return ItemStack.EMPTY;
         }
-        
+
         LOGGER.debug("Starting ring search for player: {}", player.getName());
-        
+
         // Try to find any ring type by checking common ring classes
         // This approach allows for extensibility with new ring types
         ItemStack result = ItemStack.EMPTY;
         if (!result.isEmpty()) {
             return result;
         }
-        
+
         result = findRing(player, com.rsring.item.ItemAbsorbRing.class);
         if (!result.isEmpty()) {
             return result;
         }
-        
+
         LOGGER.debug("No rings found for player: {}", player.getName());
         return ItemStack.EMPTY;
     }
-    
+
     /**
-     * Finds a specific ring type in the player's inventory locations.
-     * Searches in priority order: main hand â?off hand â?Baubles â?inventory
-     * 
-     * @param player The player to search
-     * @param ringClass The specific ring class to search for
-     * @return The ring if found, or ItemStack.EMPTY if not found
+     * 在玩家的物品栏位置中查找特定类型的戒指。
+     * 按优先顺序搜索：主手 → 副手 → Baubles → 物品栏
+     *
+     * @param player 要搜索的玩家
+     * @param ringClass 要搜索的特定戒指类
+     * @return 如果找到则返回戒指，如果没有找到则返回 ItemStack.EMPTY
      */
     public static ItemStack findRing(EntityPlayer player, Class<? extends Item> ringClass) {
         if (player == null) {
-            LOGGER.debug("Player is null, cannot search for ring of type: {}", 
+            LOGGER.debug("Player is null, cannot search for ring of type: {}",
                 ringClass != null ? ringClass.getSimpleName() : "null");
             return ItemStack.EMPTY;
         }
-        
+
         if (ringClass == null) {
             LOGGER.debug("Ring class is null, cannot search for player: {}", player.getName());
             return ItemStack.EMPTY;
         }
-        
-        LOGGER.debug("Searching for ring type {} for player: {}", 
+
+        LOGGER.debug("Searching for ring type {} for player: {}",
             ringClass.getSimpleName(), player.getName());
-        
+
         // Search in priority order
         ItemStack result;
-        
+
         result = findInHands(player, ringClass);
         if (!result.isEmpty()) {
             logSearchResult("hands", true, result);
             return result;
         }
-        
+
         // 2. Check Baubles slots
         result = findInBaubles(player, ringClass);
         if (!result.isEmpty()) {
             logSearchResult("Baubles", true, result);
             return result;
         }
-        
+
         // 3. Check inventory
         result = findInInventory(player, ringClass);
         if (!result.isEmpty()) {
             logSearchResult("inventory", true, result);
             return result;
         }
-        
-        LOGGER.debug("Ring type {} not found for player: {}", 
+
+        LOGGER.debug("Ring type {} not found for player: {}",
             ringClass.getSimpleName(), player.getName());
         return ItemStack.EMPTY;
     }
-    
+
     /**
-     * Searches for rings in the player's hands (main hand and off hand).
-     * 
-     * @param player The player to search
-     * @param ringClass The ring class to search for
-     * @return The ring if found in hands, or ItemStack.EMPTY
+     * 在玩家的手部（主手和副手）中搜索戒指。
+     *
+     * @param player 要搜索的玩家
+     * @param ringClass 要搜索的戒指类
+     * @return 如果在手部找到则返回戒指，否则返回 ItemStack.EMPTY
      */
     private static ItemStack findInHands(EntityPlayer player, Class<? extends Item> ringClass) {
         LOGGER.debug("Searching hands for ring type: {}", ringClass.getSimpleName());
-        
+
         // Check main hand first
         ItemStack mainHand = player.getHeldItemMainhand();
         if (!mainHand.isEmpty() && ringClass.isInstance(mainHand.getItem())) {
             LOGGER.debug("Found ring in main hand: {}", mainHand.getItem().getClass().getSimpleName());
             return mainHand;
         }
-        
+
         // Check off hand
         ItemStack offHand = player.getHeldItemOffhand();
         if (!offHand.isEmpty() && ringClass.isInstance(offHand.getItem())) {
             LOGGER.debug("Found ring in off hand: {}", offHand.getItem().getClass().getSimpleName());
             return offHand;
         }
-        
+
         LOGGER.debug("No ring found in hands");
         return ItemStack.EMPTY;
     }
-    
+
     /**
-     * Searches for rings in Baubles slots using the BaublesIntegration helper.
-     * 
-     * @param player The player to search
-     * @param ringClass The ring class to search for
-     * @return The ring if found in Baubles, or ItemStack.EMPTY
+     * 使用 BaublesIntegration 辅助类在 Baubles 槽位中搜索戒指。
+     *
+     * @param player 要搜索的玩家
+     * @param ringClass 要搜索的戒指类
+     * @return 如果在 Baubles 中找到则返回戒指，否则返回 ItemStack.EMPTY
      */
     private static ItemStack findInBaubles(EntityPlayer player, Class<? extends Item> ringClass) {
         return BaublesIntegration.findRingInBaubles(player, ringClass);
     }
-    
+
     /**
-     * Searches for rings in the player's main inventory.
-     * 
-     * @param player The player to search
-     * @param ringClass The ring class to search for
-     * @return The ring if found in inventory, or ItemStack.EMPTY
+     * 在玩家的主要物品栏中搜索戒指。
+     *
+     * @param player 要搜索的玩家
+     * @param ringClass 要搜索的戒指类
+     * @return 如果在物品栏中找到则返回戒指，否则返回 ItemStack.EMPTY
      */
     private static ItemStack findInInventory(EntityPlayer player, Class<? extends Item> ringClass) {
         LOGGER.debug("Searching inventory for ring type: {}", ringClass.getSimpleName());
-        
+
         return searchInventoryForRing(player.inventory, ringClass);
     }
-    
+
     /**
-     * Helper method to search through an inventory for a specific ring type.
-     * 
-     * @param inventory The inventory to search
-     * @param ringClass The ring class to search for
-     * @return The ring if found, or ItemStack.EMPTY
+     * 遍历物品栏搜索特定类型戒指的辅助方法。
+     *
+     * @param inventory 要搜索的物品栏
+     * @param ringClass 要搜索的戒指类
+     * @return 如果找到则返回戒指，否则返回 ItemStack.EMPTY
      */
     private static ItemStack searchInventoryForRing(IInventory inventory, Class<? extends Item> ringClass) {
         if (inventory == null) {
             LOGGER.debug("Inventory is null, cannot search");
             return ItemStack.EMPTY;
         }
-        
+
         int slots = inventory.getSizeInventory();
         LOGGER.debug("Searching inventory with {} slots", slots);
-        
+
         for (int i = 0; i < slots; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) {
@@ -174,32 +174,32 @@ public class RingDetectionService {
                 return stack;
             }
         }
-        
+
         LOGGER.debug("No ring found in inventory");
         return ItemStack.EMPTY;
     }
-    
+
     /**
-     * Logs the result of a ring search operation.
-     * 
-     * @param location The location where the search was performed
-     * @param found Whether a ring was found
-     * @param result The ring that was found (if any)
+     * 记录戒指搜索操作的结果。
+     *
+     * @param location 执行搜索的位置
+     * @param found 是否找到了戒指
+     * @param result 找到的戒指（如果有）
      */
     private static void logSearchResult(String location, boolean found, ItemStack result) {
         if (found && !result.isEmpty()) {
-            LOGGER.debug("Ring search successful - Location: {}, Ring: {}", 
+            LOGGER.debug("Ring search successful - Location: {}, Ring: {}",
                 location, result.getItem().getClass().getSimpleName());
         } else {
             LOGGER.debug("Ring search failed - Location: {}", location);
         }
     }
-    
+
     /**
-     * Marks the Baubles inventory as dirty to ensure proper synchronization.
-     * This is a public method that delegates to the BaublesIntegration helper.
-     * 
-     * @param player The player whose Baubles inventory should be marked dirty
+     * 将 Baubles 物品栏标记为脏以确保正确的同步。
+     * 这是一个公共方法，委托给 BaublesIntegration 辅助类。
+     *
+     * @param player 其 Baubles 物品栏应被标记为脏的玩家
      */
     public static void markBaublesDirtyIfNeeded(EntityPlayer player) {
             if (player == null) {
@@ -221,33 +221,32 @@ public class RingDetectionService {
 
 
 
-    
+
     /**
-     * Checks if the Baubles mod is available and the API is accessible.
-     * This is a public method that delegates to the BaublesIntegration helper.
-     * 
-     * @return true if Baubles is available and API is accessible, false otherwise
+     * 检查 Baubles 模组是否可用以及 API 是否可访问。
+     * 这是一个公共方法，委托给 BaublesIntegration 辅助类。
+     *
+     * @return 如果 Baubles 可用且 API 可访问则返回 true，否则返回 false
      */
     public static boolean isBaublesAvailable() {
             return BaublesHelper.isBaublesLoaded();
         }
 
 
-    
+
     /**
-     * Helper class for robust Baubles API integration with enhanced error handling.
-     * Encapsulates all Baubles-specific logic and provides graceful fallback when
-     * Baubles mod is not present or API calls fail.
+     * 用于强大 Baubles API 集成的辅助类，具有增强的错误处理。
+     * 封装所有 Baubles 特定逻辑，并在 Baubles 模组不存在或 API 调用失败时提供优雅的回退。
      */
     private static class BaublesIntegration {
         private static final Logger LOGGER = LogManager.getLogger(BaublesIntegration.class);
-        
+
         /**
-         * Finds a ring in Baubles slots with comprehensive error handling.
-         * 
-         * @param player The player to search
-         * @param ringClass The ring class to search for
-         * @return The ring if found in Baubles, or ItemStack.EMPTY
+         * 在 Baubles 槽位中查找戒指，具有全面的错误处理。
+         *
+         * @param player 要搜索的玩家
+         * @param ringClass 要搜索的戒指类
+         * @return 如果在 Baubles 中找到则返回戒指，否则返回 ItemStack.EMPTY
          */
         public static ItemStack findRingInBaubles(EntityPlayer player, Class<? extends Item> ringClass) {
             if (player == null) {
@@ -281,12 +280,12 @@ public class RingDetectionService {
             return ItemStack.EMPTY;
         }
 
-        
+
         /**
-         * Marks the Baubles inventory as dirty to ensure proper synchronization.
-         * This method handles errors gracefully and logs failures without interrupting operation.
-         * 
-         * @param player The player whose Baubles inventory should be marked dirty
+         * 将 Baubles 物品栏标记为脏以确保正确的同步。
+         * 此方法优雅地处理错误并在不中断操作的情况下记录失败。
+         *
+         * @param player 其 Baubles 物品栏应被标记为脏的玩家
          */
         public static void markBaublesDirtyIfNeeded(EntityPlayer player) {
             if (player == null) {
@@ -306,11 +305,11 @@ public class RingDetectionService {
             }
         }
 
-        
+
         /**
-         * Checks if the Baubles mod is available and the API is accessible.
-         * 
-         * @return true if Baubles is available and API is accessible, false otherwise
+         * 检查 Baubles 模组是否可用以及 API 是否可访问。
+         *
+         * @return 如果 Baubles 可用且 API 可访问则返回 true，否则返回 false
          */
         public static boolean isBaublesAvailable() {
             return BaublesHelper.isBaublesLoaded();

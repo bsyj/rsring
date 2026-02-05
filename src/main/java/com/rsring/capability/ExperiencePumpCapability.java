@@ -7,8 +7,16 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
+/**
+ * 经验泵能力实现类，实现了IExperiencePumpCapability接口
+ * 用于管理经验存储、容量等级和操作模式等功能
+ */
+/**
+ * 实现经验泵功能接口的类，用于管理经验存储、容量和模式等功能
+ */
 public class ExperiencePumpCapability implements IExperiencePumpCapability {
 
+    // 使用Capability注入方式注册经验泵功能
     @CapabilityInject(IExperiencePumpCapability.class)
     public static final Capability<IExperiencePumpCapability> EXPERIENCE_PUMP_CAPABILITY = null;
     // Experience pump capacity constants

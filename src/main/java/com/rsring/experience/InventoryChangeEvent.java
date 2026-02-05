@@ -5,66 +5,66 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
- * Custom event fired when inventory changes occur that affect experience tanks or rings.
- * Supports Requirements 7.1, 7.2, 7.3 for cross-inventory integration and change detection.
+ * 当影响经验储罐或戒指的物品栏变化发生时触发的自定义事件。
+ * 支持需求 7.1、7.2、7.3 的跨物品栏集成和变化检测。
  */
 public class InventoryChangeEvent extends Event {
-    
+
     /**
-     * Type of inventory change that occurred.
+     * 发生的物品栏变化类型。
      */
     public enum ChangeType {
-        TANK_ADDED("Tank Added"),
-        TANK_REMOVED("Tank Removed"),
-        TANK_MODIFIED("Tank Modified"),
-        RING_ADDED("Ring Added"),
-        RING_REMOVED("Ring Removed"),
-        RING_MODIFIED("Ring Modified"),
-        BAUBLES_CHANGED("Baubles Changed"),
-        INVENTORY_REFRESHED("Inventory Refreshed");
-        
+        TANK_ADDED("储罐添加"),
+        TANK_REMOVED("储罐移除"),
+        TANK_MODIFIED("储罐修改"),
+        RING_ADDED("戒指添加"),
+        RING_REMOVED("戒指移除"),
+        RING_MODIFIED("戒指修改"),
+        BAUBLES_CHANGED("饰品栏变化"),
+        INVENTORY_REFRESHED("物品栏刷新");
+
         private final String displayName;
-        
+
         ChangeType(String displayName) {
             this.displayName = displayName;
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }
     }
-    
+
     /**
-     * Location where the change occurred.
+     * 变化发生的地点。
      */
     public enum InventoryLocation {
-        PLAYER_INVENTORY("Player Inventory"),
-        HOTBAR("Hotbar"),
-        BAUBLES("Baubles Slots"),
-        OFFHAND("Off Hand"),
-        UNKNOWN("Unknown");
-        
+        PLAYER_INVENTORY("玩家物品栏"),
+        HOTBAR("快捷栏"),
+        BAUBLES("饰品栏槽位"),
+        OFFHAND("副手"),
+        UNKNOWN("未知");
+
         private final String displayName;
-        
+
         InventoryLocation(String displayName) {
             this.displayName = displayName;
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }
     }
-    
+
     private final EntityPlayer player;
     private final ChangeType changeType;
     private final InventoryLocation location;
     private final ItemStack affectedItem;
     private final int slotIndex;
     private final long timestamp;
-    
+
     /**
-     * Default constructor required by Minecraft Forge event system.
-     * Creates an empty event with default values.
+     * Minecraft Forge 事件系统所需的默认构造函数。
+     * 使用默认值创建一个空事件。
      */
     public InventoryChangeEvent() {
         this.player = null;
@@ -74,11 +74,11 @@ public class InventoryChangeEvent extends Event {
         this.slotIndex = -1;
         this.timestamp = System.currentTimeMillis();
     }
-    
+
     /**
-     * Creates a new inventory change event.
+     * 创建一个新的物品栏变化事件。
      */
-    public InventoryChangeEvent(EntityPlayer player, ChangeType changeType, 
+    public InventoryChangeEvent(EntityPlayer player, ChangeType changeType,
                                InventoryLocation location, ItemStack affectedItem, int slotIndex) {
         this.player = player;
         this.changeType = changeType;
@@ -87,52 +87,52 @@ public class InventoryChangeEvent extends Event {
         this.slotIndex = slotIndex;
         this.timestamp = System.currentTimeMillis();
     }
-    
+
     /**
-     * Creates a new inventory change event without slot information.
+     * 创建一个不包含槽位信息的新物品栏变化事件。
      */
-    public InventoryChangeEvent(EntityPlayer player, ChangeType changeType, 
+    public InventoryChangeEvent(EntityPlayer player, ChangeType changeType,
                                InventoryLocation location, ItemStack affectedItem) {
         this(player, changeType, location, affectedItem, -1);
     }
-    
+
     /**
-     * Creates a new inventory change event for general changes.
+     * 为一般变化创建一个新的物品栏变化事件。
      */
     public InventoryChangeEvent(EntityPlayer player, ChangeType changeType, InventoryLocation location) {
         this(player, changeType, location, ItemStack.EMPTY, -1);
     }
-    
+
     // Getters
-    
+
     public EntityPlayer getPlayer() {
         return player;
     }
-    
+
     public ChangeType getChangeType() {
         return changeType;
     }
-    
+
     public InventoryLocation getLocation() {
         return location;
     }
-    
+
     public ItemStack getAffectedItem() {
         return affectedItem.copy();
     }
-    
+
     public int getSlotIndex() {
         return slotIndex;
     }
-    
+
     public long getTimestamp() {
         return timestamp;
     }
-    
+
     // Utility methods
-    
+
     /**
-     * Checks if this event affects experience tanks.
+     * 检查此事件是否影响经验储罐。
      */
     public boolean affectsTanks() {
         return changeType == ChangeType.TANK_ADDED ||
@@ -141,9 +141,9 @@ public class InventoryChangeEvent extends Event {
                (changeType == ChangeType.INVENTORY_REFRESHED && isExperienceTank(affectedItem)) ||
                (changeType == ChangeType.BAUBLES_CHANGED && isExperienceTank(affectedItem));
     }
-    
+
     /**
-     * Checks if this event affects rings.
+     * 检查此事件是否影响戒指。
      */
     public boolean affectsRings() {
         return changeType == ChangeType.RING_ADDED ||
@@ -152,73 +152,73 @@ public class InventoryChangeEvent extends Event {
                (changeType == ChangeType.INVENTORY_REFRESHED && isRing(affectedItem)) ||
                (changeType == ChangeType.BAUBLES_CHANGED && isRing(affectedItem));
     }
-    
+
     /**
-     * Checks if this event affects Baubles slots.
+     * 检查此事件是否影响饰品栏槽位。
      */
     public boolean affectsBaubles() {
         return location == InventoryLocation.BAUBLES ||
                changeType == ChangeType.BAUBLES_CHANGED;
     }
-    
+
     /**
-     * Checks if the affected item is an experience tank.
+     * 检查受影响的物品是否是经验储罐。
      */
     public boolean isAffectedItemTank() {
         return isExperienceTank(affectedItem);
     }
-    
+
     /**
-     * Checks if the affected item is a ring.
+     * 检查受影响的物品是否是戒指。
      */
     public boolean isAffectedItemRing() {
         return isRing(affectedItem);
     }
-    
+
     /**
-     * Gets a human-readable description of this event.
+     * 获取此事件的人类可读描述。
      */
     public String getDescription() {
         StringBuilder desc = new StringBuilder();
         desc.append(changeType.getDisplayName());
-        
+
         if (player != null) {
             desc.append(" for player ").append(player.getName());
         }
-        
+
         desc.append(" in ").append(location.getDisplayName());
-        
+
         if (!affectedItem.isEmpty()) {
             desc.append(" (").append(affectedItem.getDisplayName()).append(")");
         }
-        
+
         if (slotIndex >= 0) {
             desc.append(" at slot ").append(slotIndex);
         }
-        
+
         return desc.toString();
     }
-    
+
     // Private helper methods
-    
+
     /**
-     * Checks if an item is an experience tank.
+     * 检查物品是否是经验储罐。
      */
     private boolean isExperienceTank(ItemStack item) {
         return !item.isEmpty() && item.getItem() instanceof com.rsring.item.ItemExperiencePump;
     }
-    
+
     /**
-     * Checks if an item is a ring.
+     * 检查物品是否是戒指。
      */
     private boolean isRing(ItemStack item) {
         if (item.isEmpty()) return false;
-        
+
         // Check for known ring types
         return item.getItem() instanceof com.rsring.item.ItemAbsorbRing;
         // Add other ring types as needed
     }
-    
+
     @Override
     public String toString() {
         return String.format("InventoryChangeEvent{player=%s, type=%s, location=%s, item=%s, slot=%d, timestamp=%d}",
@@ -229,66 +229,66 @@ public class InventoryChangeEvent extends Event {
                            slotIndex,
                            timestamp);
     }
-    
+
     // Static factory methods for common events
-    
+
     /**
-     * Creates a tank added event.
+     * 创建一个储罐添加事件。
      */
-    public static InventoryChangeEvent tankAdded(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent tankAdded(EntityPlayer player, InventoryLocation location,
                                                ItemStack tank, int slot) {
         return new InventoryChangeEvent(player, ChangeType.TANK_ADDED, location, tank, slot);
     }
-    
+
     /**
-     * Creates a tank removed event.
+     * 创建一个储罐移除事件。
      */
-    public static InventoryChangeEvent tankRemoved(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent tankRemoved(EntityPlayer player, InventoryLocation location,
                                                  ItemStack tank, int slot) {
         return new InventoryChangeEvent(player, ChangeType.TANK_REMOVED, location, tank, slot);
     }
-    
+
     /**
-     * Creates a tank modified event.
+     * 创建一个储罐修改事件。
      */
-    public static InventoryChangeEvent tankModified(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent tankModified(EntityPlayer player, InventoryLocation location,
                                                   ItemStack tank, int slot) {
         return new InventoryChangeEvent(player, ChangeType.TANK_MODIFIED, location, tank, slot);
     }
-    
+
     /**
-     * Creates a ring added event.
+     * 创建一个戒指添加事件。
      */
-    public static InventoryChangeEvent ringAdded(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent ringAdded(EntityPlayer player, InventoryLocation location,
                                                ItemStack ring, int slot) {
         return new InventoryChangeEvent(player, ChangeType.RING_ADDED, location, ring, slot);
     }
-    
+
     /**
-     * Creates a ring removed event.
+     * 创建一个戒指移除事件。
      */
-    public static InventoryChangeEvent ringRemoved(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent ringRemoved(EntityPlayer player, InventoryLocation location,
                                                  ItemStack ring, int slot) {
         return new InventoryChangeEvent(player, ChangeType.RING_REMOVED, location, ring, slot);
     }
-    
+
     /**
-     * Creates a ring modified event.
+     * 创建一个戒指修改事件。
      */
-    public static InventoryChangeEvent ringModified(EntityPlayer player, InventoryLocation location, 
+    public static InventoryChangeEvent ringModified(EntityPlayer player, InventoryLocation location,
                                                   ItemStack ring, int slot) {
         return new InventoryChangeEvent(player, ChangeType.RING_MODIFIED, location, ring, slot);
     }
-    
+
     /**
-     * Creates a Baubles changed event.
+     * 创建一个饰品栏变化事件。
      */
     public static InventoryChangeEvent baublesChanged(EntityPlayer player, ItemStack item, int slot) {
         return new InventoryChangeEvent(player, ChangeType.BAUBLES_CHANGED, InventoryLocation.BAUBLES, item, slot);
     }
-    
+
     /**
-     * Creates an inventory refreshed event.
+     * 创建一个物品栏刷新事件。
      */
     public static InventoryChangeEvent inventoryRefreshed(EntityPlayer player, InventoryLocation location) {
         return new InventoryChangeEvent(player, ChangeType.INVENTORY_REFRESHED, location);

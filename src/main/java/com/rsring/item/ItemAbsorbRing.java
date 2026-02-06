@@ -439,13 +439,8 @@ public class ItemAbsorbRing extends Item implements IBauble {
             if (isRSController) {
                 // 使用RS集成类插入到控制器
                 inserted = RSIntegration.insertItem(targetWorld, targetPos, attemptStack);
-                
-                // 如果RS插入失败或部分失败，尝试插入到关联的容器
-                if (inserted < attemptCount) {
-                    ItemStack remainingStack = attemptStack.copy();
-                    remainingStack.setCount(attemptCount - inserted);
-                    inserted += insertIntoChest(targetWorld, targetPos, remainingStack);
-                }
+                // 注意：RS控制器本身没有物品处理能力，不回退到控制器位置
+                // 如果RS网络满了，物品将保留在地上
             } else {
                 inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
             }

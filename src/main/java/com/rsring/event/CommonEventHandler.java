@@ -381,6 +381,11 @@ public class CommonEventHandler {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemAbsorbRing)) return;
         if (event.getWorld().isRemote) return;
 
+        net.minecraft.util.math.RayTraceResult hit = player.rayTrace(5.0D, 1.0F);
+        if (hit != null && hit.typeOfHit == net.minecraft.util.math.RayTraceResult.Type.BLOCK) {
+            return;
+        }
+
         IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
         if (capability == null) return;
 

@@ -154,30 +154,14 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        // 仅主手触发
         if (hand != EnumHand.MAIN_HAND) {
             return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(hand));
         }
-
         ItemStack stack = player.getHeldItem(hand);
-
-        // 蹲下 + 右键空气 = 发电
         if (player.isSneaking()) {
-            // 检查是否看向方块（通过ray trace判断）
-            net.minecraft.util.math.RayTraceResult rayTrace = player.rayTrace(5.0D, 0.0F);
-            boolean pointingAtAir = (rayTrace == null || rayTrace.typeOfHit == net.minecraft.util.math.RayTraceResult.Type.MISS);
-
-            if (pointingAtAir) {
-                // 指向空气，触发发电
-                generateEnergyOnSneakRightClick(player, stack);
-                return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-            }
-
-            // 指向方块，让onItemUse处理绑定逻辑
             return new ActionResult<>(EnumActionResult.PASS, stack);
         }
 
-        // 非蹲下状态，正常打开界面
         if (world.isRemote) {
             com.rsring.rsring.RsRingMod.proxy.openAbsorbRingGui(stack);
         } else {
@@ -189,7 +173,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 if (capability.isBound()) {
                     BlockPos pos = capability.getTerminalPos();
                     int dim = capability.getTerminalDimension();
-                    bindInfo = "已绑定 " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
+                    bindInfo = "已绑定: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
                 } else {
                     bindInfo = "未绑定";
                 }
@@ -198,37 +182,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
             }
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-    }
-
-    /**
-     * 蹲下右键空气时直接发电（不消耗经验）
-     */
-    private void generateEnergyOnSneakRightClick(EntityPlayer player, ItemStack stack) {
-        if (player.world.isRemote) {
-            // 仅在服务端处理发电逻辑
-            return;
-        }
-
-        IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
-        if (capability == null) return;
-
-        IEnergyStorage energyStorage = capability.getEnergyStorage();
-        if (energyStorage == null) return;
-
-        int manualChargeAmount = com.rsring.config.RsRingConfig.absorbRing.manualChargeAmount;
-        if (manualChargeAmount <= 0) return;
-
-        // 直接发电（不消耗经验）
-        int actuallyAdded = energyStorage.receiveEnergy(manualChargeAmount, false);
-
-        // 发送消息
-        if (actuallyAdded > 0) {
-            player.sendMessage(new TextComponentString(
-                TextFormatting.GREEN + "手摇发电！能量 +" + actuallyAdded + "FE"));
-        } else {
-            player.sendMessage(new TextComponentString(
-                TextFormatting.YELLOW + "能量已满"));
-        }
     }
 
     @Override
@@ -468,6 +421,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
 
     private boolean hasAnyFilter(IRsRingCapability capability) {
+        if (hasAnyDefaultFilter(capability.isWhitelistMode())) {
+            return true;
+        }
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);
             if (filterName != null && !filterName.isEmpty()) {
@@ -480,7 +436,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
     private boolean shouldFilterItem(IRsRingCapability capability, ItemStack itemStack) {
         boolean isWhitelistMode = capability.isWhitelistMode();
         String itemName = itemStack.getItem().getRegistryName().toString();
-        boolean isInList = false;
+        boolean isInList = isInDefaultList(itemName, isWhitelistMode);
 
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);
@@ -495,6 +451,37 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             return isInList;
         }
+    }
+
+    private boolean hasAnyDefaultFilter(boolean whitelistMode) {
+        String[] items = whitelistMode
+            ? com.rsring.config.RsRingConfig.absorbRing.defaultWhitelistItems
+            : com.rsring.config.RsRingConfig.absorbRing.defaultBlacklistItems;
+        if (items == null) return false;
+        for (String item : items) {
+            if (item != null && !item.trim().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInDefaultList(String itemName, boolean whitelistMode) {
+        if (itemName == null || itemName.isEmpty()) return false;
+        String[] items = whitelistMode
+            ? com.rsring.config.RsRingConfig.absorbRing.defaultWhitelistItems
+            : com.rsring.config.RsRingConfig.absorbRing.defaultBlacklistItems;
+        if (items == null) return false;
+        for (String item : items) {
+            if (item == null) continue;
+            String formatted = item.trim();
+            if (formatted.isEmpty()) continue;
+            if (!formatted.contains(":")) {
+                formatted = "minecraft:" + formatted;
+            }
+            if (formatted.equals(itemName)) return true;
+        }
+        return false;
     }
 
     private int insertIntoChest(World world, BlockPos pos, ItemStack stack) {

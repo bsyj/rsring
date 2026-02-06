@@ -40,6 +40,10 @@ public class RsRingCapability implements IRsRingCapability {
     private void loadDefaultFilterList() {
         blacklistItems.clear();
 
+        if (allowCustomFilters()) {
+            return;
+        }
+
         String[] items = com.rsring.config.RsRingConfig.absorbRing.useBlacklistModeByDefault
             ? com.rsring.config.RsRingConfig.absorbRing.defaultBlacklistItems
             : com.rsring.config.RsRingConfig.absorbRing.defaultWhitelistItems;

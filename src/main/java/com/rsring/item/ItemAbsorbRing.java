@@ -83,8 +83,8 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "使用方法:");
-        tooltip.add(TextFormatting.GRAY + "  1. 右键打开过滤设置界面");
-        tooltip.add(TextFormatting.GRAY + "  2. 用 RF 能源为戒指充电 (最大20M FE)");
+        tooltip.add(TextFormatting.GRAY + "  1. 手持戒指右键空气打开过滤设置界面");
+        tooltip.add(TextFormatting.GRAY + "  2. 蹲下右键绑定目标箱子/RS网络终端");
         tooltip.add(TextFormatting.GRAY + "  3. 按 K 键开启/关闭吸收功能");
         tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/快捷栏/饰品栏均可生效");
     }
@@ -415,7 +415,18 @@ public class ItemAbsorbRing extends Item implements IBauble {
             ItemStack attemptStack = itemStack.copy();
             attemptStack.setCount(attemptCount);
 
-            int inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
+            int inserted = 0;
+            boolean rsController = isRSController(targetWorld, targetPos);
+            if (rsController) {
+                inserted = insertIntoRSNetwork(targetWorld, targetPos, attemptStack);
+                if (inserted < attemptCount) {
+                    ItemStack remainingStack = attemptStack.copy();
+                    remainingStack.setCount(attemptCount - inserted);
+                    inserted += insertIntoChest(targetWorld, targetPos, remainingStack);
+                }
+            } else {
+                inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
+            }
             if (inserted > 0) {
                 if (costPerItem > 0) {
                     int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
@@ -488,6 +499,128 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return inserted;
     }
 
+    private boolean isRSController(World world, BlockPos pos) {
+        if (world == null || pos == null) return false;
+        net.minecraft.util.ResourceLocation regName = world.getBlockState(pos).getBlock().getRegistryName();
+        if (regName == null) return false;
+        String blockName = regName.toString().toLowerCase();
+        return blockName.equals("refinedstorage:controller");
+    }
+
+    private int insertIntoRSNetwork(World world, BlockPos pos, ItemStack stack) {
+        if (world == null || pos == null || stack.isEmpty()) return 0;
+        try {
+            Class<?> apiClass = Class.forName("com.raoulvdberge.refinedstorage.apiimpl.API");
+            Object api = apiClass.getMethod("instance").invoke(null);
+            Object network = getNetworkFromNodeManager(api, world, pos);
+            if (network == null) {
+                network = getNetworkFromTile(world, pos);
+            }
+            if (network == null) {
+                return 0;
+            }
+
+            // Preferred path for RS 1.6.x: INetwork.insertItem(ItemStack, int/long, Action) -> remainder
+            Class<?> actionClass = Class.forName("com.raoulvdberge.refinedstorage.api.util.Action");
+            Object perform = java.lang.Enum.valueOf((Class<? extends java.lang.Enum>) actionClass, "PERFORM");
+            try {
+                java.lang.reflect.Method insert;
+                Object remainderObj;
+                try {
+                    insert = network.getClass().getMethod("insertItem", ItemStack.class, int.class, actionClass);
+                    remainderObj = insert.invoke(network, stack.copy(), stack.getCount(), perform);
+                } catch (NoSuchMethodException e) {
+                    insert = network.getClass().getMethod("insertItem", ItemStack.class, long.class, actionClass);
+                    remainderObj = insert.invoke(network, stack.copy(), (long) stack.getCount(), perform);
+                }
+                if (remainderObj == null) {
+                    return stack.getCount();
+                }
+                if (remainderObj instanceof ItemStack) {
+                    ItemStack remainder = (ItemStack) remainderObj;
+                    int inserted = Math.max(0, stack.getCount() - remainder.getCount());
+                    return inserted;
+                }
+            } catch (NoSuchMethodException ignored) {
+                return 0;
+            }
+        } catch (Throwable t) {
+            return 0;
+        }
+        return 0;
+    }
+
+    private Object getNetworkFromNodeManager(Object api, World world, BlockPos pos) {
+        try {
+            java.lang.reflect.Method getNodeManager = api.getClass().getMethod("getNetworkNodeManager", World.class);
+            Object nodeManager = getNodeManager.invoke(api, world);
+            if (nodeManager == null) return null;
+
+            java.lang.reflect.Method getNode = nodeManager.getClass().getMethod("getNode", BlockPos.class);
+            Object node = getNode.invoke(nodeManager, pos);
+            if (node == null) return null;
+
+            java.lang.reflect.Method getNetwork = node.getClass().getMethod("getNetwork");
+            return getNetwork.invoke(node);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private Object getNetworkFromTile(World world, BlockPos pos) {
+        try {
+            TileEntity te = world.getTileEntity(pos);
+            if (te == null) return null;
+
+            // Try capability INetworkNodeProxy -> getNode() -> getNetwork()
+            try {
+                Class<?> capClass = Class.forName("com.raoulvdberge.refinedstorage.capability.CapabilityNetworkNodeProxy");
+                java.lang.reflect.Field capField = capClass.getField("NETWORK_NODE_PROXY_CAPABILITY");
+                Object cap = capField.get(null);
+                if (cap != null) {
+                    java.lang.reflect.Method getCap = te.getClass().getMethod("getCapability",
+                        net.minecraftforge.common.capabilities.Capability.class, net.minecraft.util.EnumFacing.class);
+                    Object proxy = getCap.invoke(te, cap, null);
+                    if (proxy != null) {
+                        java.lang.reflect.Method getNode = proxy.getClass().getMethod("getNode");
+                        Object node = getNode.invoke(proxy);
+                        if (node != null) {
+                            java.lang.reflect.Method getNetwork = node.getClass().getMethod("getNetwork");
+                            Object net = getNetwork.invoke(node);
+                            if (net != null) return net;
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                // ignore
+            }
+
+            // Direct getNetwork() on tile
+            for (java.lang.reflect.Method m : te.getClass().getMethods()) {
+                if ("getNetwork".equals(m.getName()) && m.getParameterTypes().length == 0) {
+                    Object net = m.invoke(te);
+                    if (net != null) return net;
+                }
+            }
+
+            // getNode() -> getNetwork()
+            for (java.lang.reflect.Method m : te.getClass().getMethods()) {
+                if (!"getNode".equals(m.getName()) || m.getParameterTypes().length != 0) continue;
+                Object node = m.invoke(te);
+                if (node == null) continue;
+                for (java.lang.reflect.Method nm : node.getClass().getMethods()) {
+                    if ("getNetwork".equals(nm.getName()) && nm.getParameterTypes().length == 0) {
+                        Object net = nm.invoke(node);
+                        if (net != null) return net;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
+        return null;
+    }
+
     @SideOnly(Side.CLIENT)
     public void onPlayerBaubleRender(ItemStack stack, EntityPlayer player, float partialTicks) {
         GlStateManager.pushMatrix();
@@ -495,4 +628,3 @@ public class ItemAbsorbRing extends Item implements IBauble {
         GlStateManager.popMatrix();
     }
 }
-

@@ -1,0 +1,36 @@
+
+///TO DO
+
+绑定rs终端到玩家
+
+配置核对结果
+RsRingConfig.java
+已生效：defaultBlacklistItems、defaultWhitelistItems、useBlacklistModeByDefault（在 RsRingCapability 中使用）。
+未生效：absorptionRange、energyCostPerItem、maxEnergyCapacity、allowCustomFilters、absorptionInterval、initialEnergy、energyCostMultiplier。
+ExperienceTankConfig.java
+已生效：enabled、xpExtractionRate、xpExtractionRange、extractXpBottles、enableAutoPumping、extractionInterval、mendingOn、mendingInterval、enableOverflowBottles、mendPlayerItems（主要在 ItemExperiencePump）。
+未生效：pumpingInterval、defaultPumpMode、defaultRetainLevel、defaultMendingMode、maxTankLevelLimit、enableSpecialTanks、xpToBottleEfficiency、xpMendingEfficiency、controller.maxManagedTanks。
+另外：getConfigSummary、validateConfig、resetToDefaults 目前没有被调用。
+GeneralConfig.java
+当前没有被任何业务逻辑引用，所有项暂不生效：enableBaublesIntegration、enableSoundEffects、enableParticleEffects、debugMode、autoSaveInterval。
+NetworkConfig.java
+当前没有被任何业务逻辑引用，所有项暂不生效：packetSendFrequency、packetSizeLimit、enableNetworkCompression。
+
+
+
+检查并修复 RingDetectionService.java 中的乱码和英文注释
+检查并修复 RingDetectionSystem.java 中的乱码和英文注释
+检查并修复 BaublesHelper.java 中的乱码和英文注释
+检查并修复 ItemLocationTracker.java 中的乱码和英文注释
+检查并修复 XpHelper.java 中的乱码和英文注释
+检查并修复 ExperienceCalculator.java 中的乱码和英文注释
+
+
+魔能双生之镐 (Infinity-1 Pick)
+编辑加合成表
+物品命令：/give @p moreavaritia:infinitympick 1
+攻击速度：1.2
+
+攻击伤害：8（）
+
+特殊功能：潜行右击切换附魔，有精准采集与时运III两种模式。注：此附魔为最普通的原版附魔，故可以被任何有附魔提取功能的设备提取，且不会对无限之镐的附魔切换功能造成任何影响，意味着可以从中无限量提取上述两种附魔。另外，此工具除无法破坏外的所有方块均为瞬间破坏。

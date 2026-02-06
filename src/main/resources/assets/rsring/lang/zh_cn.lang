@@ -1,4 +1,4 @@
-﻿#PARSE_ESCAPES
+#PARSE_ESCAPES
 #items
 item.rsring.item_absorb_ring.name=物品吸收戒指
 item.rsring.experience_pump.name=经验泵
@@ -26,6 +26,7 @@ config.rsring.ring.allowCustomFilters=允许自定义过滤
 config.rsring.ring.absorptionInterval=吸收间隔
 config.rsring.ring.initialEnergy=初始能量
 config.rsring.ring.energyCostMultiplier=能量消耗倍率
+config.rsring.ring.manualChargeAmount=手摇充电数量
 
 # 经验储罐配置
 config.rsring.tank=经验储罐设置

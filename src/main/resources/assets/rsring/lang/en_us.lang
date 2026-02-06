@@ -24,6 +24,7 @@ config.rsring.ring.allowCustomFilters=Allow Custom Filters
 config.rsring.ring.absorptionInterval=Absorption Interval
 config.rsring.ring.initialEnergy=Initial Energy
 config.rsring.ring.energyCostMultiplier=Energy Cost Multiplier
+config.rsring.ring.manualChargeAmount=Manual Charge Amount
 
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings

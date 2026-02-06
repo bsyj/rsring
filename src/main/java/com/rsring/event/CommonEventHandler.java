@@ -24,7 +24,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -32,6 +31,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
@@ -373,6 +373,36 @@ public class CommonEventHandler {
     }
 
     @SubscribeEvent
+    public void onPlayerRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (event.getHand() != EnumHand.MAIN_HAND) return;
+        EntityPlayer player = event.getEntityPlayer();
+        if (player == null || !player.isSneaking()) return;
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemAbsorbRing)) return;
+        if (event.getWorld().isRemote) return;
+
+        IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (capability == null) return;
+
+        RsRingCapability.refreshEnergyStorage(capability);
+        net.minecraftforge.energy.IEnergyStorage energy = capability.getEnergyStorage();
+        int amount = Math.max(0, com.rsring.config.RsRingConfig.absorbRing.manualChargeAmount);
+        if (amount > 0) {
+            int received = energy.receiveEnergy(amount, false);
+            if (received > 0) {
+                RsRingCapability.syncCapabilityToStack(stack, capability);
+                player.sendMessage(new TextComponentString(
+                    TextFormatting.GREEN + "手摇发电中 +" + received + "FE"));
+            } else {
+                player.sendMessage(new TextComponentString(
+                    TextFormatting.RED + "能量已满"));
+            }
+        }
+        event.setCancellationResult(net.minecraft.util.EnumActionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event == null) return;
         if (!RsRingMod.MODID.equals(event.getModID())) return;
@@ -407,5 +437,3 @@ public class CommonEventHandler {
         return blockName.equals("refinedstorage:controller");
     }
 }
-
-

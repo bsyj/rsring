@@ -114,19 +114,11 @@ public class RSIntegration {
     
     /**
      * 检查方块是否是RS网络节点(可以连接网络的方块)
+     * 注意：当前版本仅支持控制器
      */
     public static boolean isRSNetworkBlock(World world, BlockPos pos) {
-        if (world == null || pos == null) return false;
-        
-        net.minecraft.util.ResourceLocation regName = world.getBlockState(pos).getBlock().getRegistryName();
-        if (regName == null) return false;
-        
-        String blockName = regName.toString().toLowerCase();
-        return blockName.startsWith("refinedstorage:") && 
-               (blockName.contains("controller") || 
-                blockName.contains("grid") || 
-                blockName.contains("disk_drive") ||
-                blockName.contains("crafter"));
+        // 当前版本只支持控制器，不支持其他RS设备
+        return isRSController(world, pos);
     }
     
     /**

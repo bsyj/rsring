@@ -95,9 +95,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             int dim = cap.getTerminalDimension();
             if (worldIn.provider.getDimension() == dim) {
                 if (RSIntegration.isRSController(worldIn, pos)) {
-                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS网络");
-                } else if (RSIntegration.isRSNetworkBlock(worldIn, pos)) {
-                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS设备");
+                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS控制器");
                 } else {
                     tooltip.add(TextFormatting.GREEN + "绑定目标: 普通容器");
                 }
@@ -436,11 +434,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
             attemptStack.setCount(attemptCount);
 
             int inserted = 0;
-            boolean rsController = RSIntegration.isRSController(targetWorld, targetPos);
-            boolean rsNetworkBlock = RSIntegration.isRSNetworkBlock(targetWorld, targetPos);
+            boolean isRSController = RSIntegration.isRSController(targetWorld, targetPos);
             
-            if (rsController || rsNetworkBlock) {
-                // 优先使用RS集成类
+            if (isRSController) {
+                // 使用RS集成类插入到控制器
                 inserted = RSIntegration.insertItem(targetWorld, targetPos, attemptStack);
                 
                 // 如果RS插入失败或部分失败，尝试插入到关联的容器

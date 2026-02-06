@@ -343,9 +343,9 @@ public class CommonEventHandler {
         RSIntegration.initialize();
 
         boolean isContainer = isChestOrContainer(world, pos);
-        boolean isRS = RSIntegration.isRSController(world, pos) || RSIntegration.isRSNetworkBlock(world, pos);
+        boolean isRSController = RSIntegration.isRSController(world, pos);
 
-        if (isContainer || isRS) {
+        if (isContainer || isRSController) {
             ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
             if (!ringStack.isEmpty()) {
                 IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
@@ -362,13 +362,13 @@ public class CommonEventHandler {
 
                     if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
                         int dim = world.provider.getDimension();
-                        String targetType = isRS ? "RS网络" : "容器";
+                        String targetType = isRSController ? "RS控制器" : "容器";
                         String statusMsg = TextFormatting.GREEN + "成功绑定" + targetType + ": " + 
                             pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
                         player.sendMessage(new TextComponentString(statusMsg));
 
-                        // 如果是RS网络，显示网络状态
-                        if (isRS) {
+                        // 如果是RS控制器，显示网络状态
+                        if (isRSController) {
                             String rsStatus = RSIntegration.getNetworkStatus(world, pos);
                             player.sendMessage(new TextComponentString(
                                 TextFormatting.AQUA + "RS网络状态: " + rsStatus));

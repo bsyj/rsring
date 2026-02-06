@@ -38,7 +38,7 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组（1.4版本�
    - 手持戒指
    - 蹲下（Shift）+ 右键点击箱子或RS控制器
    - 聊天显示绑定成功消息和RS网络状态（如适用）
-   - 支持绑定到Refined Storage控制器、合成网格、磁盘驱动器等
+   - 支持绑定到Refined Storage控制器（普通/创造）
 
 3. **配置过滤**
    - 右键打开GUI

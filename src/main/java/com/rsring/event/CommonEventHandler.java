@@ -11,7 +11,6 @@ import com.rsring.network.PacketToggleRsRing;
 import com.rsring.rsring.RsRingMod;
 import com.rsring.util.BaublesHelper;
 import com.rsring.util.XpHelper;
-import com.rsring.integration.RSIntegration;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -339,46 +338,36 @@ public class CommonEventHandler {
         if (world.isRemote) return;
         if (!player.isSneaking()) return;
 
-        // 初始化RS集成
-        RSIntegration.initialize();
-
         boolean isContainer = isChestOrContainer(world, pos);
-        boolean isRSController = RSIntegration.isRSController(world, pos);
+        boolean isRSController = isRSController(world, pos);
 
-        if (isContainer || isRSController) {
-            ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
-            if (!ringStack.isEmpty()) {
-                IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
-                if (capability != null) {
-                    boolean wasBound = capability.isBound();
-                    BlockPos oldPos = wasBound ? capability.getTerminalPos() : null;
-                    int oldDim = wasBound ? capability.getTerminalDimension() : 0;
+        if (!isContainer && !isRSController) return;
 
-                    capability.bindTerminal(world, pos);
-                    RsRingCapability.syncCapabilityToStack(ringStack, capability);
+        ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
+        if (ringStack.isEmpty()) return;
 
-                    BlockPos newPos = capability.getTerminalPos();
-                    int newDim = capability.getTerminalDimension();
+        IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (capability == null) return;
 
-                    if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
-                        int dim = world.provider.getDimension();
-                        String targetType = isRSController ? "RS控制器" : "容器";
-                        String statusMsg = TextFormatting.GREEN + "成功绑定" + targetType + ": " + 
-                            pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
-                        player.sendMessage(new TextComponentString(statusMsg));
+        boolean wasBound = capability.isBound();
+        BlockPos oldPos = wasBound ? capability.getTerminalPos() : null;
+        int oldDim = wasBound ? capability.getTerminalDimension() : 0;
 
-                        // 如果是RS控制器，显示网络状态
-                        if (isRSController) {
-                            String rsStatus = RSIntegration.getNetworkStatus(world, pos);
-                            player.sendMessage(new TextComponentString(
-                                TextFormatting.AQUA + "RS网络状态: " + rsStatus));
-                        }
-                    }
+        capability.bindTerminal(world, pos);
+        RsRingCapability.syncCapabilityToStack(ringStack, capability);
 
-                    event.setCanceled(true);
-                }
-            }
+        BlockPos newPos = capability.getTerminalPos();
+        int newDim = capability.getTerminalDimension();
+
+        if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
+            int dim = world.provider.getDimension();
+            String targetType = isRSController ? "RS Controller" : "Container";
+            String statusMsg = TextFormatting.GREEN + "Bound to " + targetType + ": " +
+                pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
+            player.sendMessage(new TextComponentString(statusMsg));
         }
+
+        event.setCanceled(true);
     }
 
     private boolean isChestOrContainer(World world, BlockPos pos) {
@@ -409,4 +398,6 @@ public class CommonEventHandler {
         return blockName.equals("refinedstorage:controller");
     }
 }
+
+
 

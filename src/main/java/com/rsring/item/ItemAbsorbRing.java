@@ -34,7 +34,6 @@ import net.minecraftforge.fml.common.Optional;
 import baubles.api.IBauble;
 import baubles.api.BaubleType;
 import org.lwjgl.input.Keyboard;
-import com.rsring.integration.RSIntegration;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 public class ItemAbsorbRing extends Item implements IBauble {
@@ -54,50 +53,50 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (cap == null) return;
 
         IEnergyStorage energy = cap.getEnergyStorage();
-        tooltip.add(TextFormatting.GRAY + "能量: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored())
+        tooltip.add(TextFormatting.GRAY + "Energy: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored())
             + TextFormatting.GRAY + " / " + formatFe(energy.getMaxEnergyStored()) + " FE");
-        tooltip.add(TextFormatting.GRAY + "状态: " + (cap.isEnabled() ? TextFormatting.GREEN + "已开启"
-            : TextFormatting.RED + "已关闭"));
+        tooltip.add(TextFormatting.GRAY + "Status: " + (cap.isEnabled() ? TextFormatting.GREEN + "Enabled"
+            : TextFormatting.RED + "Disabled"));
         if (cap.isBound()) {
             BlockPos pos = cap.getTerminalPos();
             String dim = getDimensionName(cap.getTerminalDimension());
-            tooltip.add(TextFormatting.GRAY + "绑定: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
+            tooltip.add(TextFormatting.GRAY + "Bound: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
                 + "," + pos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.AQUA + dim + TextFormatting.GRAY + ")");
-            tooltip.add(TextFormatting.GRAY + "过滤模式: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "白名单"
-                : TextFormatting.AQUA + "黑名单"));
+            tooltip.add(TextFormatting.GRAY + "Filter: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "Whitelist"
+                : TextFormatting.AQUA + "Blacklist"));
         } else {
-            tooltip.add(TextFormatting.GRAY + "未绑定");
+            tooltip.add(TextFormatting.GRAY + "Unbound");
         }
 
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
-            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
-                + TextFormatting.DARK_GRAY + " 查看功能介绍");
+            tooltip.add(TextFormatting.DARK_GRAY + "Hold " + TextFormatting.YELLOW + "Shift"
+                + TextFormatting.DARK_GRAY + " for details");
             return;
         }
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "功能介绍:");
-        tooltip.add(TextFormatting.GRAY + "  - 吸收8格内掉落物并存入戒指/转移");
-        tooltip.add(TextFormatting.GRAY + "  - 支持黑白名单过滤");
-        tooltip.add(TextFormatting.GRAY + "  - 每个物品消耗能量");
+        tooltip.add(TextFormatting.GOLD + "Features:");
+        tooltip.add(TextFormatting.GRAY + "  - Absorbs nearby drops into a bound target");
+        tooltip.add(TextFormatting.GRAY + "  - Supports whitelist/blacklist filters");
+        tooltip.add(TextFormatting.GRAY + "  - Consumes energy per item");
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "使用方法:");
-        tooltip.add(TextFormatting.GRAY + "  1. 手持戒指右键空气打开过滤设置界面");
-        tooltip.add(TextFormatting.GRAY + "  2. 蹲下右键绑定目标箱子/RS控制器");
-        tooltip.add(TextFormatting.GRAY + "  3. 按 K 键开启/关闭吸收功能");
-        tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/快捷栏/饰品栏均可生效");
+        tooltip.add(TextFormatting.GOLD + "Usage:");
+        tooltip.add(TextFormatting.GRAY + "  1. Right-click to open filter");
+        tooltip.add(TextFormatting.GRAY + "  2. Sneak-right-click to bind target");
+        tooltip.add(TextFormatting.GRAY + "  3. Press K to toggle absorb");
+        tooltip.add(TextFormatting.GRAY + "  4. Works in inventory/baubles");
         
-        // 显示绑定目标类型
+        // Show bound target type
         if (cap.isBound() && worldIn != null) {
             BlockPos pos = cap.getTerminalPos();
             int dim = cap.getTerminalDimension();
             if (worldIn.provider.getDimension() == dim) {
-                if (RSIntegration.isRSController(worldIn, pos)) {
-                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS控制器");
+                if (isRSController(worldIn, pos)) {
+                    tooltip.add(TextFormatting.GREEN + "Target: RS Controller");
                 } else {
-                    tooltip.add(TextFormatting.GREEN + "绑定目标: 普通容器");
+                    tooltip.add(TextFormatting.GREEN + "Target: Container");
                 }
             }
         }
@@ -140,10 +139,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     private static String getDimensionName(int dim) {
         switch (dim) {
-            case 0: return "主世界";
-            case -1: return "下界";
-            case 1: return "末地";
-            default: return "维度" + dim;
+            case 0: return "Overworld";
+            case -1: return "Nether";
+            case 1: return "End";
+            default: return "Dim " + dim;
         }
     }
 
@@ -165,15 +164,15 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
-                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
-                String status = capability.isEnabled() ? "已开启" : "已关闭";
+                String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
+                String status = capability.isEnabled() ? "Enabled" : "Disabled";
                 String bindInfo;
                 if (capability.isBound()) {
                     BlockPos pos = capability.getTerminalPos();
                     int dim = capability.getTerminalDimension();
-                    bindInfo = "绑定坐标: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
+                    bindInfo = "Bound: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
                 } else {
-                    bindInfo = "未绑定";
+                    bindInfo = "Unbound";
                 }
                 String msg = net.minecraft.util.text.TextFormatting.GREEN + bindInfo + " | " + mode + " | " + status;
                 player.sendMessage(new TextComponentString(msg));
@@ -188,18 +187,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return EnumActionResult.PASS;
     }
 
-    /**
-     * 提供改进的吸收戒指GUI访问，无论其在物品栏中的位置如何。
-     * 实现需求 2.1、2.2、2.3、2.4 以增强戒指GUI访问。
-     *
-     * 此方法允许从任何有效的物品栏位置访问吸收戒指GUI：
-     * - 当握在主手或副手中时
-     * - 当装备在Baubles戒指槽中时
-     * - 当存储在玩家物品栏或快捷栏中时
-     *
-     * @param player 尝试访问戒指GUI的玩家
-     * @return 如果GUI成功打开则返回true，否则返回false
-     */
     public static boolean tryOpenAbsorbRingGui(EntityPlayer player) {
         if (player == null) {
             return false;
@@ -210,7 +197,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         if (!result.hasRings()) {
             if (player.world.isRemote) {
-                player.sendMessage(new TextComponentString(TextFormatting.RED + "未找到物品吸收戒指，请确保戒指在背包、快捷栏或饰品栏中。"));
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "No absorb ring found."));
             }
             return false;
         }
@@ -219,7 +206,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         if (absorbRing.isEmpty()) {
             if (player.world.isRemote) {
-                player.sendMessage(new TextComponentString(TextFormatting.RED + "未找到物品吸收戒指，检测到其他戒指但无法打开黑白名单界面。"));
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "Absorb ring not accessible."));
             }
             return false;
         }
@@ -227,13 +214,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (player.world.isRemote) {
             com.rsring.rsring.RsRingMod.proxy.openAbsorbRingGui(absorbRing);
             com.rsring.experience.RingDetectionResult.InventoryLocation location = findRingLocation(result, absorbRing);
-            String locationName = location != null ? location.getDisplayName() : "未知位置";
-            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "已打开物品吸收戒指黑白名单界面，位置：" + locationName));
+            String locationName = location != null ? location.getDisplayName() : "Unknown";
+            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Absorb ring GUI opened. Location: " + locationName));
         } else {
             IRsRingCapability capability = absorbRing.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
-                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
-                String msg = "戒指信息 | 过滤模式: " + mode + " | 能量: "
+                String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
+                String msg = "Ring info | Filter: " + mode + " | Energy: "
                            + capability.getEnergyStorage().getEnergyStored() + "/"
                            + capability.getEnergyStorage().getMaxEnergyStored() + " FE";
                 player.sendMessage(new TextComponentString(msg));
@@ -243,12 +230,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return true;
     }
 
-    /**
-     * 在检测结果中找到第一个吸收戒指。
-     *
-     * @param result 戒指检测结果
-     * @return 找到的第一个吸收戒指，如果没有找到则返回ItemStack.EMPTY
-     */
     private static ItemStack findAbsorbRingInResults(com.rsring.experience.RingDetectionResult result) {
         for (ItemStack ring : result.getFoundRings()) {
             if (!ring.isEmpty() && ring.getItem() instanceof ItemAbsorbRing) {
@@ -258,13 +239,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return ItemStack.EMPTY;
     }
 
-    /**
-     * 在检测结果中找到特定戒指的位置。
-     *
-     * @param result 戒指检测结果
-     * @param targetRing 要查找位置的戒指
-     * @return 戒指的位置，如果未找到则返回null
-     */
     private static com.rsring.experience.RingDetectionResult.InventoryLocation findRingLocation(
             com.rsring.experience.RingDetectionResult result, ItemStack targetRing) {
 
@@ -282,27 +256,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return null;
     }
 
-    /**
-     * 可以通过按键绑定或其他事件触发的替代GUI访问方法。
-     * 实现需求 2.1、2.2、2.3 以支持多种访问方法。
-     *
-     * 此方法提供了一种替代方法来访问吸收戒指GUI，而无需
-     * 要求玩家握住戒指并右键点击空气。
-     *
-     * @param player 尝试访问戒指GUI的玩家
-     * @return 如果GUI成功打开则返回true，否则返回false
-     */
     public static boolean openAbsorbRingGuiFromAnyLocation(EntityPlayer player) {
         return tryOpenAbsorbRingGui(player);
     }
 
-    /**
-     * 检查玩家的物品栏中是否有任何可访问的吸收戒指。
-     * 实现需求 2.4 以支持位置无关的戒指访问。
-     *
-     * @param player 要检查的玩家
-     * @return 如果玩家有可访问的吸收戒指则返回true，否则返回false
-     */
     public static boolean hasAccessibleAbsorbRing(EntityPlayer player) {
         if (player == null) {
             return false;
@@ -416,9 +373,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
         
-        // 初始化RS集成
-        RSIntegration.initialize();
-        
         for (net.minecraft.entity.item.EntityItem item : items) {
             if (item.isDead) continue;
             ItemStack itemStack = item.getItem();
@@ -434,14 +388,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
             attemptStack.setCount(attemptCount);
 
             int inserted = 0;
-            boolean isRSController = RSIntegration.isRSController(targetWorld, targetPos);
+            boolean isRSController = isRSController(targetWorld, targetPos);
             
             if (isRSController) {
-                // 使用RS集成类插入到控制器
-                inserted = RSIntegration.insertItem(targetWorld, targetPos, attemptStack);
-                // 注意：RS控制器本身没有物品处理能力，不回退到控制器位置
-                // 如果RS网络满了，物品将保留在地上
-            } else {
                 inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
             }
             
@@ -646,3 +595,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         GlStateManager.popMatrix();
     }
 }
+
+
+

@@ -2,7 +2,7 @@
 {
   "modid": "rsring",
   "name": "RS Rings and Tanks",
-  "description": "添加强大的饰品戒指和经验储罐（1.4版本）。主要功能包括：物品吸收戒指（当前版本暂不支持绑定RS终端，仅支持绑定普通箱子并跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。1.4版本更新了版本号，修复了一些小问题，优化了模组性能和稳定性。\n\n未来计划：\n- 实现RS终端绑定功能\n- 增加更多饰品栏装备\n- 优化经验系统性能\n- 添加更多配置选项\n\nAdds powerful Baubles rings and experience tanks (Version 1.4). Features include: Item Absorb Ring (currently does not support binding to RS terminals, only supports binding to regular chests and collecting items across dimensions), Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system. Version 1.4 updates the version number, fixes minor issues, and optimizes mod performance and stability.\n\nFuture plans:\n- Implement RS terminal binding functionality\n- Add more bauble slot equipment\n- Optimize experience system performance\n- Add more configuration options",
+  "description": "添加强大的饰品戒指和经验储罐（1.4版本）。主要功能包括：物品吸收戒指（支持绑定RS终端和普通箱子，跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。1.4版本新增RS网络集成功能，可以直接将吸收的物品存入Refined Storage网络。\n\n未来计划：\n- 增加更多饰品栏装备\n- 优化经验系统性能\n- 添加更多配置选项\n\nAdds powerful Baubles rings and experience tanks (Version 1.4). Features include: Item Absorb Ring (supports binding to RS terminals and regular chests, collecting items across dimensions), Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system. Version 1.4 adds RS network integration, allowing direct item transfer to Refined Storage networks.\n\nFuture plans:\n- Add more bauble slot equipment\n- Optimize experience system performance\n- Add more configuration options",
   "version": "1.4",
   "mcversion": "1.12.2",
   "logoFile": "assets/rsring/textures/items/mod_banner.png",

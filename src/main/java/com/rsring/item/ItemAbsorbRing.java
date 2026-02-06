@@ -34,6 +34,7 @@ import net.minecraftforge.fml.common.Optional;
 import baubles.api.IBauble;
 import baubles.api.BaubleType;
 import org.lwjgl.input.Keyboard;
+import com.rsring.integration.RSIntegration;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 public class ItemAbsorbRing extends Item implements IBauble {
@@ -84,9 +85,24 @@ public class ItemAbsorbRing extends Item implements IBauble {
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "使用方法:");
         tooltip.add(TextFormatting.GRAY + "  1. 手持戒指右键空气打开过滤设置界面");
-        tooltip.add(TextFormatting.GRAY + "  2. 蹲下右键绑定目标箱子/RS网络终端");
+        tooltip.add(TextFormatting.GRAY + "  2. 蹲下右键绑定目标箱子/RS控制器");
         tooltip.add(TextFormatting.GRAY + "  3. 按 K 键开启/关闭吸收功能");
         tooltip.add(TextFormatting.GRAY + "  4. 戒指在背包/快捷栏/饰品栏均可生效");
+        
+        // 显示绑定目标类型
+        if (cap.isBound() && worldIn != null) {
+            BlockPos pos = cap.getTerminalPos();
+            int dim = cap.getTerminalDimension();
+            if (worldIn.provider.getDimension() == dim) {
+                if (RSIntegration.isRSController(worldIn, pos)) {
+                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS网络");
+                } else if (RSIntegration.isRSNetworkBlock(worldIn, pos)) {
+                    tooltip.add(TextFormatting.GREEN + "绑定目标: RS设备");
+                } else {
+                    tooltip.add(TextFormatting.GREEN + "绑定目标: 普通容器");
+                }
+            }
+        }
     }
 
     @Override
@@ -401,6 +417,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
+        
+        // 初始化RS集成
+        RSIntegration.initialize();
+        
         for (net.minecraft.entity.item.EntityItem item : items) {
             if (item.isDead) continue;
             ItemStack itemStack = item.getItem();
@@ -416,9 +436,14 @@ public class ItemAbsorbRing extends Item implements IBauble {
             attemptStack.setCount(attemptCount);
 
             int inserted = 0;
-            boolean rsController = isRSController(targetWorld, targetPos);
-            if (rsController) {
-                inserted = insertIntoRSNetwork(targetWorld, targetPos, attemptStack);
+            boolean rsController = RSIntegration.isRSController(targetWorld, targetPos);
+            boolean rsNetworkBlock = RSIntegration.isRSNetworkBlock(targetWorld, targetPos);
+            
+            if (rsController || rsNetworkBlock) {
+                // 优先使用RS集成类
+                inserted = RSIntegration.insertItem(targetWorld, targetPos, attemptStack);
+                
+                // 如果RS插入失败或部分失败，尝试插入到关联的容器
                 if (inserted < attemptCount) {
                     ItemStack remainingStack = attemptStack.copy();
                     remainingStack.setCount(attemptCount - inserted);
@@ -427,6 +452,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             } else {
                 inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
             }
+            
             if (inserted > 0) {
                 if (costPerItem > 0) {
                     int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);

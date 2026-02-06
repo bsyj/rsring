@@ -11,6 +11,7 @@ import com.rsring.network.PacketToggleRsRing;
 import com.rsring.rsring.RsRingMod;
 import com.rsring.util.BaublesHelper;
 import com.rsring.util.XpHelper;
+import com.rsring.integration.RSIntegration;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -338,7 +339,13 @@ public class CommonEventHandler {
         if (world.isRemote) return;
         if (!player.isSneaking()) return;
 
-        if (isChestOrContainer(world, pos) || isRSController(world, pos)) {
+        // 初始化RS集成
+        RSIntegration.initialize();
+
+        boolean isContainer = isChestOrContainer(world, pos);
+        boolean isRS = RSIntegration.isRSController(world, pos) || RSIntegration.isRSNetworkBlock(world, pos);
+
+        if (isContainer || isRS) {
             ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
             if (!ringStack.isEmpty()) {
                 IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
@@ -355,8 +362,17 @@ public class CommonEventHandler {
 
                     if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
                         int dim = world.provider.getDimension();
-                        player.sendMessage(new TextComponentString(
-                            TextFormatting.GREEN + "成功绑定到: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")"));
+                        String targetType = isRS ? "RS网络" : "容器";
+                        String statusMsg = TextFormatting.GREEN + "成功绑定" + targetType + ": " + 
+                            pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
+                        player.sendMessage(new TextComponentString(statusMsg));
+
+                        // 如果是RS网络，显示网络状态
+                        if (isRS) {
+                            String rsStatus = RSIntegration.getNetworkStatus(world, pos);
+                            player.sendMessage(new TextComponentString(
+                                TextFormatting.AQUA + "RS网络状态: " + rsStatus));
+                        }
                     }
 
                     event.setCanceled(true);

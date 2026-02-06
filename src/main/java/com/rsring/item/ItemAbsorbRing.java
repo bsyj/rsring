@@ -53,50 +53,50 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (cap == null) return;
 
         IEnergyStorage energy = cap.getEnergyStorage();
-        tooltip.add(TextFormatting.GRAY + "Energy: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored())
+        tooltip.add(TextFormatting.GRAY + "能量: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored())
             + TextFormatting.GRAY + " / " + formatFe(energy.getMaxEnergyStored()) + " FE");
-        tooltip.add(TextFormatting.GRAY + "Status: " + (cap.isEnabled() ? TextFormatting.GREEN + "Enabled"
-            : TextFormatting.RED + "Disabled"));
+        tooltip.add(TextFormatting.GRAY + "状态: " + (cap.isEnabled() ? TextFormatting.GREEN + "已启用"
+            : TextFormatting.RED + "已禁用"));
         if (cap.isBound()) {
             BlockPos pos = cap.getTerminalPos();
             String dim = getDimensionName(cap.getTerminalDimension());
-            tooltip.add(TextFormatting.GRAY + "Bound: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
+            tooltip.add(TextFormatting.GRAY + "已绑定: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
                 + "," + pos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.AQUA + dim + TextFormatting.GRAY + ")");
-            tooltip.add(TextFormatting.GRAY + "Filter: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "Whitelist"
-                : TextFormatting.AQUA + "Blacklist"));
+            tooltip.add(TextFormatting.GRAY + "过滤模式: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "白名单"
+                : TextFormatting.AQUA + "黑名单"));
         } else {
-            tooltip.add(TextFormatting.GRAY + "Unbound");
+            tooltip.add(TextFormatting.GRAY + "未绑定");
         }
 
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
-            tooltip.add(TextFormatting.DARK_GRAY + "Hold " + TextFormatting.YELLOW + "Shift"
-                + TextFormatting.DARK_GRAY + " for details");
+            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
+                + TextFormatting.DARK_GRAY + " 查看详情");
             return;
         }
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "Features:");
-        tooltip.add(TextFormatting.GRAY + "  - Absorbs nearby drops into a bound target");
-        tooltip.add(TextFormatting.GRAY + "  - Supports whitelist/blacklist filters");
-        tooltip.add(TextFormatting.GRAY + "  - Consumes energy per item");
+        tooltip.add(TextFormatting.GOLD + "功能特点:");
+        tooltip.add(TextFormatting.GRAY + "  - 吸收附近的掉落物到绑定的目标");
+        tooltip.add(TextFormatting.GRAY + "  - 支持白名单/黑名单过滤");
+        tooltip.add(TextFormatting.GRAY + "  - 每次吸收消耗能量");
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "Usage:");
-        tooltip.add(TextFormatting.GRAY + "  1. Right-click to open filter");
-        tooltip.add(TextFormatting.GRAY + "  2. Sneak-right-click to bind target");
-        tooltip.add(TextFormatting.GRAY + "  3. Press K to toggle absorb");
-        tooltip.add(TextFormatting.GRAY + "  4. Works in inventory/baubles");
-        
-        // Show bound target type
+        tooltip.add(TextFormatting.GOLD + "使用方法:");
+        tooltip.add(TextFormatting.GRAY + "  1. 右键空气点击打开过滤设置");
+        tooltip.add(TextFormatting.GRAY + "  2. 潜行右键rs控制器/箱子绑定");
+        tooltip.add(TextFormatting.GRAY + "  3. 按K键切换吸收开关");
+        tooltip.add(TextFormatting.GRAY + "  4. 可在背包/饰品槽中使用");
+
+        // 显示绑定目标类型
         if (cap.isBound() && worldIn != null) {
             BlockPos pos = cap.getTerminalPos();
             int dim = cap.getTerminalDimension();
             if (worldIn.provider.getDimension() == dim) {
                 if (isRSController(worldIn, pos)) {
-                    tooltip.add(TextFormatting.GREEN + "Target: RS Controller");
+                    tooltip.add(TextFormatting.GREEN + "目标: RS控制器");
                 } else {
-                    tooltip.add(TextFormatting.GREEN + "Target: Container");
+                    tooltip.add(TextFormatting.GREEN + "目标: 容器");
                 }
             }
         }
@@ -139,10 +139,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     private static String getDimensionName(int dim) {
         switch (dim) {
-            case 0: return "Overworld";
-            case -1: return "Nether";
-            case 1: return "End";
-            default: return "Dim " + dim;
+            case 0: return "主世界";
+            case -1: return "下界";
+            case 1: return "末地";
+            default: return "维度 " + dim;
         }
     }
 
@@ -154,9 +154,31 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        if (hand != EnumHand.MAIN_HAND) {
+            return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(hand));
+        }
         ItemStack stack = player.getHeldItem(hand);
         if (player.isSneaking()) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
+            if (!world.isRemote) {
+                IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+                if (capability != null) {
+                    RsRingCapability.refreshEnergyStorage(capability);
+                    IEnergyStorage energy = capability.getEnergyStorage();
+                    int amount = Math.max(0, com.rsring.config.RsRingConfig.absorbRing.manualChargeAmount);
+                    if (amount > 0) {
+                        int received = energy.receiveEnergy(amount, false);
+                        if (received > 0) {
+                            RsRingCapability.syncCapabilityToStack(stack, capability);
+                            player.sendMessage(new TextComponentString(
+                                TextFormatting.GREEN + "Manual charge +" + received + " FE"));
+                        } else {
+                            player.sendMessage(new TextComponentString(
+                                TextFormatting.RED + "Energy is full"));
+                        }
+                    }
+                }
+            }
+            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
         }
 
         if (world.isRemote) {
@@ -164,15 +186,15 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             IRsRingCapability capability = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
-                String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
-                String status = capability.isEnabled() ? "Enabled" : "Disabled";
+                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
+                String status = capability.isEnabled() ? "已启用" : "已禁用";
                 String bindInfo;
                 if (capability.isBound()) {
                     BlockPos pos = capability.getTerminalPos();
                     int dim = capability.getTerminalDimension();
-                    bindInfo = "Bound: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
+                    bindInfo = "已绑定: " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
                 } else {
-                    bindInfo = "Unbound";
+                    bindInfo = "未绑定";
                 }
                 String msg = net.minecraft.util.text.TextFormatting.GREEN + bindInfo + " | " + mode + " | " + status;
                 player.sendMessage(new TextComponentString(msg));
@@ -197,7 +219,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         if (!result.hasRings()) {
             if (player.world.isRemote) {
-                player.sendMessage(new TextComponentString(TextFormatting.RED + "No absorb ring found."));
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "未找到吸收戒指。"));
             }
             return false;
         }
@@ -206,7 +228,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         if (absorbRing.isEmpty()) {
             if (player.world.isRemote) {
-                player.sendMessage(new TextComponentString(TextFormatting.RED + "Absorb ring not accessible."));
+                player.sendMessage(new TextComponentString(TextFormatting.RED + "吸收戒指无法访问。"));
             }
             return false;
         }
@@ -214,13 +236,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (player.world.isRemote) {
             com.rsring.rsring.RsRingMod.proxy.openAbsorbRingGui(absorbRing);
             com.rsring.experience.RingDetectionResult.InventoryLocation location = findRingLocation(result, absorbRing);
-            String locationName = location != null ? location.getDisplayName() : "Unknown";
-            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Absorb ring GUI opened. Location: " + locationName));
+            String locationName = location != null ? location.getDisplayName() : "未知";
+            player.sendMessage(new TextComponentString(TextFormatting.GREEN + "吸收戒指界面已打开。位置: " + locationName));
         } else {
             IRsRingCapability capability = absorbRing.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
             if (capability != null) {
-                String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
-                String msg = "Ring info | Filter: " + mode + " | Energy: "
+                String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
+                String msg = "戒指信息 | 过滤模式: " + mode + " | 能量: "
                            + capability.getEnergyStorage().getEnergyStored() + "/"
                            + capability.getEnergyStorage().getMaxEnergyStored() + " FE";
                 player.sendMessage(new TextComponentString(msg));
@@ -288,6 +310,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         EntityPlayer entityPlayer = (EntityPlayer) player;
         IRsRingCapability capability = itemstack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        RsRingCapability.refreshEnergyStorage(capability);
         if (capability != null && capability.isBound()) {
             com.rsring.capability.RsRingCapability.syncCapabilityToStack(itemstack, capability);
         }
@@ -372,7 +395,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
-        
+
         for (net.minecraft.entity.item.EntityItem item : items) {
             if (item.isDead) continue;
             ItemStack itemStack = item.getItem();
@@ -389,11 +412,14 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
             int inserted = 0;
             boolean isRSController = isRSController(targetWorld, targetPos);
-            
+
             if (isRSController) {
+                inserted = insertIntoRSNetwork(targetWorld, targetPos, attemptStack);
+            } else {
+                // 对于非RS控制器（普通箱子等），使用insertIntoChest方法
                 inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
             }
-            
+
             if (inserted > 0) {
                 if (costPerItem > 0) {
                     int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
@@ -595,6 +621,3 @@ public class ItemAbsorbRing extends Item implements IBauble {
         GlStateManager.popMatrix();
     }
 }
-
-
-

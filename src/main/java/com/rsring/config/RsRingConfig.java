@@ -25,6 +25,7 @@ public class RsRingConfig implements IHasConfig {
         public int absorptionInterval = 5;
         public int initialEnergy = 0;
         public double energyCostMultiplier = 1.0;
+        public int manualChargeAmount = 1000;
     }
 
     public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
@@ -108,5 +109,72 @@ public class RsRingConfig implements IHasConfig {
         net.minecraftforge.common.config.Property energyMultProp = config.get(RsRingMod.MODID + ".ring", "energyCostMultiplier", 1.0D, "config.rsring.ring.energyCostMultiplier");
         energyMultProp.setLanguageKey("config.rsring.ring.energyCostMultiplier");
         absorbRing.energyCostMultiplier = energyMultProp.getDouble();
+
+        absorbRing.manualChargeAmount = config.getInt("manualChargeAmount",
+            RsRingMod.MODID + ".ring",
+            1000,
+            0,
+            1000000,
+            "config.rsring.ring.manualChargeAmount",
+            "config.rsring.ring.manualChargeAmount");
+    }
+
+    public static boolean validateConfig() {
+        boolean changed = false;
+
+        if (absorbRing.absorptionRange < 1) {
+            absorbRing.absorptionRange = 1;
+            changed = true;
+        } else if (absorbRing.absorptionRange > 32) {
+            absorbRing.absorptionRange = 32;
+            changed = true;
+        }
+
+        if (absorbRing.energyCostPerItem < 0) {
+            absorbRing.energyCostPerItem = 0;
+            changed = true;
+        } else if (absorbRing.energyCostPerItem > 1000) {
+            absorbRing.energyCostPerItem = 1000;
+            changed = true;
+        }
+
+        if (absorbRing.maxEnergyCapacity < 1000) {
+            absorbRing.maxEnergyCapacity = 1000;
+            changed = true;
+        } else if (absorbRing.maxEnergyCapacity > 100000000) {
+            absorbRing.maxEnergyCapacity = 100000000;
+            changed = true;
+        }
+
+        if (absorbRing.absorptionInterval < 1) {
+            absorbRing.absorptionInterval = 1;
+            changed = true;
+        } else if (absorbRing.absorptionInterval > 20) {
+            absorbRing.absorptionInterval = 20;
+            changed = true;
+        }
+
+        if (absorbRing.initialEnergy < 0) {
+            absorbRing.initialEnergy = 0;
+            changed = true;
+        } else if (absorbRing.initialEnergy > absorbRing.maxEnergyCapacity) {
+            absorbRing.initialEnergy = absorbRing.maxEnergyCapacity;
+            changed = true;
+        }
+
+        if (absorbRing.energyCostMultiplier < 0) {
+            absorbRing.energyCostMultiplier = 0.0;
+            changed = true;
+        }
+
+        if (absorbRing.manualChargeAmount < 0) {
+            absorbRing.manualChargeAmount = 0;
+            changed = true;
+        } else if (absorbRing.manualChargeAmount > 1000000) {
+            absorbRing.manualChargeAmount = 1000000;
+            changed = true;
+        }
+
+        return changed;
     }
 }

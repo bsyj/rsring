@@ -9,6 +9,7 @@ import com.rsring.item.ItemExperiencePump;
 import com.rsring.item.ItemExperiencePumpController;
 import com.rsring.network.PacketToggleRsRing;
 import com.rsring.rsring.RsRingMod;
+import com.rsring.config.ConfigRegistry;
 import com.rsring.util.BaublesHelper;
 import com.rsring.util.XpHelper;
 import net.minecraft.block.state.IBlockState;
@@ -30,6 +31,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
@@ -361,13 +363,20 @@ public class CommonEventHandler {
 
         if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
             int dim = world.provider.getDimension();
-            String targetType = isRSController ? "RS Controller" : "Container";
-            String statusMsg = TextFormatting.GREEN + "Bound to " + targetType + ": " +
+            String targetType = isRSController ? "RS控制器" : "容器";
+            String statusMsg = TextFormatting.GREEN + "成功绑定到 " + targetType + ": " +
                 pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
             player.sendMessage(new TextComponentString(statusMsg));
         }
 
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event == null) return;
+        if (!RsRingMod.MODID.equals(event.getModID())) return;
+        ConfigRegistry.syncAllConfig();
     }
 
     private boolean isChestOrContainer(World world, BlockPos pos) {
@@ -398,6 +407,5 @@ public class CommonEventHandler {
         return blockName.equals("refinedstorage:controller");
     }
 }
-
 
 

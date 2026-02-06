@@ -259,8 +259,8 @@ String titleText = title;
                 String itemName = capability.getFilterSlot(i);
                 if (itemName == null || itemName.isEmpty()) {
                     this.drawHoveringText(java.util.Arrays.asList(
-                        TextFormatting.GRAY + "Click to add filter item",
-                        TextFormatting.DARK_GRAY + "Read-only when locked"
+                        TextFormatting.GRAY + "点击添加过滤物品",
+                        TextFormatting.DARK_GRAY + "锁定时只读"
                     ), mouseX, mouseY);
                 } else {
                     try {
@@ -291,7 +291,7 @@ String titleText = title;
             float hue = ((t % period) / (float) period) % 1.0f;
 
             java.util.List<String> tooltip = new java.util.ArrayList<>();
-            String mode = capability.isWhitelistMode() ? "Whitelist" : "Blacklist";
+            String mode = capability.isWhitelistMode() ? "白名单" : "黑名单";
 
             net.minecraft.util.text.TextFormatting[] colors = {
                 net.minecraft.util.text.TextFormatting.RED,
@@ -311,7 +311,7 @@ String titleText = title;
             net.minecraft.util.text.TextFormatting hintColor = colors[hintColorIndex];
 
             tooltip.add(modeColor + mode);
-            tooltip.add(hintColor + "Click to toggle mode");
+            tooltip.add(hintColor + "点击切换模式");
 
             this.drawHoveringText(tooltip, mouseX, mouseY);
         }

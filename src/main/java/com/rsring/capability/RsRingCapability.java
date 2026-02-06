@@ -109,6 +109,25 @@ public class RsRingCapability implements IRsRingCapability {
         return new EnergyStorage(max, MAX_IO, MAX_IO, clamped);
     }
 
+    private void refreshEnergyStorage() {
+        int configuredMax = getConfiguredMaxEnergy();
+        if (energyStorage == null) {
+            energyStorage = createEnergyStorage(getConfiguredInitialEnergy());
+            return;
+        }
+        int currentMax = energyStorage.getMaxEnergyStored();
+        if (currentMax != configuredMax) {
+            int stored = Math.min(energyStorage.getEnergyStored(), configuredMax);
+            energyStorage = new EnergyStorage(configuredMax, MAX_IO, MAX_IO, stored);
+        }
+    }
+
+    public static void refreshEnergyStorage(IRsRingCapability cap) {
+        if (cap instanceof RsRingCapability) {
+            ((RsRingCapability) cap).refreshEnergyStorage();
+        }
+    }
+
     @Override
     public void bindTerminal(World world, BlockPos pos) {
         this.terminalPos = pos;
@@ -289,7 +308,11 @@ public class RsRingCapability implements IRsRingCapability {
             int energy = Math.min(tag.getInteger("energy"), maxEnergy);
             cap.energyStorage = new EnergyStorage(maxEnergy, MAX_IO, MAX_IO, energy);
 
-            cap.whitelistMode = tag.getBoolean("whitelistMode");
+            if (tag.hasKey("whitelistMode")) {
+                cap.whitelistMode = tag.getBoolean("whitelistMode");
+            } else {
+                cap.whitelistMode = getConfiguredWhitelistMode();
+            }
             if (tag.hasKey("blacklistItems")) {
                 net.minecraft.nbt.NBTTagList blacklistList =
 tag.getTagList("blacklistItems", 8); // 8 = String tag
@@ -297,6 +320,8 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 for (int i = 0; i < blacklistList.tagCount(); i++) {
                     cap.blacklistItems.add(blacklistList.getStringTagAt(i));
                 }
+            } else {
+                cap.loadDefaultFilterList();
             }
         }
     }

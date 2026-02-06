@@ -51,3 +51,6 @@ config.rsring.tank.xpMendingEfficiency=经验修补效率
 # 经验泵控制器配置
 config.rsring.controller=泵控制器设置
 config.rsring.controller.maxManagedTanks=最大管理储罐数量
+
+# 修正缺失的配置项
+item.rsring.experience_tank.name=经验储罐

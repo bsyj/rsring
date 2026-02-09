@@ -2,10 +2,19 @@
 
 <div align="center">
 
+![Mod Banner](src/main/resources/assets/rsring/textures/items/mod_banner.png)
+
 **版本**: 1.4.0  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
 **作者**: bsyj
+
+[![GitHub Release](https://img.shields.io/github/v/release/bsyj/rsring?style=flat-square&color=orange)](https://github.com/bsyj/rsring/releases)
+[![GitHub Downloads](https://img.shields.io/github/downloads/bsyj/rsring/total?style=flat-square&color=brightgreen)](https://github.com/bsyj/rsring/releases)
+[![Minecraft Version](https://img.shields.io/badge/Minecraft-1.12.2-blue?style=flat-square)](https://www.minecraft.net/)
+[![Forge Version](https://img.shields.io/badge/Forge-14.23.5.2847+-blue?style=flat-square)](https://files.minecraftforge.net/)
+[![License](https://img.shields.io/github/license/bsyj/rsring?style=flat-square&color=yellow)](LICENSE.txt)
+[![Visitors](https://visitor-badge.laobi.icu/badge?page_id=bsyj.rsring)](https://github.com/bsyj/rsring)
 
 </div>
 
@@ -343,6 +352,12 @@ build/libs/rsring-1.4.0.jar
 
 - **GitHub仓库**: https://github.com/bsyj/rsring
 - **问题追踪**: https://github.com/bsyj/rsring/issues
+
+---
+
+## 📊 活动统计
+
+[![Ashutosh's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=bsyj&theme=github-compact&area=true)](https://github.com/bsyj/rsring)
 
 ---
 

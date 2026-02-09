@@ -477,6 +477,12 @@ build/libs/rsring-1.4.0.jar
 
 ---
 
+## 📊 活动统计
+
+[![Ashutosh's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=bsyj&theme=github-compact&area=true)](https://github.com/bsyj/rsring)
+
+---
+
 <div align="center">
 
 **享受游戏！** 🎮

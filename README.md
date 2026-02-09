@@ -37,10 +37,10 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 
 **主要功能：**
 - 自动吸收8格内的掉落物品
-- 黑白名单过滤系统（9个过滤槽）
+- 黑白名单过滤系统（9个过滤槽）（默认黑白名单）
 - 支持绑定到RS控制器和普通箱子
 - 跨维度物品传送
-- FE能量驱动（最大10M FE）
+- FE能量驱动
 - K键快速开关
 - 支持背包、手持、饰品栏使用
 
@@ -48,8 +48,8 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - 吸收范围：8格（可配置）
 - 吸收间隔：5 tick（可配置）
 - 能量消耗：1 FE/物品（可配置）
-- 最大能量：10,000,000 FE
-- 过滤槽数量：9个
+- 最大能量：10,000,000 FE（可配置）
+- 过滤槽数量：9个（有默认黑白名单）
 
 ### 经验储罐系统
 
@@ -101,8 +101,8 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - Forge 14.23.5.2847 或更高版本
 
 **推荐依赖：**
-- Baubles 1.5.2+（用于饰品栏支持）
-- JEI 4.16.1.1013+（用于配方显示）
+- Baubles 1.5.2+（可选，用于饰品栏支持）
+- JEI 4.16.1.1013+（可选，用于配方显示）
 - Refined Storage（可选，用于RS网络集成）
 
 ### 安装步骤
@@ -111,7 +111,8 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 2. 下载 RS Rings and Tanks 模组 jar 文件
 3. 将 jar 文件放入 `.minecraft/mods` 目录
 4. （可选）下载并安装 Baubles 模组
-5. 启动游戏，模组将自动加载
+5. （可选）下载并安装 Refined Storage 模组
+6. 启动游戏，模组将自动加载
 
 ---
 
@@ -523,8 +524,8 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 - Absorption range: 8 blocks (configurable)
 - Absorption interval: 5 ticks (configurable)
 - Energy cost: 1 FE/item (configurable)
-- Max energy: 10,000,000 FE
-- Filter slots: 9
+- Max energy: 10,000,000 FE (configurable)
+- Filter slots: 9 (has default black/white list)
 
 ### Experience Tank System
 
@@ -576,8 +577,8 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 - Forge 14.23.5.2847 or higher
 
 **Recommended Dependencies:**
-- Baubles 1.5.2+ (for accessory slot support)
-- JEI 4.16.1.1013+ (for recipe display)
+- Baubles 1.5.2+ (optional, for accessory slot support)
+- JEI 4.16.1.1013+ (optional, for recipe display)
 - Refined Storage (optional, for RS network integration)
 
 ### Installation Steps
@@ -586,7 +587,8 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 2. Download the RS Rings and Tanks mod jar file
 3. Place the jar file in `.minecraft/mods` directory
 4. (Optional) Download and install Baubles mod
-5. Launch the game, the mod will load automatically
+5. (Optional) Download and install Refined Storage mod
+6. Launch the game, the mod will load automatically
 
 ---
 

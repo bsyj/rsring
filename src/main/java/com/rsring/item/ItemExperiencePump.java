@@ -666,12 +666,25 @@ public class ItemExperiencePump extends Item implements IBauble {
             }
         }
 
+        if (availableXp > 0 && player.inventory != null && player.inventory.armorInventory != null) {
+            for (ItemStack armorStack : player.inventory.armorInventory) {
+                if (armorStack == null || armorStack.isEmpty() || availableXp <= 0) continue;
+                if (armorStack.isItemDamaged() && net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, armorStack) > 0) {
+                    availableXp = mendSingleItem(armorStack, availableXp, cap);
+                }
+            }
+        }
+
         if (availableXp > 0) {
             ItemStack off = player.getHeldItemOffhand();
             if (off != null && !off.isEmpty() && off.isItemDamaged() &&
                 net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, off) > 0) {
-                mendSingleItem(off, availableXp, cap);
+                availableXp = mendSingleItem(off, availableXp, cap);
             }
+        }
+
+        if (availableXp > 0) {
+            availableXp = mendBaubles(player, availableXp, cap);
         }
 
         syncCapabilityToStack(pump, cap);
@@ -708,6 +721,38 @@ public class ItemExperiencePump extends Item implements IBauble {
         stack.setItemDamage(newDamage);
         cap.takeXp(consumeXp);
         return availableXp - consumeXp;
+    }
+
+    private int mendBaubles(EntityPlayer player, int availableXp, IExperiencePumpCapability cap) {
+        if (player == null || cap == null || availableXp <= 0) {
+            return availableXp;
+        }
+
+        try {
+            Class<?> baublesApiClass = Class.forName("baubles.api.BaublesApi");
+            Object handler = baublesApiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
+            
+            if (handler instanceof net.minecraft.inventory.IInventory) {
+                net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
+                for (int i = 0; i < baubles.getSizeInventory(); i++) {
+                    if (availableXp <= 0) break;
+                    
+                    ItemStack baubleStack = baubles.getStackInSlot(i);
+                    if (baubleStack == null || baubleStack.isEmpty()) continue;
+                    
+                    if (baubleStack.isItemDamaged() && 
+                        net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, baubleStack) > 0) {
+                        availableXp = mendSingleItem(baubleStack, availableXp, cap);
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            return availableXp;
+        } catch (Exception e) {
+            return availableXp;
+        }
+
+        return availableXp;
     }
 
     private static int getPlayerTotalXp(EntityPlayer player) {

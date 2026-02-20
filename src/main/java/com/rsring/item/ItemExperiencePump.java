@@ -389,6 +389,9 @@ public class ItemExperiencePump extends Item implements IBauble {
             return;
         }
 
+        int oldXp = cap.getXpStored();
+        boolean xpChanged = false;
+
         int extractedXp = 0;
         if (player.ticksExisted % com.rsring.config.ExperienceTankConfig.tank.extractionInterval == 0) {
             extractedXp = extractXpFromSurroundings(player, stack, cap);
@@ -396,6 +399,7 @@ public class ItemExperiencePump extends Item implements IBauble {
 
         if (extractedXp > 0) {
             storeExtractedXp(player, stack, cap, extractedXp);
+            xpChanged = true;
         }
 
         int pumpInterval = Math.max(1, com.rsring.config.ExperienceTankConfig.tank.pumpingInterval);
@@ -403,16 +407,29 @@ public class ItemExperiencePump extends Item implements IBauble {
             cap.getMode() != IExperiencePumpCapability.MODE_OFF && player.ticksExisted % pumpInterval == 0) {
             com.rsring.experience.ExperiencePumpController controller = com.rsring.experience.ExperiencePumpController.getInstance();
             if (!controller.isTankManagedByController(stack)) {
+                int beforePump = cap.getXpStored();
                 pumpExperienceBetweenPlayerAndTank(player, stack, cap);
+                if (cap.getXpStored() != beforePump) {
+                    xpChanged = true;
+                }
             }
         }
 
         if (com.rsring.config.ExperienceTankConfig.tank.mendingOn && cap.isUseForMending() &&
             cap.getXpStored() > 0 && player.ticksExisted % com.rsring.config.ExperienceTankConfig.tank.mendingInterval == 0) {
+            int beforeMend = cap.getXpStored();
             tryRepairMending(player, stack, cap);
+            if (cap.getXpStored() != beforeMend) {
+                xpChanged = true;
+            }
         }
 
         syncCapabilityToStack(stack, cap);
+
+        // 同步到客户端
+        if (xpChanged && player instanceof net.minecraft.entity.player.EntityPlayerMP) {
+            syncTankToClient(stack, player);
+        }
     }
 
     
@@ -822,5 +839,41 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (fillRatio < 6000) return FILL_LEVEL_HALF;
         if (fillRatio < 9000) return FILL_LEVEL_THREE_QUARTERS;
         return FILL_LEVEL_FULL;
+    }
+
+    /**
+     * 同步储罐数据到客户端
+     * 在饰品栏或背包中查找储罐位置并发送同步包
+     */
+    private void syncTankToClient(ItemStack tank, EntityPlayer player) {
+        if (tank == null || tank.isEmpty() || player == null) return;
+        if (!(player instanceof net.minecraft.entity.player.EntityPlayerMP)) return;
+
+        net.minecraft.entity.player.EntityPlayerMP playerMP = (net.minecraft.entity.player.EntityPlayerMP) player;
+
+        // 先在饰品栏中查找
+        if (com.rsring.util.BaublesHelper.isBaublesLoaded()) {
+            Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+            int slots = com.rsring.util.BaublesHelper.getSlots(handler);
+            for (int i = 0; i < slots; i++) {
+                ItemStack slotStack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+                if (slotStack == tank) {
+                    com.rsring.util.BaublesHelper.setStackInSlot(handler, i, tank);
+                    com.rsring.rsring.RsRingMod.network.sendTo(
+                        new com.rsring.network.PacketSyncTankSlots("baubles", i, tank), playerMP);
+                    return;
+                }
+            }
+        }
+
+        // 在玩家背包中查找
+        for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+            ItemStack slotStack = player.inventory.getStackInSlot(i);
+            if (slotStack == tank) {
+                com.rsring.rsring.RsRingMod.network.sendTo(
+                    new com.rsring.network.PacketSyncTankSlots("inventory", i, tank), playerMP);
+                return;
+            }
+        }
     }
 }

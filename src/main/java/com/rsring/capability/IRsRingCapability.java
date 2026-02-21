@@ -35,4 +35,8 @@ public interface IRsRingCapability {
     /** 9 格过滤槽：仅读取匹配，不消耗物品。slot 0~8 */
     void setFilterSlot(int slot, String itemRegistryName);
     String getFilterSlot(int slot);
+
+    // 密封状态：密封后无法接受外部充电
+    boolean isSealed();
+    void setSealed(boolean sealed);
 }

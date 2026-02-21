@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.Logger;
@@ -135,6 +136,10 @@ public class RsRingMod
         
         // 注册自定义储罐的合成配方
         CustomTankRecipes.registerRecipes();
+
+        // 注册戒指密封切换配方
+        ForgeRegistries.RECIPES.register(new com.rsring.crafting.RingSealRecipe(
+            new ResourceLocation(MODID, "ring_seal_toggle")));
     }
 
     @EventHandler

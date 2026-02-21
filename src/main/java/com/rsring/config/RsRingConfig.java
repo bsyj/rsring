@@ -26,7 +26,7 @@ public class RsRingConfig implements IHasConfig {
         public int initialEnergy = 0;
         public double energyCostMultiplier = 1.0;
         public int manualChargeAmount = 1000;
-        public boolean blockExternalCharging = false;
+        public boolean blockExternalCharging = true;
     }
 
     public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
@@ -121,9 +121,9 @@ public class RsRingConfig implements IHasConfig {
 
         absorbRing.blockExternalCharging = config.getBoolean("blockExternalCharging",
             RsRingMod.MODID + ".ring",
-            false,
+            true,
             "config.rsring.ring.blockExternalCharging",
-            "config.rsring.ring.blockExternalCharging");
+            "config.rsring.ring.blockExternalCharging.comment");
     }
 
     public static boolean validateConfig() {

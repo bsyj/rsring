@@ -27,6 +27,7 @@ public class RsRingCapability implements IRsRingCapability {
 
     private List<String> blacklistItems = new ArrayList<>();
     private boolean whitelistMode = !com.rsring.config.RsRingConfig.absorbRing.useBlacklistModeByDefault;
+    private boolean sealed = com.rsring.config.RsRingConfig.absorbRing.blockExternalCharging;
 
     // Constructor
     public RsRingCapability() {
@@ -181,6 +182,7 @@ public class RsRingCapability implements IRsRingCapability {
         copy.enabled = this.enabled;
         copy.blacklistItems = new ArrayList<>(this.blacklistItems);
         copy.whitelistMode = this.whitelistMode;
+        copy.sealed = this.sealed;
         copy.energyStorage = createEnergyStorage(this.energyStorage.getEnergyStored());
         return copy;
     }
@@ -271,6 +273,16 @@ public class RsRingCapability implements IRsRingCapability {
         return s == null ? "" : s;
     }
 
+    @Override
+    public boolean isSealed() {
+        return sealed;
+    }
+
+    @Override
+    public void setSealed(boolean sealed) {
+        this.sealed = sealed;
+    }
+
     public static class RsRingStorage implements Capability.IStorage<IRsRingCapability> {
         @Override
         public NBTBase writeNBT(Capability<IRsRingCapability> capability, IRsRingCapability instance, EnumFacing side) {
@@ -288,6 +300,7 @@ public class RsRingCapability implements IRsRingCapability {
             tag.setInteger("energy", cap.energyStorage.getEnergyStored());
 
             tag.setBoolean("whitelistMode", cap.whitelistMode);
+            tag.setBoolean("sealed", cap.sealed);
             net.minecraft.nbt.NBTTagList blacklistList = new net.minecraft.nbt.NBTTagList();
             for (String item : cap.blacklistItems) {
                 blacklistList.appendTag(new net.minecraft.nbt.NBTTagString(item));
@@ -317,6 +330,7 @@ public class RsRingCapability implements IRsRingCapability {
             } else {
                 cap.whitelistMode = getConfiguredWhitelistMode();
             }
+            cap.sealed = tag.getBoolean("sealed");
             if (tag.hasKey("blacklistItems")) {
                 net.minecraft.nbt.NBTTagList blacklistList =
 tag.getTagList("blacklistItems", 8); // 8 = String tag
@@ -392,7 +406,7 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 return (T) this.capability;
             }
             if (capability == CapabilityEnergy.ENERGY) {
-                if (com.rsring.config.RsRingConfig.absorbRing.blockExternalCharging) {
+                if (this.capability.isSealed()) {
                     if (readOnlyWrapper == null || readOnlyWrapper.inner != this.capability.getEnergyStorage()) {
                         readOnlyWrapper = new ReadOnlyEnergyWrapper(this.capability.getEnergyStorage());
                     }

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -57,6 +58,8 @@ public class ItemAbsorbRing extends Item implements IBauble {
             + TextFormatting.GRAY + " / " + formatFe(energy.getMaxEnergyStored()) + " FE");
         tooltip.add(TextFormatting.GRAY + "状态: " + (cap.isEnabled() ? TextFormatting.GREEN + "已启用"
             : TextFormatting.RED + "已禁用"));
+        tooltip.add(TextFormatting.GRAY + "密封: " + (cap.isSealed() ? TextFormatting.LIGHT_PURPLE + I18n.format("tooltip.rsring.sealed.yes")
+            : TextFormatting.DARK_GRAY + I18n.format("tooltip.rsring.sealed.no")));
         if (cap.isBound()) {
             BlockPos pos = cap.getTerminalPos();
             String dim = getDimensionName(cap.getTerminalDimension());

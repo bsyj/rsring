@@ -14,6 +14,11 @@ key.categories.rsring=戒指
 
 #messages
 message.rsring.ring_not_found=未找到戒指
+
+#tooltips
+tooltip.rsring.sealed.yes=是
+tooltip.rsring.sealed.no=否
+
 # Configuration
 config.rsring.gui.title=RsRing 模组配置
 config.rsring.ring=吸收戒指设置
@@ -28,7 +33,8 @@ config.rsring.ring.absorptionInterval=吸收间隔
 config.rsring.ring.initialEnergy=初始能量
 config.rsring.ring.energyCostMultiplier=能量消耗倍率
 config.rsring.ring.manualChargeAmount=手摇充电数量
-config.rsring.ring.blockExternalCharging=阻止外部充电
+config.rsring.ring.blockExternalCharging=默认密封状态
+config.rsring.ring.blockExternalCharging.comment=新合成的戒指默认是否密封（密封后无法接受外部充电，可通过工作台切换）
 
 # 经验储罐配置
 config.rsring.tank=经验储罐设置

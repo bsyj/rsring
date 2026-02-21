@@ -12,6 +12,10 @@ key.rsring.toggle.desc=Toggle Ring
 key.categories.rsring=Rings
 message.rsring.ring_not_found=Ring not found
 
+#tooltips
+tooltip.rsring.sealed.yes=Yes
+tooltip.rsring.sealed.no=No
+
 # Configuration
 config.rsring.gui.title=RsRing Mod Configuration
 config.rsring.ring=Absorb Ring Settings
@@ -26,7 +30,8 @@ config.rsring.ring.absorptionInterval=Absorption Interval
 config.rsring.ring.initialEnergy=Initial Energy
 config.rsring.ring.energyCostMultiplier=Energy Cost Multiplier
 config.rsring.ring.manualChargeAmount=Manual Charge Amount
-config.rsring.ring.blockExternalCharging=Block External Charging
+config.rsring.ring.blockExternalCharging=Default Sealed State
+config.rsring.ring.blockExternalCharging.comment=Whether newly crafted rings are sealed by default (sealed rings cannot accept external charging, can be toggled via crafting)
 
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings

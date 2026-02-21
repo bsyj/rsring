@@ -80,5 +80,7 @@ public class ClientProxy extends CommonProxy {
             RsRingMod.experienceTank1000, 0, new ModelResourceLocation(RsRingMod.experienceTank1000.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(
             RsRingMod.experienceTank2000, 0, new ModelResourceLocation(RsRingMod.experienceTank2000.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(
+            RsRingMod.experienceTank10000, 0, new ModelResourceLocation(RsRingMod.experienceTank10000.getRegistryName(), "inventory"));
     }
 }

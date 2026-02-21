@@ -108,6 +108,33 @@ public class XpHelper {
     }
     
     /**
+     * 计算玩家使用储罐中的经验后能达到的等级
+     * 即：玩家当前经验 + 储罐经验 = 总经验，对应的等级
+     * 
+     * @param playerCurrentXp 玩家当前总经验
+     * @param tankStoredXp 储罐中存储的经验
+     * @return 玩家使用储罐经验后能达到的精确等级
+     */
+    public static double getLevelAfterUsingTankXp(int playerCurrentXp, int tankStoredXp) {
+        int totalXp = playerCurrentXp + tankStoredXp;
+        return getLevelsForExperience(totalXp);
+    }
+    
+    /**
+     * 计算储罐中的经验相当于多少玩家等级（基于玩家当前等级）
+     * 即：玩家使用储罐经验后能达到的等级 - 玩家当前等级
+     * 
+     * @param playerCurrentXp 玩家当前总经验
+     * @param tankStoredXp 储罐中存储的经验
+     * @return 储罐经验相当于多少玩家等级
+     */
+    public static double getStoredLevelsRelativeToPlayer(int playerCurrentXp, int tankStoredXp) {
+        double currentLevel = getLevelsForExperience(playerCurrentXp);
+        double newLevel = getLevelAfterUsingTankXp(playerCurrentXp, tankStoredXp);
+        return newLevel - currentLevel;
+    }
+    
+    /**
      * 获取玩家的总经验点数
      * 包括当前等级的经验 + 当前等级进度的经验
      * 

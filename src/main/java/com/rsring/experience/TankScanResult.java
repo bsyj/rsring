@@ -210,14 +210,15 @@ public class TankScanResult {
     
     /**
      * 获取单个储罐存储的经验值。
-     * 使用现有的 ItemExperiencePump 方法以保持兼容性。
+     * 优先从 Capability 读取，确保获取最新数据。
      */
     private int getTankStoredXP(ItemStack tank) {
         if (tank.isEmpty() || !(tank.getItem() instanceof com.rsring.item.ItemExperiencePump)) {
             return 0;
         }
         
-        return com.rsring.item.ItemExperiencePump.getXpStoredFromNBT(tank);
+        // 优先从 Capability 读取，确保客户端显示最新数据
+        return com.rsring.item.ItemExperiencePump.getXpFromCapabilityOrNBT(tank);
     }
     
     @Override

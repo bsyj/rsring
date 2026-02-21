@@ -82,6 +82,8 @@ public class ItemExperiencePump extends Item implements IBauble {
             return 4339720;
         } else if (stack.getItem() instanceof ItemExperienceTank2000) {
             return 17677220;
+        } else if (stack.getItem() instanceof ItemExperienceTank10000) {
+            return 448377220;
         }
         
         int capacityLevels = getCapacityLevelsFromNBT(stack);
@@ -118,6 +120,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (data == null) {
             int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL;
             tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "1");
+            tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + "0.0");
             tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY
                 + " / " + initialCapacity + " mb");
 
@@ -139,8 +142,10 @@ public class ItemExperiencePump extends Item implements IBauble {
         int xp = data.getInteger(XP_KEY);
         int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
         int max = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1));
+        double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xp);
 
         tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + capacityLevels);
+        tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + String.format("%.1f", storedLevels));
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY
             + " / " + max + " mb");
 
@@ -224,8 +229,9 @@ public class ItemExperiencePump extends Item implements IBauble {
             int xpStored = getXpStoredFromNBT(stack);
             int capacityLevels = getCapacityLevelsFromNBT(stack);
             int maxXp = getMaxXpFromNBT(stack);
+            double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xpStored);
 
-            String message = TextFormatting.AQUA + "等级 " + capacityLevels +
+            String message = TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + String.format("%.1f", storedLevels) +
                            TextFormatting.GRAY + " - " +
                            TextFormatting.GREEN + xpStored +
                            TextFormatting.GRAY + " / " +

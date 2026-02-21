@@ -6,6 +6,7 @@ item.rsring.experience_tank_100.name=Experience Tank - 100 Levels
 item.rsring.experience_tank_500.name=Experience Tank - 500 Levels
 item.rsring.experience_tank_1000.name=Experience Tank - 1000 Levels
 item.rsring.experience_tank_2000.name=Experience Tank - 2000 Levels
+item.rsring.experience_tank_10000.name=Experience Tank - 10000 Levels
 item.rsring.experience_pump_controller.name=Experience Pump Controller
 key.rsring.toggle.desc=Toggle Ring
 key.categories.rsring=Rings

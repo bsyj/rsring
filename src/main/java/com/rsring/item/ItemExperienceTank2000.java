@@ -37,8 +37,8 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
         if (data == null) {
-            // 即使没有NBT数据也要显示基础信息
             tooltip.add(TextFormatting.GRAY + "玩家等级: " + TextFormatting.AQUA + "2000级");
+            tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + "0.0");
             tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY + " / " + DEFAULT_CAPACITY + " mb");
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
@@ -57,12 +57,12 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
 
         int xp = data.getInteger("xp");
         int max = DEFAULT_CAPACITY;
+        double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xp);
 
-        // 基础信息显示
         tooltip.add(TextFormatting.GRAY + "玩家等级: " + TextFormatting.AQUA + "2000级");
+        tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + String.format("%.1f", storedLevels));
         tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " mb");
 
-        // 详细信息（Shift显示）
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
             tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看详细信息");
@@ -85,15 +85,13 @@ public class ItemExperienceTank2000 extends ItemExperiencePump implements IBaubl
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
 
-        // 服务器端：显示储罐容量信息到聊天栏
         if (!world.isRemote) {
-            // 从NBT读取数据（确保准确性）
             int xpStored = getXpStoredFromNBT(stack);
             int maxXp = DEFAULT_CAPACITY;
+            double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xpStored);
 
-            // 构造消息：2000级储罐 - Y / Z mb
-            String message = TextFormatting.AQUA + "2000级储罐 " +
-                           TextFormatting.GRAY + "- " +
+            String message = TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + String.format("%.1f", storedLevels) +
+                           TextFormatting.GRAY + " - " +
                            TextFormatting.GREEN + xpStored +
                            TextFormatting.GRAY + " / " +
                            TextFormatting.YELLOW + maxXp +

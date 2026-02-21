@@ -20,12 +20,13 @@ public class RsRingConfig implements IHasConfig {
         public int absorptionRange = 8;
         // 每个物品吸收所需的能量点数，默认为1
         public int energyCostPerItem = 1;
-        public int maxEnergyCapacity = 10000000;
+        public int maxEnergyCapacity = 100000;
         public boolean allowCustomFilters = true;
         public int absorptionInterval = 5;
         public int initialEnergy = 0;
         public double energyCostMultiplier = 1.0;
         public int manualChargeAmount = 1000;
+        public boolean blockExternalCharging = false;
     }
 
     public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
@@ -78,9 +79,9 @@ public class RsRingConfig implements IHasConfig {
 
         absorbRing.maxEnergyCapacity = config.getInt("maxEnergyCapacity",
             RsRingMod.MODID + ".ring",
-            10000000,
+            100000,
             1000,
-            100000000,
+            10000000,
             "config.rsring.ring.maxEnergyCapacity",
             "config.rsring.ring.maxEnergyCapacity");
 
@@ -102,7 +103,7 @@ public class RsRingConfig implements IHasConfig {
             RsRingMod.MODID + ".ring",
             0,
             0,
-            10000000,
+            100000,
             "config.rsring.ring.initialEnergy",
             "config.rsring.ring.initialEnergy");
 
@@ -117,6 +118,12 @@ public class RsRingConfig implements IHasConfig {
             1000000,
             "config.rsring.ring.manualChargeAmount",
             "config.rsring.ring.manualChargeAmount");
+
+        absorbRing.blockExternalCharging = config.getBoolean("blockExternalCharging",
+            RsRingMod.MODID + ".ring",
+            false,
+            "config.rsring.ring.blockExternalCharging",
+            "config.rsring.ring.blockExternalCharging");
     }
 
     public static boolean validateConfig() {
@@ -141,8 +148,8 @@ public class RsRingConfig implements IHasConfig {
         if (absorbRing.maxEnergyCapacity < 1000) {
             absorbRing.maxEnergyCapacity = 1000;
             changed = true;
-        } else if (absorbRing.maxEnergyCapacity > 100000000) {
-            absorbRing.maxEnergyCapacity = 100000000;
+        } else if (absorbRing.maxEnergyCapacity > 10000000) {
+            absorbRing.maxEnergyCapacity = 10000000;
             changed = true;
         }
 

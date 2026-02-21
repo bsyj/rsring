@@ -7,6 +7,7 @@ item.rsring.experience_tank_100.name=经验储罐 - 100 级
 item.rsring.experience_tank_500.name=经验储罐 - 500 级
 item.rsring.experience_tank_1000.name=经验储罐 - 1000 级
 item.rsring.experience_tank_2000.name=经验储罐 - 2000 级
+item.rsring.experience_tank_10000.name=经验储罐 - 10000 级
 #keys
 key.rsring.toggle.desc=切换戒指功能
 key.categories.rsring=戒指

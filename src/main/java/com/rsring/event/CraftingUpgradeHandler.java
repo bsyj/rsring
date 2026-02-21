@@ -46,7 +46,8 @@ public class CraftingUpgradeHandler {
                     if (pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank100 ||
                         pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank500 ||
                         pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank1000 ||
-                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank2000) {
+                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank2000 ||
+                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank10000) {
                         return ItemStack.EMPTY; // 特殊储罐不能应用合成升级
                     }
                 } else if (stack.getItem() == net.minecraft.init.Items.ENDER_PEARL && pearlStack.isEmpty()) {
@@ -82,6 +83,8 @@ public class CraftingUpgradeHandler {
                 result = new ItemStack(RsRingMod.experienceTank1000);
             } else if (pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank2000) {
                 result = new ItemStack(RsRingMod.experienceTank2000);
+            } else if (pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank10000) {
+                result = new ItemStack(RsRingMod.experienceTank10000);
             } else {
                 // 基础经验泵
                 result = new ItemStack(RsRingMod.experiencePump);
@@ -93,7 +96,8 @@ public class CraftingUpgradeHandler {
             if (result.getItem() instanceof ItemExperiencePump && !(result.getItem() instanceof com.rsring.item.ItemExperienceTank100) && 
                 !(result.getItem() instanceof com.rsring.item.ItemExperienceTank500) && 
                 !(result.getItem() instanceof com.rsring.item.ItemExperienceTank1000) && 
-                !(result.getItem() instanceof com.rsring.item.ItemExperienceTank2000)) {
+                !(result.getItem() instanceof com.rsring.item.ItemExperienceTank2000) &&
+                !(result.getItem() instanceof com.rsring.item.ItemExperienceTank10000)) {
                 newLevels = originalLevels + 1;
             }
             
@@ -146,7 +150,8 @@ public class CraftingUpgradeHandler {
                     if (pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank100 ||
                         pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank500 ||
                         pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank1000 ||
-                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank2000) {
+                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank2000 ||
+                        pumpStack.getItem() instanceof com.rsring.item.ItemExperienceTank10000) {
                         return false; // 特殊储罐不能应用合成升级
                     }
                 } else if (stack.getItem() == net.minecraft.init.Items.ENDER_PEARL && !hasPearl) {

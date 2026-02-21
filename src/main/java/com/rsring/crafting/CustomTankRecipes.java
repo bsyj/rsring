@@ -19,7 +19,8 @@ public class CustomTankRecipes {
             return;
         }
         if (RsRingMod.experienceTank100 == null || RsRingMod.experienceTank500 == null ||
-            RsRingMod.experienceTank1000 == null || RsRingMod.experienceTank2000 == null) {
+            RsRingMod.experienceTank1000 == null || RsRingMod.experienceTank2000 == null ||
+            RsRingMod.experienceTank10000 == null) {
             return;
         }
 
@@ -69,6 +70,20 @@ public class CustomTankRecipes {
             "DDD",
             'D', Items.DIAMOND,
             'T', RsRingMod.experienceTank1000
+        );
+
+        // 10000级经验储罐：下界之星 + 2000级储罐 + 龙蛋
+        GameRegistry.addShapedRecipe(
+            new net.minecraft.util.ResourceLocation("rsring", "experience_tank_10000"),
+            null,
+            new ItemStack(RsRingMod.experienceTank10000),
+            "NSN",
+            "GTG",
+            "NSN",
+            'N', Items.NETHER_STAR,
+            'S', net.minecraft.init.Blocks.BEACON,
+            'G', Items.GOLDEN_APPLE,
+            'T', RsRingMod.experienceTank2000
         );
     }
 }

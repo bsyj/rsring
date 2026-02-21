@@ -29,6 +29,7 @@ import com.rsring.item.ItemExperienceTank100;
 import com.rsring.item.ItemExperienceTank500;
 import com.rsring.item.ItemExperienceTank1000;
 import com.rsring.item.ItemExperienceTank2000;
+import com.rsring.item.ItemExperienceTank10000;
 import com.rsring.crafting.CustomTankRecipes;
 import com.rsring.network.PacketPumpAction;
 import com.rsring.network.PacketPumpData;
@@ -62,6 +63,7 @@ public class RsRingMod
     public static ItemExperienceTank500 experienceTank500;
     public static ItemExperienceTank1000 experienceTank1000;
     public static ItemExperienceTank2000 experienceTank2000;
+    public static ItemExperienceTank10000 experienceTank10000;
     public static SimpleNetworkWrapper network;
 
     @EventHandler
@@ -97,6 +99,8 @@ public class RsRingMod
             ForgeRegistries.ITEMS.register(experienceTank1000);
             experienceTank2000 = new ItemExperienceTank2000();
             ForgeRegistries.ITEMS.register(experienceTank2000);
+            experienceTank10000 = new ItemExperienceTank10000();
+            ForgeRegistries.ITEMS.register(experienceTank10000);
         }
 
         CapabilityManager.INSTANCE.register(IExperiencePumpCapability.class, new ExperiencePumpCapability.Storage(), ExperiencePumpCapability::new);

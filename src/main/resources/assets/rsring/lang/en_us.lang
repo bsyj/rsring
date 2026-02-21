@@ -46,6 +46,7 @@ config.rsring.tank.maxTankLevelLimit=Max Tank Level Limit
 config.rsring.tank.enableSpecialTanks=Enable Special Tanks
 config.rsring.tank.xpToBottleEfficiency=XP to Bottle Efficiency
 config.rsring.tank.xpMendingEfficiency=XP Mending Efficiency
+config.rsring.tank.enableSMECompatibility=Enable So Many Enchantments Compatibility
 
 # Pump Controller Configuration
 config.rsring.controller=Pump Controller Settings

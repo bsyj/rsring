@@ -24,6 +24,7 @@ public class ExperienceTankConfig implements IHasConfig {
         public boolean enableSpecialTanks = true;
         public double xpToBottleEfficiency = 1.0;
         public double xpMendingEfficiency = 1.0;
+        public boolean enableSMECompatibility = true;
     }
 
     public static class ControllerConfig {
@@ -157,6 +158,12 @@ public class ExperienceTankConfig implements IHasConfig {
         mendingEffProp.setLanguageKey("config.rsring.tank.xpMendingEfficiency");
         tank.xpMendingEfficiency = mendingEffProp.getDouble();
 
+        tank.enableSMECompatibility = config.getBoolean("enableSMECompatibility",
+            RsRingMod.MODID + ".tank",
+            true,
+            "config.rsring.tank.enableSMECompatibility",
+            "config.rsring.tank.enableSMECompatibility");
+
         controller.maxManagedTanks = config.getInt("maxManagedTanks",
             RsRingMod.MODID + ".controller",
             32,
@@ -245,5 +252,6 @@ public class ExperienceTankConfig implements IHasConfig {
         tank.enableSpecialTanks = true;
         tank.xpToBottleEfficiency = 1.0;
         tank.xpMendingEfficiency = 1.0;
+        tank.enableSMECompatibility = true;
     }
 }

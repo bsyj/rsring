@@ -48,6 +48,7 @@ config.rsring.tank.maxTankLevelLimit=最大储罐等级限制
 config.rsring.tank.enableSpecialTanks=启用特殊储罐
 config.rsring.tank.xpToBottleEfficiency=经验瓶转换效率
 config.rsring.tank.xpMendingEfficiency=经验修补效率
+config.rsring.tank.enableSMECompatibility=启用 So Many Enchantments 兼容
 
 # 经验泵控制器配置
 config.rsring.controller=泵控制器设置

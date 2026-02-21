@@ -667,17 +667,19 @@ public class ItemExperiencePump extends Item implements IBauble {
     private void tryRepairMending(EntityPlayer player, ItemStack pump, IExperiencePumpCapability cap) {
         if (player == null || pump == null || cap == null || !com.rsring.config.ExperienceTankConfig.tank.mendPlayerItems) return;
 
+        com.rsring.util.EnchantmentCompat.init();
+
         int availableXp = cap.getXpStored();
         if (availableXp <= 0) return;
 
-        if (pump.isItemDamaged()) {
+        if (pump.isItemDamaged() && com.rsring.util.EnchantmentCompat.hasAnyMending(pump)) {
             availableXp = mendSingleItem(pump, availableXp, cap);
         }
 
         if (availableXp > 0 && player.inventory != null && player.inventory.mainInventory != null) {
             for (ItemStack stack : player.inventory.mainInventory) {
                 if (stack == null || availableXp <= 0) break;
-                if (stack.isItemDamaged() && net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, stack) > 0) {
+                if (stack.isItemDamaged() && com.rsring.util.EnchantmentCompat.hasAnyMending(stack)) {
                     availableXp = mendSingleItem(stack, availableXp, cap);
                 }
             }
@@ -686,7 +688,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (availableXp > 0 && player.inventory != null && player.inventory.armorInventory != null) {
             for (ItemStack armorStack : player.inventory.armorInventory) {
                 if (armorStack == null || armorStack.isEmpty() || availableXp <= 0) continue;
-                if (armorStack.isItemDamaged() && net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, armorStack) > 0) {
+                if (armorStack.isItemDamaged() && com.rsring.util.EnchantmentCompat.hasAnyMending(armorStack)) {
                     availableXp = mendSingleItem(armorStack, availableXp, cap);
                 }
             }
@@ -695,7 +697,7 @@ public class ItemExperiencePump extends Item implements IBauble {
         if (availableXp > 0) {
             ItemStack off = player.getHeldItemOffhand();
             if (off != null && !off.isEmpty() && off.isItemDamaged() &&
-                net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, off) > 0) {
+                com.rsring.util.EnchantmentCompat.hasAnyMending(off)) {
                 availableXp = mendSingleItem(off, availableXp, cap);
             }
         }
@@ -724,12 +726,19 @@ public class ItemExperiencePump extends Item implements IBauble {
             return availableXp;
         }
 
-        int needRepair = damage;
+        com.rsring.util.EnchantmentCompat.MendingType mendingType = com.rsring.util.EnchantmentCompat.getMendingType(stack);
+        if (mendingType == com.rsring.util.EnchantmentCompat.MendingType.NONE) {
+            return availableXp;
+        }
+
+        int baseDurabilityPerXp = mendingType.getDurabilityPerXp();
         double efficiency = com.rsring.config.ExperienceTankConfig.tank.xpMendingEfficiency;
         if (efficiency <= 0) efficiency = 1.0;
-        int needXp = (int) Math.ceil(needRepair / (2.0 * efficiency));
+
+        int needRepair = damage;
+        int needXp = (int) Math.ceil(needRepair / (baseDurabilityPerXp * efficiency));
         int consumeXp = Math.min(needXp, availableXp);
-        int repairDurability = (int) Math.floor(consumeXp * 2.0 * efficiency);
+        int repairDurability = (int) Math.floor(consumeXp * baseDurabilityPerXp * efficiency);
         if (consumeXp > 0 && repairDurability <= 0) {
             repairDurability = 1;
         }
@@ -745,28 +754,21 @@ public class ItemExperiencePump extends Item implements IBauble {
             return availableXp;
         }
 
-        try {
-            Class<?> baublesApiClass = Class.forName("baubles.api.BaublesApi");
-            Object handler = baublesApiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-            
-            if (handler instanceof net.minecraft.inventory.IInventory) {
-                net.minecraft.inventory.IInventory baubles = (net.minecraft.inventory.IInventory) handler;
-                for (int i = 0; i < baubles.getSizeInventory(); i++) {
-                    if (availableXp <= 0) break;
-                    
-                    ItemStack baubleStack = baubles.getStackInSlot(i);
-                    if (baubleStack == null || baubleStack.isEmpty()) continue;
-                    
-                    if (baubleStack.isItemDamaged() && 
-                        net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(net.minecraft.init.Enchantments.MENDING, baubleStack) > 0) {
-                        availableXp = mendSingleItem(baubleStack, availableXp, cap);
-                    }
-                }
+        Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+        if (handler == null) {
+            return availableXp;
+        }
+
+        int slots = com.rsring.util.BaublesHelper.getSlots(handler);
+        for (int i = 0; i < slots; i++) {
+            if (availableXp <= 0) break;
+
+            ItemStack baubleStack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+            if (baubleStack == null || baubleStack.isEmpty()) continue;
+
+            if (baubleStack.isItemDamaged() && com.rsring.util.EnchantmentCompat.hasAnyMending(baubleStack)) {
+                availableXp = mendSingleItem(baubleStack, availableXp, cap);
             }
-        } catch (ClassNotFoundException e) {
-            return availableXp;
-        } catch (Exception e) {
-            return availableXp;
         }
 
         return availableXp;

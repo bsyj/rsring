@@ -2,8 +2,8 @@
 {
   "modid": "rsring",
   "name": "RS Rings and Tanks",
-  "description": "添加强大的饰品戒指和经验储罐（1.4版本）。主要功能包括：物品吸收戒指（支持绑定RS终端和普通箱子，跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。1.4版本新增RS网络集成功能，可以直接将吸收的物品存入Refined Storage网络。\n\n未来计划：\n- 增加更多饰品栏装备\n- 优化经验系统性能\n- 添加更多配置选项\n\nAdds powerful Baubles rings and experience tanks (Version 1.4). Features include: Item Absorb Ring (supports binding to RS terminals and regular chests, collecting items across dimensions), Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system. Version 1.4 adds RS network integration, allowing direct item transfer to Refined Storage networks.\n\nFuture plans:\n- Add more bauble slot equipment\n- Optimize experience system performance\n- Add more configuration options",
-  "version": "1.4",
+  "description": "添加强大的饰品戒指和经验储罐（1.6版本）。主要功能包括：物品吸收戒指（支持绑定RS终端和普通箱子，跨维度收集物品）、经验储罐（存储和管理经验值，支持容量升级）、可自定义的黑白名单过滤系统。1.6版本新增So Many Enchantments模组兼容，支持Advanced Mending高级经验修补附魔（修复效率提升50%）。\n\n未来计划：\n- 增加更多饰品栏装备\n- 优化经验系统性能\n- 添加更多配置选项\n\nAdds powerful Baubles rings and experience tanks (Version 1.6). Features include: Item Absorb Ring (supports binding to RS terminals and regular chests, collecting items across dimensions), Experience Tanks for storing and managing XP with upgradeable capacity, and customizable black/white list filtering system. Version 1.6 adds So Many Enchantments compatibility, supporting Advanced Mending enchantment (50% more repair efficiency).\n\nFuture plans:\n- Add more bauble slot equipment\n- Optimize experience system performance\n- Add more configuration options",
+  "version": "1.6",
   "mcversion": "1.12.2",
   "logoFile": "assets/rsring/textures/items/mod_banner.png",
   "url": "",

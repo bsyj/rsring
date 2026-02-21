@@ -61,6 +61,23 @@ public class ItemExperiencePump extends Item implements IBauble {
         return data != null ? data.getInteger(XP_KEY) : 0;
     }
 
+    /**
+     * 优先从 Capability 读取经验值，如果失败则从 NBT 读取
+     * 用于客户端 tooltip 显示，确保获取最新的数据
+     */
+    public static int getXpFromCapabilityOrNBT(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return 0;
+
+        // 优先尝试从 Capability 读取
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap != null) {
+            return cap.getXpStored();
+        }
+
+        // 回退到 NBT 读取
+        return getXpStoredFromNBT(stack);
+    }
+
     
     public static int getCapacityLevelsFromNBT(ItemStack stack) {
         if (stack == null) return DEFAULT_RETAIN_LEVEL;
@@ -116,59 +133,31 @@ public class ItemExperiencePump extends Item implements IBauble {
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        net.minecraft.nbt.NBTTagCompound data = getDataFromNBT(stack);
-        if (data == null) {
-            int initialCapacity = IExperiencePumpCapability.BASE_XP_PER_LEVEL;
-            tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + "1");
-            tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + "0.0");
-            tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + "0" + TextFormatting.GRAY
-                + " / " + initialCapacity + " mb");
-
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
-                tooltip.add("");
-                tooltip.add(TextFormatting.GOLD + "功能介绍:");
-                tooltip.add(TextFormatting.GRAY + "  - 吸收附近经验球");
-                tooltip.add(TextFormatting.GRAY + "  - 存储经验（需配合经验泵控制器使用）");
-                tooltip.add(TextFormatting.GRAY + "  - 自动修复附魔装备");
-                tooltip.add(TextFormatting.GOLD + "使用方法:");
-                tooltip.add(TextFormatting.GRAY + "  - 与经验泵控制器配合使用");
-            } else {
-                tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
-                    + TextFormatting.DARK_GRAY + " 查看详细信息");
-            }
-            return;
-        }
-
-        int xp = data.getInteger(XP_KEY);
-        int capacityLevels = data.hasKey(CAPACITY_LEVELS_KEY) ? data.getInteger(CAPACITY_LEVELS_KEY) : DEFAULT_RETAIN_LEVEL;
-        int max = (int)(IExperiencePumpCapability.BASE_XP_PER_LEVEL * Math.pow(2, capacityLevels - 1));
+        // 优先从 Capability 读取数据，确保获取最新的经验值
+        int xp = getXpFromCapabilityOrNBT(stack);
+        int capacityLevels = getCapacityLevelsFromNBT(stack);
+        int max = getMaxXpFromNBT(stack);
         double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xp);
 
-        tooltip.add(TextFormatting.GRAY + "等级: " + TextFormatting.AQUA + capacityLevels);
+        tooltip.add(TextFormatting.GRAY + "容量等级: " + TextFormatting.AQUA + capacityLevels);
         tooltip.add(TextFormatting.LIGHT_PURPLE + "已存等级: " + TextFormatting.YELLOW + String.format("%.1f", storedLevels));
-        tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY
-            + " / " + max + " mb");
+        tooltip.add(TextFormatting.GRAY + "经验: " + TextFormatting.GREEN + xp + TextFormatting.GRAY + " / " + max + " XP");
 
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
-            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift"
-                + TextFormatting.DARK_GRAY + " 查看详细信息");
+            tooltip.add(TextFormatting.DARK_GRAY + "按住 " + TextFormatting.YELLOW + "Shift" + TextFormatting.DARK_GRAY + " 查看详细信息");
         } else {
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "功能介绍:");
-            tooltip.add(TextFormatting.GRAY + "  - 自动吸收附近经验球和经验瓶");
-            tooltip.add(TextFormatting.GRAY + "  - 智能经验存储与溢出处理");
-            tooltip.add(TextFormatting.GRAY + "  - 自动修复附魔装备（经验修补）");
-            tooltip.add(TextFormatting.GRAY + "  - 与经验泵控制器协同工作");
+            tooltip.add(TextFormatting.GRAY + "  · 自动吸收附近经验球和经验瓶");
+            tooltip.add(TextFormatting.GRAY + "  · 智能经验存储与溢出处理");
+            tooltip.add(TextFormatting.GRAY + "  · 自动修复附魔装备（经验修补）");
+            tooltip.add(TextFormatting.GRAY + "  · 与经验泵控制器协同工作");
             tooltip.add("");
             tooltip.add(TextFormatting.GOLD + "配置信息:");
-            tooltip.add(TextFormatting.GRAY + "  - 抽取速度: " + TextFormatting.AQUA
-                + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/秒");
-            tooltip.add(TextFormatting.GRAY + "  - 抽取范围: " + TextFormatting.AQUA
-                + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
-            tooltip.add(TextFormatting.GRAY + "  - 溢出保护: "
-                + (com.rsring.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启"
-                : TextFormatting.RED + "关闭"));
+            tooltip.add(TextFormatting.GRAY + "  · 抽取速度: " + TextFormatting.AQUA + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRate + " XP/刻");
+            tooltip.add(TextFormatting.GRAY + "  · 抽取范围: " + TextFormatting.AQUA + com.rsring.config.ExperienceTankConfig.tank.xpExtractionRange + " 格");
+            tooltip.add(TextFormatting.GRAY + "  · 溢出保护: " + (com.rsring.config.ExperienceTankConfig.tank.enableOverflowBottles ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
         }
     }
 
@@ -226,7 +215,8 @@ public class ItemExperiencePump extends Item implements IBauble {
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if (!world.isRemote) {
-            int xpStored = getXpStoredFromNBT(stack);
+            // 服务端从 Capability 或 NBT 读取
+            int xpStored = getXpFromCapabilityOrNBT(stack);
             int capacityLevels = getCapacityLevelsFromNBT(stack);
             int maxXp = getMaxXpFromNBT(stack);
             double storedLevels = com.rsring.util.XpHelper.getLevelsForExperience(xpStored);
@@ -236,7 +226,7 @@ public class ItemExperiencePump extends Item implements IBauble {
                            TextFormatting.GREEN + xpStored +
                            TextFormatting.GRAY + " / " +
                            TextFormatting.YELLOW + maxXp +
-                           TextFormatting.GRAY + " mb";
+                           TextFormatting.GRAY + " XP";
 
             player.sendMessage(new TextComponentString(message));
         }

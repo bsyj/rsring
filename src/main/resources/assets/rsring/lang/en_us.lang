@@ -26,6 +26,7 @@ config.rsring.ring.absorptionInterval=Absorption Interval
 config.rsring.ring.initialEnergy=Initial Energy
 config.rsring.ring.energyCostMultiplier=Energy Cost Multiplier
 config.rsring.ring.manualChargeAmount=Manual Charge Amount
+config.rsring.ring.blockExternalCharging=Block External Charging
 
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings

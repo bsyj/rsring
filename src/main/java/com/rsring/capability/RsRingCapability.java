@@ -330,8 +330,47 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
         }
     }
 
+    public static class ReadOnlyEnergyWrapper implements IEnergyStorage {
+        private final IEnergyStorage inner;
+
+        public ReadOnlyEnergyWrapper(IEnergyStorage inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public int receiveEnergy(int maxReceive, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public int extractEnergy(int maxExtract, boolean simulate) {
+            return inner.extractEnergy(maxExtract, simulate);
+        }
+
+        @Override
+        public int getEnergyStored() {
+            return inner.getEnergyStored();
+        }
+
+        @Override
+        public int getMaxEnergyStored() {
+            return inner.getMaxEnergyStored();
+        }
+
+        @Override
+        public boolean canExtract() {
+            return inner.canExtract();
+        }
+
+        @Override
+        public boolean canReceive() {
+            return false;
+        }
+    }
+
     public static class RsRingCapabilityProvider implements ICapabilitySerializable<NBTTagCompound> {
         private IRsRingCapability capability = new RsRingCapability();
+        private ReadOnlyEnergyWrapper readOnlyWrapper;
 
         public RsRingCapabilityProvider() {}
 
@@ -353,6 +392,12 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 return (T) this.capability;
             }
             if (capability == CapabilityEnergy.ENERGY) {
+                if (com.rsring.config.RsRingConfig.absorbRing.blockExternalCharging) {
+                    if (readOnlyWrapper == null || readOnlyWrapper.inner != this.capability.getEnergyStorage()) {
+                        readOnlyWrapper = new ReadOnlyEnergyWrapper(this.capability.getEnergyStorage());
+                    }
+                    return (T) readOnlyWrapper;
+                }
                 return (T) this.capability.getEnergyStorage();
             }
             return null;

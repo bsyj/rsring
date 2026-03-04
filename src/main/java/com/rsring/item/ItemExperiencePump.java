@@ -268,10 +268,17 @@ public class ItemExperiencePump extends Item implements IBauble {
             return 0;
         }
 
+        int currentLevel = player.experienceLevel;
+        float currentProgress = player.experience;
+        int targetLevel = currentLevel + levelsToExtract;
+        
+        // 计算目标经验：目标等级的基础经验 + 保持当前进度
+        int targetTotal = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
+        int xpForTargetLevel = com.rsring.util.XpHelper.getExperienceLimitOnLevel(targetLevel);
+        targetTotal += (int) (currentProgress * xpForTargetLevel);
+        
         int currentTotal = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
-        double currentLevels = com.rsring.util.XpHelper.getLevelsForExperience(currentTotal);
-        double targetLevels = currentLevels + levelsToExtract;
-        int xpNeeded = com.rsring.util.XpHelper.convertLevelToXP(targetLevels) - currentTotal;
+        int xpNeeded = targetTotal - currentTotal;
 
         if (xpNeeded <= 0) {
             return 0;

@@ -419,13 +419,16 @@ public class GuiExperiencePumpController extends GuiScreen {
         long t = System.currentTimeMillis();
         int perimeter = 2 * (barWidth + barHeight); // 边框周长
         int meteorLength = 25; // 流星长度
-        int period = 2000; // 与标题同步：2秒周期
+        int period = 2000; // 与标题同步：2 秒周期
         float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 与标题同步：双重彩虹波动
+        
+        // 计算流星的基础相位（与字体颜色使用相同的时间基准）
+        float basePhase = (t % period) / (float) period;
 
         // 绘制两个流星（相位差半周）
         for (int meteor = 0; meteor < 2; meteor++) {
-            int meteorOffset = meteor * (perimeter / 2); // 第二个流星偏移半周
-            int meteorPos = (int) ((t / 8 + meteorOffset) % perimeter); // 流星位置
+            float meteorPhase = (basePhase + meteor * 0.5f) % 1.0f; // 第二个流星相位差半周
+            int meteorPos = (int) (meteorPhase * perimeter); // 流星位置（与字体颜色同步）
 
             // 绘制单个流星
             for (int i = 0; i < meteorLength; i++) {
@@ -456,8 +459,8 @@ public class GuiExperiencePumpController extends GuiScreen {
                 // 使用更陡的曲线，让尾巴快速消失
                 float alpha = 1.0f - meteorProgress * meteorProgress * meteorProgress; // 立方曲线
 
-                // RGB色相与标题同步，双重彩虹波动，两个流星色相错开
-                float meteorHue = ((t % period) / (float) period + meteor * 0.5f + hueOffset) % 1.0f;
+                // RGB 色相与标题同步，双重彩虹波动，两个流星色相错开
+                float meteorHue = (meteorPhase + hueOffset) % 1.0f;
                 int meteorColor = hsvToRgbInt(meteorHue, 1.0f, 1.0f);
 
                 // 边框背景色（灰色）

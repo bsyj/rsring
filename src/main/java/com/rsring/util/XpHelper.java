@@ -279,10 +279,22 @@ public class XpHelper {
         }
         
         int currentTotal = getPlayerTotalExperience(player);
-        double currentLevels = getLevelsForExperience(currentTotal);
-        double targetLevels = Math.max(0, currentLevels - levelsToExtract);
+        int currentLevel = player.experienceLevel;
+        float currentProgress = player.experience;
         
-        int targetTotal = convertLevelToXP(targetLevels);
+        // 计算目标等级和目标进度
+        int targetLevel = Math.max(0, currentLevel - levelsToExtract);
+        
+        // 如果目标等级为 0，提取所有经验
+        if (targetLevel == 0) {
+            return removeExperienceFromPlayer(player, currentTotal);
+        }
+        
+        // 计算目标经验：目标等级的基础经验 + 保持当前进度
+        int targetTotal = getExperienceForLevel(targetLevel);
+        int xpForTargetLevel = getExperienceLimitOnLevel(targetLevel);
+        targetTotal += (int) (currentProgress * xpForTargetLevel);
+        
         int toExtract = Math.max(0, currentTotal - targetTotal);
         
         if (toExtract > 0) {
@@ -306,10 +318,17 @@ public class XpHelper {
         }
         
         int currentTotal = getPlayerTotalExperience(player);
-        double currentLevels = getLevelsForExperience(currentTotal);
-        double targetLevels = currentLevels + levelsToAdd;
+        int currentLevel = player.experienceLevel;
+        float currentProgress = player.experience;
         
-        int targetTotal = convertLevelToXP(targetLevels);
+        // 计算目标等级
+        int targetLevel = currentLevel + levelsToAdd;
+        
+        // 计算目标经验：目标等级的基础经验 + 保持当前进度
+        int targetTotal = getExperienceForLevel(targetLevel);
+        int xpForTargetLevel = getExperienceLimitOnLevel(targetLevel);
+        targetTotal += (int) (currentProgress * xpForTargetLevel);
+        
         int toAdd = Math.max(0, targetTotal - currentTotal);
         
         if (toAdd > 0) {

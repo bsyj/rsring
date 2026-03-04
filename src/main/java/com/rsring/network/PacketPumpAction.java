@@ -194,10 +194,17 @@ public class PacketPumpAction implements IMessage {
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
                         if (levelsToTake <= 0) break;
 
+                        int currentLevel = player.experienceLevel;
+                        float currentProgress = player.experience;
+                        int targetLevel = currentLevel + levelsToTake;
+                        
+                        // 计算目标经验：目标等级的基础经验 + 保持当前进度
+                        int targetTotal = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
+                        int xpForTargetLevel = com.rsring.util.XpHelper.getExperienceLimitOnLevel(targetLevel);
+                        targetTotal += (int) (currentProgress * xpForTargetLevel);
+                        
                         int currentTotal = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
-                        double currentLevels = com.rsring.util.XpHelper.getLevelsForExperience(currentTotal);
-                        double targetLevels = currentLevels + levelsToTake;
-                        int totalXPNeeded = com.rsring.util.XpHelper.convertLevelToXP(targetLevels) - currentTotal;
+                        int totalXPNeeded = targetTotal - currentTotal;
                         if (totalXPNeeded <= 0) break;
 
                         int totalExtracted = 0;
@@ -243,11 +250,23 @@ public class PacketPumpAction implements IMessage {
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
 
-                        int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
-                        double currentLevels = com.rsring.util.XpHelper.getLevelsForExperience(playerTotalXP);
-                        double targetLevels = Math.max(0, currentLevels - levelsToStore);
-                        int targetTotalXP = com.rsring.util.XpHelper.convertLevelToXP(targetLevels);
-                        int totalXPToStore = playerTotalXP - targetTotalXP;
+                        int currentLevel = player.experienceLevel;
+                        float currentProgress = player.experience;
+                        int targetLevel = Math.max(0, currentLevel - levelsToStore);
+                        
+                        // 如果目标等级为 0，存储所有经验
+                        if (targetLevel == 0) {
+                            int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
+                            totalXPToStore = playerTotalXP;
+                        } else {
+                            // 计算目标经验：目标等级的基础经验 + 保持当前进度
+                            int targetTotalXP = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
+                            int xpForTargetLevel = com.rsring.util.XpHelper.getExperienceLimitOnLevel(targetLevel);
+                            targetTotalXP += (int) (currentProgress * xpForTargetLevel);
+                            
+                            int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
+                            totalXPToStore = playerTotalXP - targetTotalXP;
+                        }
                         if (totalXPToStore <= 0) break;
 
                         int totalStored = 0;

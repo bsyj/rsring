@@ -194,9 +194,10 @@ public class PacketPumpAction implements IMessage {
                         int levelsToTake = msg.value > 0 ? msg.value : 1;
                         if (levelsToTake <= 0) break;
 
-                        int currentLevel = player.experienceLevel;
-                        int targetLevel = currentLevel + levelsToTake;
-                        int totalXPNeeded = com.rsring.util.XpHelper.getExperienceBetweenLevels(currentLevel, targetLevel);
+                        int currentTotal = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
+                        double currentLevels = com.rsring.util.XpHelper.getLevelsForExperience(currentTotal);
+                        double targetLevels = currentLevels + levelsToTake;
+                        int totalXPNeeded = com.rsring.util.XpHelper.convertLevelToXP(targetLevels) - currentTotal;
                         if (totalXPNeeded <= 0) break;
 
                         int totalExtracted = 0;
@@ -242,15 +243,11 @@ public class PacketPumpAction implements IMessage {
                         int levelsToStore = msg.value > 0 ? msg.value : 1;
                         if (levelsToStore <= 0) break;
 
-                        int currentLevel = player.experienceLevel;
-                        int targetLevel = Math.max(0, currentLevel - levelsToStore);
-                        int totalXPToStore = com.rsring.util.XpHelper.getExperienceBetweenLevels(targetLevel, currentLevel);
-                        if (totalXPToStore <= 0) break;
-
                         int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
-                        int targetTotalXP = com.rsring.util.XpHelper.getExperienceForLevel(targetLevel);
-                        if (playerTotalXP <= targetTotalXP) break;
-                        totalXPToStore = Math.min(totalXPToStore, playerTotalXP - targetTotalXP);
+                        double currentLevels = com.rsring.util.XpHelper.getLevelsForExperience(playerTotalXP);
+                        double targetLevels = Math.max(0, currentLevels - levelsToStore);
+                        int targetTotalXP = com.rsring.util.XpHelper.convertLevelToXP(targetLevels);
+                        int totalXPToStore = playerTotalXP - targetTotalXP;
                         if (totalXPToStore <= 0) break;
 
                         int totalStored = 0;

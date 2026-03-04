@@ -108,6 +108,31 @@ public class XpHelper {
     }
     
     /**
+     * 将精确等级（包含小数）转换为经验点数
+     * 与 getLevelsForExperience 互为逆运算
+     * 
+     * @param levels 精确等级（包含小数，如 10.2 表示10级20%进度）
+     * @return 对应的经验点数
+     */
+    public static int convertLevelToXP(double levels) {
+        if (levels <= 0) {
+            return 0;
+        }
+        
+        int integerLevel = (int) Math.floor(levels);
+        double fractionalPart = levels - integerLevel;
+        
+        int baseXP = getExperienceForLevel(integerLevel);
+        
+        if (fractionalPart > 0) {
+            int xpForLevel = getExperienceLimitOnLevel(integerLevel);
+            baseXP += (int) Math.round(fractionalPart * xpForLevel);
+        }
+        
+        return baseXP;
+    }
+    
+    /**
      * 计算玩家使用储罐中的经验后能达到的等级
      * 即：玩家当前经验 + 储罐经验 = 总经验，对应的等级
      * 
@@ -242,6 +267,7 @@ public class XpHelper {
     
     /**
      * 从玩家身上提取指定等级数的经验
+     * 保持当前进度的精确性
      * 
      * @param player 玩家实例
      * @param levelsToExtract 要提取的等级数
@@ -252,16 +278,15 @@ public class XpHelper {
             return 0;
         }
         
-        int currentLevel = player.experienceLevel;
-        int targetLevel = Math.max(0, currentLevel - levelsToExtract);
-        
         int currentTotal = getPlayerTotalExperience(player);
-        int targetTotal = getExperienceForLevel(targetLevel);
+        double currentLevels = getLevelsForExperience(currentTotal);
+        double targetLevels = Math.max(0, currentLevels - levelsToExtract);
+        
+        int targetTotal = convertLevelToXP(targetLevels);
         int toExtract = Math.max(0, currentTotal - targetTotal);
         
         if (toExtract > 0) {
-            int actualRemoved = removeExperienceFromPlayer(player, toExtract);
-            return actualRemoved;
+            return removeExperienceFromPlayer(player, toExtract);
         }
         
         return 0;
@@ -269,6 +294,7 @@ public class XpHelper {
     
     /**
      * 向玩家添加指定等级数的经验
+     * 保持当前进度的精确性
      * 
      * @param player 玩家实例
      * @param levelsToAdd 要添加的等级数
@@ -279,11 +305,11 @@ public class XpHelper {
             return 0;
         }
         
-        int currentLevel = player.experienceLevel;
-        int targetLevel = currentLevel + levelsToAdd;
-        
         int currentTotal = getPlayerTotalExperience(player);
-        int targetTotal = getExperienceForLevel(targetLevel);
+        double currentLevels = getLevelsForExperience(currentTotal);
+        double targetLevels = currentLevels + levelsToAdd;
+        
+        int targetTotal = convertLevelToXP(targetLevels);
         int toAdd = Math.max(0, targetTotal - currentTotal);
         
         if (toAdd > 0) {

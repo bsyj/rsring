@@ -1,6 +1,8 @@
 package com.rsring.item;
 
 import com.rsring.capability.IExperiencePumpCapability;
+import com.rsring.experience.ExperiencePumpController;
+import com.rsring.experience.TankScanResult;
 import com.rsring.rsring.RsRingMod;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -181,6 +183,30 @@ public class ItemExperiencePumpController extends Item {
             tooltip.add(TextFormatting.GRAY + "  · 模式: " + getModeText(mode));
             tooltip.add(TextFormatting.GRAY + "  · 保留等级: " + TextFormatting.AQUA + retainLevel);
             tooltip.add(TextFormatting.GRAY + "  · 修补: " + (mending ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭"));
+        }
+
+        // 显示储罐统计信息
+        if (worldIn != null && worldIn.isRemote) {
+            net.minecraft.entity.player.EntityPlayer player = net.minecraft.client.Minecraft.getMinecraft().player;
+            if (player != null) {
+                ExperiencePumpController controller = ExperiencePumpController.getInstance();
+                TankScanResult scanResult = controller.scanAllInventories(player);
+                
+                int totalTanks = scanResult.getTankCount();
+                int totalCapacity = scanResult.getTotalCapacity();
+                int totalStored = scanResult.getTotalStored();
+                
+                int playerXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);
+                double storedLevelsBasedOnPlayer = com.rsring.util.XpHelper.getStoredLevelsRelativeToPlayer(playerXP, totalStored);
+                double storedLevelsFromZero = com.rsring.util.XpHelper.getLevelsForExperience(totalStored);
+                
+                tooltip.add(TextFormatting.GOLD + "储罐统计:");
+                tooltip.add(TextFormatting.GRAY + "  · 总容: " + TextFormatting.YELLOW + totalStored + " / " + totalCapacity + " XP");
+                tooltip.add(TextFormatting.GRAY + "  · 已存等级: " + TextFormatting.LIGHT_PURPLE + String.format("%.1f", storedLevelsBasedOnPlayer) + TextFormatting.DARK_GRAY + " (基于玩家)");
+                tooltip.add(TextFormatting.GRAY + "  · 已存等级: " + TextFormatting.LIGHT_PURPLE + String.format("%.1f", storedLevelsFromZero) + TextFormatting.DARK_GRAY + " (从0开始)");
+                tooltip.add(TextFormatting.GRAY + "  · 玩家: " + TextFormatting.GREEN + playerXP + " XP (" + player.experienceLevel + "级)");
+                tooltip.add(TextFormatting.GRAY + "  · 储罐数: " + TextFormatting.AQUA + totalTanks);
+            }
         }
 
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {

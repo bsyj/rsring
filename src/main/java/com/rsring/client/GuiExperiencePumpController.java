@@ -76,8 +76,10 @@ public class GuiExperiencePumpController extends GuiScreen {
     // 已存等级悬停提示所需的数据
     private double storedLevelsBasedOnPlayer;
     private int storedLevelsBasedOnPlayerY;
+    private int storedLevelsBasedOnPlayerWidth;
     private double storedLevelsFromZero;
     private int storedLevelsFromZeroY;
+    private int storedLevelsFromZeroWidth;
 
     public GuiExperiencePumpController(ItemStack controllerStack, EnumHand hand) {
         this.controllerStack = controllerStack;
@@ -306,20 +308,21 @@ public class GuiExperiencePumpController extends GuiScreen {
         if (player == null) {
             return;
         }
-        // Total capacity used / total (显示为 XP 格式：已用 / 总容量)
+        // Total capacity used / total (显示为 XP 格式：已用 / 总容量）
         String totalCapInfo = String.format("%d / %d XP", totalStored, totalCapacity);
-        // RGB 跑马灯颜色，根据时间变化
+        // RGB 跑马灯颜色，神光同步（与标题的炫酷双重彩虹一致）
         long t = System.currentTimeMillis();
-        int period = 5000; // 周期 ms，比标题慢一点
+        int period = 2000; // 与标题同步：2秒周期
+        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 与标题同步：双重彩虹波动
 
         // 各行分别有相位偏移，形成跑马灯效果
-        int colorLine1 = hsvToRgbInt(((t % period) / (float) period + 0.0f) % 1.0f, 0.9f, 1.0f);
-        int colorLine2 = hsvToRgbInt(((t % period) / (float) period + 0.33f) % 1.0f, 0.9f, 1.0f);
-        int colorLine3 = hsvToRgbInt(((t % period) / (float) period + 0.66f) % 1.0f, 0.9f, 1.0f);
-        int colorLine4 = hsvToRgbInt(((t % period) / (float) period + 0.15f) % 1.0f, 0.9f, 1.0f);
-        int colorLine5 = hsvToRgbInt(((t % period) / (float) period + 0.45f) % 1.0f, 0.9f, 1.0f);
+        int colorLine1 = hsvToRgbInt(((t % period) / (float) period + 0.0f + hueOffset) % 1.0f, 1.0f, 1.0f);
+        int colorLine2 = hsvToRgbInt(((t % period) / (float) period + 0.1f + hueOffset) % 1.0f, 1.0f, 1.0f);
+        int colorLine3 = hsvToRgbInt(((t % period) / (float) period + 0.2f + hueOffset) % 1.0f, 1.0f, 1.0f);
+        int colorLine4 = hsvToRgbInt(((t % period) / (float) period + 0.3f + hueOffset) % 1.0f, 1.0f, 1.0f);
+        int colorLine5 = hsvToRgbInt(((t % period) / (float) period + 0.4f + hueOffset) % 1.0f, 1.0f, 1.0f);
 
-        int startY = guiTop + 82;  // 进度条下方开始
+        int startY = guiTop + 92;  // 进度条下方开始（增加间距）
         int lineSpacing = 12;
 
         // 第一行：总容量
@@ -328,13 +331,17 @@ public class GuiExperiencePumpController extends GuiScreen {
         // 第二行：已存等级（基于玩家当前等级）
         int playerXP = pumpController.getPlayerTotalExperience(player);
         storedLevelsBasedOnPlayer = com.rsring.util.XpHelper.getStoredLevelsRelativeToPlayer(playerXP, totalStored);
-        fontRenderer.drawStringWithShadow("已存等级: " + String.format("%.1f", storedLevelsBasedOnPlayer), guiLeft + 8, startY + lineSpacing, colorLine2);
+        String line2Text = "已存等级: " + String.format("%.1f", storedLevelsBasedOnPlayer);
+        fontRenderer.drawStringWithShadow(line2Text, guiLeft + 8, startY + lineSpacing, colorLine2);
         storedLevelsBasedOnPlayerY = startY + lineSpacing;
+        storedLevelsBasedOnPlayerWidth = fontRenderer.getStringWidth(line2Text);
 
         // 第三行：已存等级（从0级开始计算）
         storedLevelsFromZero = com.rsring.util.XpHelper.getLevelsForExperience(totalStored);
-        fontRenderer.drawStringWithShadow("已存等级: " + String.format("%.1f", storedLevelsFromZero), guiLeft + 8, startY + lineSpacing * 2, colorLine3);
+        String line3Text = "已存等级: " + String.format("%.1f", storedLevelsFromZero);
+        fontRenderer.drawStringWithShadow(line3Text, guiLeft + 8, startY + lineSpacing * 2, colorLine3);
         storedLevelsFromZeroY = startY + lineSpacing * 2;
+        storedLevelsFromZeroWidth = fontRenderer.getStringWidth(line3Text);
 
         // 第四行：玩家当前经验
         String playerXpInfo = pumpController.formatExperienceDisplay(playerXP);
@@ -354,30 +361,66 @@ public class GuiExperiencePumpController extends GuiScreen {
     private void drawXpProgressBar() {
         int barX = guiLeft + 8;
         int barY = guiTop + 68;  // 操作按钮下方，文字上方
-        int barWidth = 160;
-        int barHeight = 12;
+        int barWidth = 160;      // 进度条宽度
+        int barHeight = 16;      // 进度条高度（加高）
 
         // 绘制进度条背景
         drawRect(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
 
         // 计算进度 - 使用总容量
         float progress = totalCapacity > 0 ? (float) totalStored / totalCapacity : 0;
-        int fillWidth = (int) (barWidth * progress);
+        int fillWidth = Math.max(1, (int) (barWidth * progress)); // 至少1像素
 
-        // 绘制进度条填充
-        int fillColor = 0xFF7EFF05; // 绿色 #7EFF05
-        drawRect(barX, barY, barX + fillWidth, barY + barHeight, fillColor);
+        // 绘制进度条填充（带动态效果）
+        if (totalStored > 0) {
+            long t = System.currentTimeMillis();
+            
+            // 基础绿色
+            int baseColor = 0xFF7EFF05;
+            
+            // 动态效果1：光泽流动（从左到右的光带）
+            int shinePos = (int) ((t / 10) % (fillWidth + 40)) - 20;  // 光带位置
+            int shineWidth = 20;  // 光带宽度
+            
+            // 动态效果2：颜色脉冲（亮度周期性变化）
+            float pulse = (float) Math.sin(t / 300.0) * 0.15f + 0.85f;  // 0.7~1.0
+            
+            // 逐像素绘制，实现光泽流动效果
+            for (int x = 0; x < fillWidth; x++) {
+                // 计算当前像素的亮度
+                float brightness = pulse;
+                
+                // 光泽效果：光带经过的地方更亮
+                int distToShine = Math.abs(x - shinePos);
+                if (distToShine < shineWidth) {
+                    float shineIntensity = 1.0f - (float) distToShine / shineWidth;
+                    shineIntensity = shineIntensity * shineIntensity;  // 平滑曲线
+                    brightness += shineIntensity * 0.5f;  // 最多增加50%亮度
+                }
+                
+                // 计算最终颜色
+                int r = (int) Math.min(255, (baseColor >> 16 & 0xFF) * brightness);
+                int g = (int) Math.min(255, (baseColor >> 8 & 0xFF) * brightness);
+                int b = (int) Math.min(255, (baseColor & 0xFF) * brightness);
+                int pixelColor = 0xFF000000 | (r << 16) | (g << 8) | b;
+                
+                drawRect(barX + x, barY, barX + x + 1, barY + barHeight, pixelColor);
+            }
+        }
 
-        // 绘制边框（静态白色底边）
-        drawRect(barX, barY, barX + 1, barY + barHeight, 0xFFFFFFFF);
-        drawRect(barX + barWidth - 1, barY, barX + barWidth, barY + barHeight, 0xFFFFFFFF);
-        drawRect(barX, barY, barX + barWidth, barY + 1, 0xFFFFFFFF);
-        drawRect(barX, barY + barHeight - 1, barX + barWidth, barY + barHeight, 0xFFFFFFFF);
+        // 绘制边框（灰色边框）
+        int borderColor = 0xFF888888;
+        drawRect(barX, barY, barX + 1, barY + barHeight, borderColor); // 左边框
+        drawRect(barX + barWidth - 1, barY, barX + barWidth, barY + barHeight, borderColor); // 右边框
+        drawRect(barX, barY, barX + barWidth, barY + 1, borderColor); // 上边框
+        drawRect(barX, barY + barHeight - 1, barX + barWidth, barY + barHeight, borderColor); // 下边框
 
         // 跑马灯流星效果 - 双流星沿边框循环移动
         long t = System.currentTimeMillis();
         int perimeter = 2 * (barWidth + barHeight); // 边框周长
-        int meteorLength = 30; // 流星长度（更长更明显）
+        int meteorLength = 25; // 流星长度
+        int period = 2000; // 与标题同步：2秒周期
+        float hueOffset = (float)Math.sin(t / 500.0) * 0.1f; // 与标题同步：双重彩虹波动
 
         // 绘制两个流星（相位差半周）
         for (int meteor = 0; meteor < 2; meteor++) {
@@ -408,15 +451,26 @@ public class GuiExperiencePumpController extends GuiScreen {
                     my = barY + barHeight - (pos - 2 * barWidth - barHeight) - 1;
                 }
 
-                // 流星渐变颜色（RGB动态 + 头部亮尾部暗）
-                float brightness = 1.0f - (float) i / meteorLength;
-                // 色相随时间循环变化，参考字体的RGB效果
-                int period = 3000; // 周期 ms
-                float meteorHue = ((t % period) / (float) period + i * 0.01f + meteor * 0.5f) % 1.0f;
-                int meteorColor = hsvToRgbInt(meteorHue, 1.0f, brightness);
+                // 头大尾小效果：头部亮，尾部融入边框背景
+                float meteorProgress = (float) i / meteorLength;
+                // 使用更陡的曲线，让尾巴快速消失
+                float alpha = 1.0f - meteorProgress * meteorProgress * meteorProgress; // 立方曲线
 
-                // 绘制流星像素（加粗：绘制2x2像素块）
-                drawRect(mx, my, mx + 2, my + 2, meteorColor);
+                // RGB色相与标题同步，双重彩虹波动，两个流星色相错开
+                float meteorHue = ((t % period) / (float) period + meteor * 0.5f + hueOffset) % 1.0f;
+                int meteorColor = hsvToRgbInt(meteorHue, 1.0f, 1.0f);
+
+                // 边框背景色（灰色）
+                int bgColor = 0xFF888888;
+
+                // 颜色混合：尾部逐渐融入背景色
+                int r = (int) ((((meteorColor >> 16) & 0xFF) * alpha) + (((bgColor >> 16) & 0xFF) * (1.0f - alpha)));
+                int g = (int) ((((meteorColor >> 8) & 0xFF) * alpha) + (((bgColor >> 8) & 0xFF) * (1.0f - alpha)));
+                int b = (int) (((meteorColor & 0xFF) * alpha) + ((bgColor & 0xFF) * (1.0f - alpha)));
+                int blendedColor = 0xFF000000 | (r << 16) | (g << 8) | b;
+
+                // 绘制单像素流星
+                drawRect(mx, my, mx + 1, my + 1, blendedColor);
             }
         }
     }
@@ -448,14 +502,14 @@ public class GuiExperiencePumpController extends GuiScreen {
      * Draws hover tips for buttons and stored level lines
      */
     private void drawHoverTips(int mouseX, int mouseY) {
-        // 检查是否悬停在"已存等级（基于玩家）"行上
-        if (isMouseOverLine(mouseX, mouseY, storedLevelsBasedOnPlayerY)) {
+        // 检查是否悬停在"已存等级（基于玩家）"文字上
+        if (isMouseOverText(mouseX, mouseY, storedLevelsBasedOnPlayerY, storedLevelsBasedOnPlayerWidth)) {
             drawHoveringText(java.util.Arrays.asList("基于玩家: 玩家使用储罐经验后能升的等级"), mouseX, mouseY, fontRenderer);
             return;
         }
 
-        // 检查是否悬停在"已存等级（从0开始）"行上
-        if (isMouseOverLine(mouseX, mouseY, storedLevelsFromZeroY)) {
+        // 检查是否悬停在"已存等级（从0开始）"文字上
+        if (isMouseOverText(mouseX, mouseY, storedLevelsFromZeroY, storedLevelsFromZeroWidth)) {
             drawHoveringText(java.util.Arrays.asList("从0开始: 储罐经验相当于从0级升到的等级"), mouseX, mouseY, fontRenderer);
             return;
         }
@@ -528,6 +582,18 @@ public class GuiExperiencePumpController extends GuiScreen {
         int lineTop = lineY;
         int lineBottom = lineY + 10;  // 行高约10像素
         return mouseX >= lineLeft && mouseX <= lineRight && mouseY >= lineTop && mouseY <= lineBottom;
+    }
+
+    /**
+     * 检查鼠标是否悬停在指定文字区域上
+     */
+    private boolean isMouseOverText(int mouseX, int mouseY, int textY, int textWidth) {
+        if (textY <= 0 || textWidth <= 0) return false;
+        int textLeft = guiLeft + 8;
+        int textRight = guiLeft + 8 + textWidth;
+        int textTop = textY;
+        int textBottom = textY + 10;
+        return mouseX >= textLeft && mouseX <= textRight && mouseY >= textTop && mouseY <= textBottom;
     }
 
     private String getMendingButtonText() {

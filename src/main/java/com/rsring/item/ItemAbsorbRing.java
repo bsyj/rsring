@@ -80,9 +80,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "功能特点:");
-        tooltip.add(TextFormatting.GRAY + "  - 吸收附近的掉落物到绑定的目标");
+        tooltip.add(TextFormatting.GRAY + "  - 吸收附近的掉落物进入绑定的目标");
         tooltip.add(TextFormatting.GRAY + "  - 支持白名单/黑名单过滤");
         tooltip.add(TextFormatting.GRAY + "  - 每次吸收消耗能量");
+        tooltip.add(TextFormatting.GRAY + "  - 密封模式：防止外部能量系统充能");
 
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "使用方法:");
@@ -90,6 +91,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         tooltip.add(TextFormatting.GRAY + "  2. 潜行右键rs控制器/箱子绑定");
         tooltip.add(TextFormatting.GRAY + "  3. 按K键切换吸收开关");
         tooltip.add(TextFormatting.GRAY + "  4. 可在背包/饰品槽中使用");
+        tooltip.add(TextFormatting.GRAY + "  5. 工作台放戒指切换密封模式");
 
         // 显示绑定目标类型
         if (cap.isBound() && worldIn != null) {

@@ -169,8 +169,8 @@ public class XpHelper {
     public static int getPlayerTotalExperience(EntityPlayer player) {
         // 当前等级对应的总经验
         int currentLevelPoints = getExperienceForLevel(player.experienceLevel);
-        // 当前等级进度对应的经验
-        int partialLevelPoints = (int) (player.experience * player.xpBarCap());
+        // 当前等级进度对应的经验（使用四舍五入避免精度丢失）
+        int partialLevelPoints = Math.round(player.experience * player.xpBarCap());
         return currentLevelPoints + partialLevelPoints;
     }
     

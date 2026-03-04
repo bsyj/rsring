@@ -254,6 +254,8 @@ public class PacketPumpAction implements IMessage {
                         float currentProgress = player.experience;
                         int targetLevel = Math.max(0, currentLevel - levelsToStore);
                         
+                        int totalXPToStore;
+                        
                         // 如果目标等级为 0，存储所有经验
                         if (targetLevel == 0) {
                             int playerTotalXP = com.rsring.util.XpHelper.getPlayerTotalExperience(player);

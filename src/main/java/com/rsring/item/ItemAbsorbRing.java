@@ -21,6 +21,7 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.energy.IEnergyStorage;
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
+import com.rsring.filter.FilterMode;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -440,6 +441,20 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
     private boolean shouldFilterItem(IRsRingCapability capability, ItemStack itemStack) {
         boolean isWhitelistMode = capability.isWhitelistMode();
+        FilterMode filterMode = capability.getFilterMode();
+        
+        switch (filterMode) {
+            case MOD:
+                return shouldFilterByMod(capability, itemStack, isWhitelistMode);
+            case ATTRIBUTE:
+                return shouldFilterByAttribute(capability, itemStack, isWhitelistMode);
+            case ITEM:
+            default:
+                return shouldFilterByItem(capability, itemStack, isWhitelistMode);
+        }
+    }
+    
+    private boolean shouldFilterByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
         String itemName = itemStack.getItem().getRegistryName().toString();
         boolean isInList = isInDefaultList(itemName, isWhitelistMode);
 
@@ -456,6 +471,78 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             return isInList;
         }
+    }
+    
+    private boolean shouldFilterByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
+        String itemModId = itemStack.getItem().getRegistryName().getNamespace();
+        List<String> filterMods = capability.getFilterMods();
+        
+        // 检查是否在模组过滤列表中
+        boolean isInList = false;
+        for (String modId : filterMods) {
+            if (modId != null && !modId.isEmpty() && modId.equals(itemModId)) {
+                isInList = true;
+                break;
+            }
+        }
+        
+        // 如果没有配置模组过滤，检查槽位中的物品所属模组
+        if (!isInList) {
+            for (int i = 0; i < 9; i++) {
+                String filterName = capability.getFilterSlot(i);
+                if (filterName != null && !filterName.isEmpty()) {
+                    // 从物品ID提取模组ID
+                    String filterModId = filterName.contains(":") ? 
+                        filterName.substring(0, filterName.indexOf(":")) : "minecraft";
+                    if (filterModId.equals(itemModId)) {
+                        isInList = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (isWhitelistMode) {
+            return !isInList;
+        } else {
+            return isInList;
+        }
+    }
+    
+    private boolean shouldFilterByAttribute(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
+        // 属性过滤模式：检查物品是否匹配槽位中的物品（包括NBT）
+        boolean isInList = false;
+        
+        for (int i = 0; i < 9; i++) {
+            String filterName = capability.getFilterSlot(i);
+            if (filterName != null && !filterName.isEmpty()) {
+                // 解析过滤项：格式为 "modid:itemid" 或 "modid:itemid{nbttag}"
+                if (matchesItemWithNBT(filterName, itemStack)) {
+                    isInList = true;
+                    break;
+                }
+            }
+        }
+        
+        if (isWhitelistMode) {
+            return !isInList;
+        } else {
+            return isInList;
+        }
+    }
+    
+    private boolean matchesItemWithNBT(String filterName, ItemStack itemStack) {
+        String itemName = itemStack.getItem().getRegistryName().toString();
+        
+        // 简单匹配：只比较物品ID
+        if (filterName.equals(itemName)) {
+            return true;
+        }
+        
+        // TODO: 实现NBT匹配逻辑
+        // 如果filterName包含NBT数据，需要解析并比较
+        
+        return false;
     }
 
     private boolean hasAnyDefaultFilter(boolean whitelistMode) {

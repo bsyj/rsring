@@ -117,6 +117,10 @@ public class RsRingMod
         network.registerMessage(com.rsring.network.PacketSyncTankSlots.Handler.class, com.rsring.network.PacketSyncTankSlots.class, 5, Side.CLIENT);
         // Register packet for opening ring filter GUI
         network.registerMessage(com.rsring.network.PacketOpenRingGui.Handler.class, com.rsring.network.PacketOpenRingGui.class, 6, Side.SERVER);
+        // Register packet for syncing capability from server -> client
+        network.registerMessage(com.rsring.network.PacketSyncCapabilityToClient.Handler.class, com.rsring.network.PacketSyncCapabilityToClient.class, 7, Side.CLIENT);
+        // Register packet for syncing advanced filter from client -> server
+        network.registerMessage(com.rsring.network.PacketSyncAdvancedFilter.Handler.class, com.rsring.network.PacketSyncAdvancedFilter.class, 8, Side.SERVER);
     }
 
     @EventHandler

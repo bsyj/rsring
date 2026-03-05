@@ -4,6 +4,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraft.item.ItemStack;
+import com.rsring.filter.FilterMode;
+import com.rsring.filter.ItemAttribute;
+import com.rsring.util.Pair;
 import java.util.List;
 
 public interface IRsRingCapability {
@@ -39,4 +42,18 @@ public interface IRsRingCapability {
     // 密封状态：密封后无法接受外部充电
     boolean isSealed();
     void setSealed(boolean sealed);
+
+    // 高级过滤模式
+    FilterMode getFilterMode();
+    void setFilterMode(FilterMode mode);
+
+    boolean isMatchAllMode();
+    void setMatchAllMode(boolean matchAll);
+
+    List<Pair<ItemAttribute, Boolean>> getFilterAttributes();
+    void addFilterAttribute(ItemAttribute attr, boolean inverted);
+
+    List<String> getFilterMods();
+    void addFilterMod(String modId);
+    void removeFilterMod(String modId);
 }

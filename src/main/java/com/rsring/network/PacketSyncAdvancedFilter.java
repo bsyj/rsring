@@ -6,6 +6,7 @@ import com.rsring.filter.FilterMode;
 import com.rsring.filter.ItemAttribute;
 import com.rsring.util.Pair;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -197,14 +198,22 @@ public class PacketSyncAdvancedFilter implements IMessage {
                 
                 RsRingCapability.syncCapabilityToStack(stack, cap);
                 
+                // 标记物品栏为脏，触发同步到客户端
+                EntityPlayerMP player = ctx.getServerHandler().player;
+                player.inventory.markDirty();
+                
                 // 标记 Baubles 为脏
                 try {
-                    com.rsring.service.RingDetectionService.markBaublesDirtyIfNeeded(
-                        ctx.getServerHandler().player
-                    );
+                    com.rsring.service.RingDetectionService.markBaublesDirtyIfNeeded(player);
                 } catch (Throwable t) {
                     // 忽略错误
                 }
+                
+                // 发送同步数据包回客户端
+                com.rsring.rsring.RsRingMod.network.sendTo(
+                    new PacketSyncCapabilityToClient(cap),
+                    player
+                );
             });
             return null;
         }

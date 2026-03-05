@@ -75,12 +75,23 @@ public class PacketSyncRingFilter implements IMessage {
                     cap.setFilterSlot(i, msg.slots[i] == null ? "" : msg.slots[i]);
                 }
                 RsRingCapability.syncCapabilityToStack(stack, cap);
+                
+                // 标记物品栏为脏，触发同步到客户端
+                player.inventory.markDirty();
+                
                 // 如果指定戒指在 Baubles 饰品栏，需要标记 Baubles 为脏（修改）以便同步
                 try {
                     com.rsring.service.RingDetectionService.markBaublesDirtyIfNeeded(player);
                 } catch (Throwable t) {
                     // 忽略任何错误，不影响主流程
                 }
+                
+                // 发送同步数据包回客户端
+                com.rsring.rsring.RsRingMod.network.sendTo(
+                    new com.rsring.network.PacketSyncCapabilityToClient(cap),
+                    player
+                );
+                
                 // 不同步时不发聊天提示，避免放一个物品就刷屏
             });
             return null;

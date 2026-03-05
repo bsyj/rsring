@@ -28,6 +28,9 @@ package com.rsring.client;
 
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
+import com.rsring.filter.FilterMode;
+import com.rsring.filter.ItemAttribute;
+import com.rsring.util.Pair;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -38,6 +41,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 物品吸收戒指过滤器GUI界面，继承自GuiContainer
@@ -52,6 +57,8 @@ private static final int PAD = 8;
     private static final int SLOT_COUNT = 9;
     private static final int TOGGLE_BTN_WIDTH = 20;
     private static final int TOGGLE_BTN_HEIGHT = 20;
+    private static final int FILTER_MODE_BTN_WIDTH = 20;
+    private static final int FILTER_MODE_BTN_HEIGHT = 20;
 
     private static final int SLOTX_START = PAD;
     private static final int SLOTY = SQ + PAD * 4;
@@ -64,6 +71,10 @@ private static final int PAD = 8;
     private final ItemStack ringStack;
     private final String title;
     private IRsRingCapability capability;
+    
+    // 点击冷却时间（毫秒）
+    private static final long CLICK_COOLDOWN = 200;
+    private long lastButtonClickTime = 0;
 
     public GuiRingFilterContainer(ContainerRingFilter container, ItemStack ringStack, String title) {
         super(container);
@@ -80,7 +91,8 @@ private static final int PAD = 8;
     }
 
     private void refreshCapability() {
-        if (capability == null) capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        // 总是重新获取 capability，确保获取最新的数据
+        capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
     }
 
     private boolean isCustomFiltersAllowed() {
@@ -216,10 +228,12 @@ String titleText = title;
 
     private void drawCustomButtons(int mouseX, int mouseY) {
         if (capability == null) return;
-        int x = 150;
-        int y = PAD / 2;
+        
+        // 绘制过滤模式切换按钮
+        int filterModeBtnX = 126;
+        int filterModeBtnY = PAD / 2;
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        int hoverState = isMouseOverButton(mouseX, mouseY, x, y) ? 2 : 1;
+        int filterModeHoverState = isMouseOverFilterModeButton(mouseX, mouseY, filterModeBtnX, filterModeBtnY) ? 2 : 1;
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(
             GlStateManager.SourceFactor.SRC_ALPHA,
@@ -228,23 +242,64 @@ String titleText = title;
             GlStateManager.DestFactor.ZERO);
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         this.mc.getTextureManager().bindTexture(VANILLA_BUTTON_TEXTURE);
+        this.drawTexturedModalRect(filterModeBtnX, filterModeBtnY, 0, 46 + filterModeHoverState * 20, FILTER_MODE_BTN_WIDTH / 2, FILTER_MODE_BTN_HEIGHT);
+        this.drawTexturedModalRect(filterModeBtnX + FILTER_MODE_BTN_WIDTH / 2, filterModeBtnY, 200 - FILTER_MODE_BTN_WIDTH / 2, 46 + filterModeHoverState * 20, FILTER_MODE_BTN_WIDTH / 2, FILTER_MODE_BTN_HEIGHT);
+        
+        // 绘制过滤模式图标
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        this.mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
+        FilterMode currentMode = capability.getFilterMode();
+        int modeIconIndex = getFilterModeIconIndex(currentMode);
+        int modeIconSize = 16;
+        int texX = modeIconIndex * modeIconSize;
+        int texY = 0;
+        if (texX > 240) {
+            texY = (texX / 256) * modeIconSize;
+            texX = texX % 256;
+        }
+        this.drawTexturedModalRect(filterModeBtnX + 2, filterModeBtnY + 2, texX, texY, modeIconSize, modeIconSize);
+        
+        // 绘制黑白名单切换按钮
+        int x = 150;
+        int y = PAD / 2;
+        int hoverState = isMouseOverButton(mouseX, mouseY, x, y) ? 2 : 1;
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        this.mc.getTextureManager().bindTexture(VANILLA_BUTTON_TEXTURE);
         this.drawTexturedModalRect(x, y, 0, 46 + hoverState * 20, TOGGLE_BTN_WIDTH / 2, TOGGLE_BTN_HEIGHT);
         this.drawTexturedModalRect(x + TOGGLE_BTN_WIDTH / 2, y, 200 - TOGGLE_BTN_WIDTH / 2, 46 + hoverState * 20, TOGGLE_BTN_WIDTH / 2, TOGGLE_BTN_HEIGHT);
-        this.mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        this.mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
         int textureIndex = capability.isWhitelistMode() ? 12 : 11;
-        int sizeBtnTexture = 16;
-        int texX = textureIndex * sizeBtnTexture;
-        int texY = 0;
+        int btnIconSize = 16;
+        int texX2 = textureIndex * btnIconSize;
+        int texY2 = 0;
         if (textureIndex > 15) {
-            texY = (textureIndex / 15) * sizeBtnTexture;
+            texY2 = (textureIndex / 15) * btnIconSize;
         }
-        this.drawTexturedModalRect(x + 2, y + 2, texX, texY, sizeBtnTexture, sizeBtnTexture);
+        this.drawTexturedModalRect(x + 2, y + 2, texX2, texY2, btnIconSize, btnIconSize);
     }
 
     private boolean isMouseOverButton(int mouseX, int mouseY, int btnX, int btnY) {
         return mouseX >= btnX && mouseX < btnX + TOGGLE_BTN_WIDTH &&
                mouseY >= btnY && mouseY < btnY + TOGGLE_BTN_HEIGHT;
+    }
+
+    private boolean isMouseOverFilterModeButton(int mouseX, int mouseY, int btnX, int btnY) {
+        return mouseX >= btnX && mouseX < btnX + FILTER_MODE_BTN_WIDTH &&
+               mouseY >= btnY && mouseY < btnY + FILTER_MODE_BTN_HEIGHT;
+    }
+
+    private int getFilterModeIconIndex(FilterMode mode) {
+        switch (mode) {
+            case ITEM:
+                return 0;
+            case MOD:
+                return 1;
+            case ATTRIBUTE:
+                return 2;
+            default:
+                return 0;
+        }
     }
 
     private void drawCustomTooltips(int mouseX, int mouseY) {
@@ -276,6 +331,51 @@ String titleText = title;
                 return;
             }
         }
+        
+        // 过滤模式按钮 tooltip
+        int filterModeBtnX = 126;
+        int filterModeBtnY = PAD / 2;
+        if (isMouseOverFilterModeButton(relativeX, relativeY, filterModeBtnX, filterModeBtnY)) {
+            if (!customAllowed) {
+                java.util.List<String> tooltip = new java.util.ArrayList<>();
+                tooltip.add(TextFormatting.RED + "Locked by config");
+                this.drawHoveringText(tooltip, mouseX, mouseY);
+                return;
+            }
+
+            long t = System.currentTimeMillis();
+            int period = 2000;
+            float hue = ((t % period) / (float) period) % 1.0f;
+
+            java.util.List<String> tooltip = new java.util.ArrayList<>();
+            FilterMode mode = capability.getFilterMode();
+            String modeText = getFilterModeDisplayName(mode);
+
+            net.minecraft.util.text.TextFormatting[] colors = {
+                net.minecraft.util.text.TextFormatting.RED,
+                net.minecraft.util.text.TextFormatting.GOLD,
+                net.minecraft.util.text.TextFormatting.YELLOW,
+                net.minecraft.util.text.TextFormatting.GREEN,
+                net.minecraft.util.text.TextFormatting.AQUA,
+                net.minecraft.util.text.TextFormatting.BLUE,
+                net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
+                net.minecraft.util.text.TextFormatting.DARK_PURPLE
+            };
+
+            int colorIndex = (int)(hue * colors.length) % colors.length;
+            net.minecraft.util.text.TextFormatting modeColor = colors[colorIndex];
+
+            int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+            net.minecraft.util.text.TextFormatting hintColor = colors[hintColorIndex];
+
+            tooltip.add(modeColor + modeText);
+            tooltip.add(hintColor + "点击切换过滤方式");
+
+            this.drawHoveringText(tooltip, mouseX, mouseY);
+            return;
+        }
+        
+        // 黑白名单按钮 tooltip
         int btnX = 150;
         int btnY = PAD / 2;
         if (isMouseOverButton(relativeX, relativeY, btnX, btnY)) {
@@ -317,19 +417,89 @@ String titleText = title;
         }
     }
 
+    private String getFilterModeDisplayName(FilterMode mode) {
+        switch (mode) {
+            case ITEM:
+                return "物品 ID 过滤";
+            case MOD:
+                return "模组过滤";
+            case ATTRIBUTE:
+                return "属性过滤";
+            default:
+                return "物品 ID 过滤";
+        }
+    }
+
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         refreshCapability();
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (capability == null) return;
+        
         int relativeX = mouseX - this.guiLeft;
         int relativeY = mouseY - this.guiTop;
+        
+        // 处理过滤模式按钮点击
+        int filterModeBtnX = 126;
+        int filterModeBtnY = PAD / 2;
+        if (isMouseOverFilterModeButton(relativeX, relativeY, filterModeBtnX, filterModeBtnY)) {
+            if (!isCustomFiltersAllowed()) {
+                return;
+            }
+            // 检查点击冷却时间
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastButtonClickTime < CLICK_COOLDOWN) {
+                return; // 冷却中，忽略点击
+            }
+            lastButtonClickTime = currentTime; // 记录点击时间
+            FilterMode currentMode = capability.getFilterMode();
+            FilterMode newMode = currentMode.next();
+            capability.setFilterMode(newMode);
+            String newModeText = getFilterModeDisplayName(newMode);
+
+            this.mc.player.sendMessage(new net.minecraft.util.text.TextComponentString(
+                net.minecraft.util.text.TextFormatting.GOLD + "已切换过滤方式：" +
+                net.minecraft.util.text.TextFormatting.AQUA + newModeText
+            ));
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            
+            // 构建完整的数据包
+            String[] itemSlots = new String[9];
+            String[] modSlots = new String[9];
+            for (int i = 0; i < 9; i++) {
+                itemSlots[i] = capability.getFilterSlot(i);
+            }
+            List<String> mods = capability.getFilterMods();
+            for (int i = 0; i < Math.min(9, mods.size()); i++) {
+                modSlots[i] = mods.get(i);
+            }
+            List<Pair<ItemAttribute, Boolean>> attrs = capability.getFilterAttributes();
+            
+            com.rsring.rsring.RsRingMod.network.sendToServer(
+                new com.rsring.network.PacketSyncAdvancedFilter(
+                    capability.getFilterMode(),
+                    capability.isWhitelistMode(),
+                    capability.isMatchAllMode(),
+                    itemSlots,
+                    modSlots,
+                    attrs
+                ));
+            return;
+        }
+        
+        // 处理黑白名单按钮点击
         int btnX = 150;
         int btnY = PAD / 2;
         if (isMouseOverButton(relativeX, relativeY, btnX, btnY)) {
             if (!isCustomFiltersAllowed()) {
                 return;
             }
+            // 检查点击冷却时间
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastButtonClickTime < CLICK_COOLDOWN) {
+                return; // 冷却中，忽略点击
+            }
+            lastButtonClickTime = currentTime; // 记录点击时间
             boolean oldMode = capability.isWhitelistMode();
             capability.setWhitelistMode(!oldMode);
             String newModeText = capability.isWhitelistMode() ? "白名单" : "黑名单";
@@ -391,6 +561,15 @@ String titleText = title;
             return;
         }
         super.keyTyped(typedChar, keyCode);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
+        // 关闭 GUI 时同步 capability 数据到物品 NBT
+        if (capability != null && ringStack != null) {
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+        }
     }
 
     @Override

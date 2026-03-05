@@ -13,6 +13,11 @@ import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.DimensionManager;
+import com.rsring.filter.FilterMode;
+import com.rsring.filter.ItemAttribute;
+import com.rsring.util.Pair;
+import com.rsring.config.RsRingConfig;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -28,6 +33,11 @@ public class RsRingCapability implements IRsRingCapability {
     private List<String> blacklistItems = new ArrayList<>();
     private boolean whitelistMode = !com.rsring.config.RsRingConfig.absorbRing.useBlacklistModeByDefault;
     private boolean sealed = com.rsring.config.RsRingConfig.absorbRing.blockExternalCharging;
+
+    private FilterMode filterMode = FilterMode.ITEM;
+    private boolean matchAllMode = false;
+    private List<Pair<ItemAttribute, Boolean>> filterAttributes = new ArrayList<>();
+    private List<String> filterMods = new ArrayList<>();
 
     // Constructor
     public RsRingCapability() {
@@ -283,6 +293,58 @@ public class RsRingCapability implements IRsRingCapability {
         this.sealed = sealed;
     }
 
+    @Override
+    public FilterMode getFilterMode() {
+        return this.filterMode;
+    }
+
+    @Override
+    public void setFilterMode(FilterMode mode) {
+        this.filterMode = mode;
+    }
+
+    @Override
+    public boolean isMatchAllMode() {
+        return this.matchAllMode;
+    }
+
+    @Override
+    public void setMatchAllMode(boolean matchAll) {
+        this.matchAllMode = matchAll;
+    }
+
+    @Override
+    public List<Pair<ItemAttribute, Boolean>> getFilterAttributes() {
+        return new ArrayList<>(this.filterAttributes);
+    }
+
+    @Override
+    public void addFilterAttribute(ItemAttribute attr, boolean inverted) {
+        if (!allowCustomFilters()) return;
+        if (attr != null) {
+            this.filterAttributes.add(Pair.of(attr, inverted));
+        }
+    }
+
+    @Override
+    public List<String> getFilterMods() {
+        return new ArrayList<>(this.filterMods);
+    }
+
+    @Override
+    public void addFilterMod(String modId) {
+        if (!allowCustomFilters()) return;
+        if (modId != null && !this.filterMods.contains(modId)) {
+            this.filterMods.add(modId);
+        }
+    }
+
+    @Override
+    public void removeFilterMod(String modId) {
+        if (!allowCustomFilters()) return;
+        this.filterMods.remove(modId);
+    }
+
     public static class RsRingStorage implements Capability.IStorage<IRsRingCapability> {
         @Override
         public NBTBase writeNBT(Capability<IRsRingCapability> capability, IRsRingCapability instance, EnumFacing side) {
@@ -301,11 +363,33 @@ public class RsRingCapability implements IRsRingCapability {
 
             tag.setBoolean("whitelistMode", cap.whitelistMode);
             tag.setBoolean("sealed", cap.sealed);
+            
+            // 保存高级过滤数据
+            tag.setString("filterMode", cap.filterMode.getName());
+            tag.setBoolean("matchAllMode", cap.matchAllMode);
+            
             net.minecraft.nbt.NBTTagList blacklistList = new net.minecraft.nbt.NBTTagList();
             for (String item : cap.blacklistItems) {
                 blacklistList.appendTag(new net.minecraft.nbt.NBTTagString(item));
             }
             tag.setTag("blacklistItems", blacklistList);
+            
+            // 保存模组过滤列表
+            net.minecraft.nbt.NBTTagList modList = new net.minecraft.nbt.NBTTagList();
+            for (String modId : cap.filterMods) {
+                modList.appendTag(new net.minecraft.nbt.NBTTagString(modId));
+            }
+            tag.setTag("filterMods", modList);
+            
+            // 保存属性过滤列表
+            net.minecraft.nbt.NBTTagList attrList = new net.minecraft.nbt.NBTTagList();
+            for (Pair<ItemAttribute, Boolean> pair : cap.filterAttributes) {
+                NBTTagCompound attrTag = new NBTTagCompound();
+                pair.getKey().writeNBT(attrTag);
+                attrTag.setBoolean("inverted", pair.getValue());
+                attrList.appendTag(attrTag);
+            }
+            tag.setTag("filterAttributes", attrList);
 
             return tag;
         }
@@ -331,6 +415,36 @@ public class RsRingCapability implements IRsRingCapability {
                 cap.whitelistMode = getConfiguredWhitelistMode();
             }
             cap.sealed = tag.getBoolean("sealed");
+            
+            // 读取高级过滤数据
+            if (tag.hasKey("filterMode")) {
+                cap.filterMode = FilterMode.fromName(tag.getString("filterMode"));
+            }
+            cap.matchAllMode = tag.getBoolean("matchAllMode");
+            
+            // 读取模组过滤列表
+            cap.filterMods.clear();
+            if (tag.hasKey("filterMods")) {
+                net.minecraft.nbt.NBTTagList modList = tag.getTagList("filterMods", 8);
+                for (int i = 0; i < modList.tagCount(); i++) {
+                    cap.filterMods.add(modList.getStringTagAt(i));
+                }
+            }
+            
+            // 读取属性过滤列表
+            cap.filterAttributes.clear();
+            if (tag.hasKey("filterAttributes")) {
+                net.minecraft.nbt.NBTTagList attrList = tag.getTagList("filterAttributes", 10);
+                for (int i = 0; i < attrList.tagCount(); i++) {
+                    NBTTagCompound attrTag = attrList.getCompoundTagAt(i);
+                    ItemAttribute attr = ItemAttribute.fromNBT(attrTag);
+                    boolean inverted = attrTag.getBoolean("inverted");
+                    if (attr != null) {
+                        cap.filterAttributes.add(Pair.of(attr, inverted));
+                    }
+                }
+            }
+            
             if (tag.hasKey("blacklistItems")) {
                 net.minecraft.nbt.NBTTagList blacklistList =
 tag.getTagList("blacklistItems", 8); // 8 = String tag

@@ -25,6 +25,8 @@ public class ExperienceTankConfig implements IHasConfig {
         public double xpToBottleEfficiency = 1.0;
         public double xpMendingEfficiency = 1.0;
         public boolean enableSMECompatibility = true;
+        // 严格模式：只有戴在饰品栏才能使用，默认为false
+        public boolean strictMode = false;
     }
 
     public static class ControllerConfig {
@@ -163,6 +165,12 @@ public class ExperienceTankConfig implements IHasConfig {
             true,
             "config.rsring.tank.enableSMECompatibility",
             "config.rsring.tank.enableSMECompatibility");
+
+        tank.strictMode = config.getBoolean("strictMode",
+            RsRingMod.MODID + ".tank",
+            false,
+            "config.rsring.tank.strictMode",
+            "config.rsring.tank.strictMode.comment");
 
         controller.maxManagedTanks = config.getInt("maxManagedTanks",
             RsRingMod.MODID + ".controller",

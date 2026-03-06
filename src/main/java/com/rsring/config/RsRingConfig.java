@@ -27,9 +27,27 @@ public class RsRingConfig implements IHasConfig {
         public double energyCostMultiplier = 1.0;
         public int manualChargeAmount = 1000;
         public boolean blockExternalCharging = true;
+        // 严格模式：只有戴在饰品栏才能使用，默认为false
+        public boolean strictMode = false;
+    }
+    
+    /**
+     * 销毁模式配置类
+     * 包含销毁模式的默认黑白名单配置
+     */
+    public static class DestroyModeConfig {
+        // 默认销毁黑名单物品列表
+        public String[] defaultBlacklistItems = new String[]{};
+        // 默认销毁白名单物品列表
+        public String[] defaultWhitelistItems = new String[]{};
+        // 默认是否使用黑名单模式
+        public boolean useBlacklistModeByDefault = true;
+        // 强制销毁模式只能使用白名单（安全选项）
+        public boolean whitelistOnly = true;
     }
 
     public static AbsorbRingConfig absorbRing = new AbsorbRingConfig();
+    public static DestroyModeConfig destroyMode = new DestroyModeConfig();
 
     /**
      * 同步配置方法，用于从配置文件中读取并设置吸收戒指的各项参数
@@ -124,6 +142,39 @@ public class RsRingConfig implements IHasConfig {
             true,
             "config.rsring.ring.blockExternalCharging",
             "config.rsring.ring.blockExternalCharging.comment");
+        
+        absorbRing.strictMode = config.getBoolean("strictMode",
+            RsRingMod.MODID + ".ring",
+            false,
+            "config.rsring.ring.strictMode",
+            "config.rsring.ring.strictMode.comment");
+        
+        // ==================== 销毁模式配置（放在吸收戒指设置下）====================
+        destroyMode.defaultBlacklistItems = config.getStringList("destroyDefaultBlacklistItems",
+            RsRingMod.MODID + ".ring",
+            new String[]{},
+            "config.rsring.ring.destroyDefaultBlacklistItems",
+            null,
+            "config.rsring.ring.destroyDefaultBlacklistItems");
+        
+        destroyMode.defaultWhitelistItems = config.getStringList("destroyDefaultWhitelistItems",
+            RsRingMod.MODID + ".ring",
+            new String[]{},
+            "config.rsring.ring.destroyDefaultWhitelistItems",
+            null,
+            "config.rsring.ring.destroyDefaultWhitelistItems");
+        
+        destroyMode.useBlacklistModeByDefault = config.getBoolean("destroyUseBlacklistModeByDefault",
+            RsRingMod.MODID + ".ring",
+            true,
+            "config.rsring.ring.destroyUseBlacklistModeByDefault",
+            "config.rsring.ring.destroyUseBlacklistModeByDefault");
+        
+        destroyMode.whitelistOnly = config.getBoolean("destroyWhitelistOnly",
+            RsRingMod.MODID + ".ring",
+            true,
+            "config.rsring.ring.destroyWhitelistOnly",
+            "config.rsring.ring.destroyWhitelistOnly");
     }
 
     public static boolean validateConfig() {

@@ -144,4 +144,9 @@ public enum StandardTraits implements ItemAttribute {
     public String getNBTKey() {
         return "standard_trait";
     }
+    
+    @Override
+    public boolean canRead(net.minecraft.nbt.NBTTagCompound nbt) {
+        return nbt.hasKey("standard_trait");
+    }
 }

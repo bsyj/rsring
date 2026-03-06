@@ -34,7 +34,13 @@ config.rsring.ring.initialEnergy=初始能量
 config.rsring.ring.energyCostMultiplier=能量消耗倍率
 config.rsring.ring.manualChargeAmount=手摇充电数量
 config.rsring.ring.blockExternalCharging=默认密封状态
-config.rsring.ring.blockExternalCharging.comment=新合成的戒指默认是否密封（密封后无法接受外部充电，可通过工作台切换）
+config.rsring.ring.blockExternalCharging.comment=新合成的戒指默认是否密封\n密封后戒指无法接受外部充电\n可通过工作台切换密封状态
+config.rsring.ring.destroyDefaultBlacklistItems=销毁模式默认黑名单
+config.rsring.ring.destroyDefaultWhitelistItems=销毁模式默认白名单
+config.rsring.ring.destroyUseBlacklistModeByDefault=销毁模式默认使用黑名单
+config.rsring.ring.destroyWhitelistOnly=销毁模式仅允许白名单
+config.rsring.ring.strictMode=严格模式
+config.rsring.ring.strictMode.comment=只有戴在饰品栏时戒指才能使用\n默认关闭
 
 # 经验储罐配置
 config.rsring.tank=经验储罐设置
@@ -57,6 +63,8 @@ config.rsring.tank.enableSpecialTanks=启用特殊储罐
 config.rsring.tank.xpToBottleEfficiency=经验瓶转换效率
 config.rsring.tank.xpMendingEfficiency=经验修补效率
 config.rsring.tank.enableSMECompatibility=启用 So Many Enchantments 兼容
+config.rsring.tank.strictMode=严格模式
+config.rsring.tank.strictMode.comment=只有戴在饰品栏时储罐才能使用\n默认关闭
 
 # 经验泵控制器配置
 config.rsring.controller=泵控制器设置
@@ -64,3 +72,259 @@ config.rsring.controller.maxManagedTanks=最大管理储罐数量
 
 # 修正缺失的配置项
 item.rsring.experience_tank.name=经验储罐
+
+# ==================== 物品属性翻译 ====================
+# 标准特性
+item_attributes.placeable=可放置
+item_attributes.placeable.inverted=不可放置
+item_attributes.consumable=可食用
+item_attributes.consumable.inverted=不可食用
+item_attributes.enchanted=已附魔
+item_attributes.enchanted.inverted=未附魔
+item_attributes.max_enchanted=满级附魔
+item_attributes.max_enchanted.inverted=非满级附魔
+item_attributes.renamed=已命名
+item_attributes.renamed.inverted=未命名
+item_attributes.damaged=已损坏
+item_attributes.damaged.inverted=未损坏
+item_attributes.badly_damaged=严重损坏
+item_attributes.badly_damaged.inverted=未严重损坏
+item_attributes.not_stackable=不可堆叠
+item_attributes.not_stackable.inverted=可堆叠
+item_attributes.equipable=可装备
+item_attributes.equipable.inverted=不可装备
+item_attributes.furnace_fuel=燃料
+item_attributes.furnace_fuel.inverted=非燃料
+
+# 标签属性
+item_attributes.in_tag=属于标签 %s
+item_attributes.in_tag.inverted=不属于标签 %s
+
+# 模组属性
+item_attributes.added_by=来自模组 %s
+item_attributes.added_by.inverted=非来自模组 %s
+
+# 附魔属性
+item_attributes.enchantment=附魔 %s
+item_attributes.enchantment.inverted=无附魔 %s
+
+# NBT属性
+item_attributes.nbt_tag=NBT: %s
+item_attributes.nbt_tag.inverted=无NBT: %s
+
+# 颜色属性
+item_attributes.color=颜色: %s
+item_attributes.color.inverted=非颜色: %s
+
+# 名称属性
+item_attributes.has_name=名称: %s
+item_attributes.has_name.inverted=非名称: %s
+
+# 书作者属性
+item_attributes.book_author=作者: %s
+item_attributes.book_author.inverted=非作者: %s
+
+# 书副本属性
+item_attributes.book_copy_original=原版书
+item_attributes.book_copy_original.inverted=非原版书
+item_attributes.book_copy_first=副本
+item_attributes.book_copy_first.inverted=非副本
+item_attributes.book_copy_second=副本的副本
+item_attributes.book_copy_second.inverted=非副本的副本
+item_attributes.book_copy_tattered=破损书
+item_attributes.book_copy_tattered.inverted=非破损书
+
+# GUI按钮提示
+gui.rsring.match_nbt=NBT匹配
+gui.rsring.match_nbt.enabled=开启
+gui.rsring.match_nbt.disabled=关闭
+gui.rsring.match_durability=耐久匹配
+gui.rsring.match_durability.enabled=开启
+gui.rsring.match_durability.disabled=关闭
+gui.rsring.add_inverted=右键添加反转属性
+gui.rsring.add_normal=左键添加属性
+
+# 行为标签属性
+item_attributes.behavior_tag=行为: %s
+item_attributes.behavior_tag.inverted=非行为: %s
+
+# 行为标签名称
+behavior_tag.piglin_loved=猪灵喜爱
+behavior_tag.trimmable_armor=可装饰纹样
+behavior_tag.fox_food=狐狸食物
+behavior_tag.piglin_food=猪灵食物
+behavior_tag.piglin_repellents=猪灵厌恶
+behavior_tag.bee_food=蜜蜂食物
+behavior_tag.flowers=花朵
+behavior_tag.small_flowers=小型花朵
+behavior_tag.tall_flowers=大型花朵
+behavior_tag.beehives=蜂巢
+behavior_tag.dragon_food=龙食物
+behavior_tag.cat_food=猫食物
+behavior_tag.wolf_food=狼食物
+behavior_tag.horse_food=马食物
+behavior_tag.camel_food=骆驼食物
+behavior_tag.llama_food=羊驼食物
+behavior_tag.parrot_food=鹦鹉食物
+behavior_tag.parrot_poisonous_food=鹦鹉毒药
+behavior_tag.rabbit_food=兔子食物
+behavior_tag.chicken_food=鸡食物
+behavior_tag.pig_food=猪食物
+behavior_tag.sheep_food=羊食物
+behavior_tag.cow_food=牛食物
+behavior_tag.turtle_food=海龟食物
+behavior_tag.panda_food=熊猫食物
+behavior_tag.fish_food=鱼食物
+behavior_tag.ocelot_food=豹猫食物
+behavior_tag.mooshroom_food=哞菇食物
+behavior_tag.villager_food=村民食物
+behavior_tag.zombie_villager_food=僵尸村民治疗
+behavior_tag.rail_blocks=铁轨
+behavior_tag.boats=船
+behavior_tag.chest_boats=箱子船
+behavior_tag.music_discs=音乐唱片
+behavior_tag.candles=蜡烛
+behavior_tag.beds=床
+behavior_tag.coal_ores=煤矿石
+behavior_tag.iron_ores=铁矿石
+behavior_tag.gold_ores=金矿石
+behavior_tag.diamond_ores=钻石矿石
+behavior_tag.redstone_ores=红石矿石
+behavior_tag.lapis_ores=青金石矿石
+behavior_tag.emerald_ores=绿宝石矿石
+behavior_tag.quartz_ores=石英矿石
+behavior_tag.logs=原木
+behavior_tag.planks=木板
+behavior_tag.saplings=树苗
+behavior_tag.leaves=树叶
+behavior_tag.sand=沙子
+behavior_tag.sandstone=沙岩
+behavior_tag.wool=羊毛
+behavior_tag.carpets=地毯
+behavior_tag.glass=玻璃
+behavior_tag.glass_panes=玻璃板
+behavior_tag.terracotta=陶瓦
+behavior_tag.concrete=混凝土
+behavior_tag.concrete_powder=混凝土粉末
+behavior_tag.buttons=按钮
+behavior_tag.pressure_plates=压力板
+behavior_tag.doors=门
+behavior_tag.trapdoors=活板门
+behavior_tag.fences=栅栏
+behavior_tag.fence_gates=栅栏门
+behavior_tag.slabs=台阶
+behavior_tag.stairs=楼梯
+behavior_tag.walls=墙
+
+# 盔甲细分
+behavior_tag.helmets=头盔
+behavior_tag.chestplates=胸甲
+behavior_tag.leggings=护腿
+behavior_tag.boots=靴子
+behavior_tag.leather_armors=皮革盔甲
+behavior_tag.iron_armors=铁盔甲
+behavior_tag.golden_armors=金盔甲
+behavior_tag.diamond_armors=钻石盔甲
+behavior_tag.chainmail_armors=锁链盔甲
+
+# 武器细分
+behavior_tag.swords=剑
+behavior_tag.bows=弓
+behavior_tag.weapons=武器
+behavior_tag.wooden_swords=木剑
+behavior_tag.stone_swords=石剑
+behavior_tag.iron_swords=铁剑
+behavior_tag.golden_swords=金剑
+behavior_tag.diamond_swords=钻石剑
+behavior_tag.arrows=箭矢
+behavior_tag.shields=盾牌
+
+# InTag 标签翻译（forge命名空间）
+tag.armors=盔甲
+tag.armors/helmets=头盔
+tag.armors/chestplates=胸甲
+tag.armors/leggings=护腿
+tag.armors/boots=靴子
+tag.weapons=武器
+tag.weapons/swords=剑
+tag.weapons/bows=弓
+tag.tools=工具
+tag.tools/pickaxes=镐
+tag.tools/axes=斧
+tag.tools/shovels=铲
+tag.tools/hoes=锄
+tag.tools/shears=剪刀
+tag.tools/shields=盾牌
+
+# 矿物词典标签
+tag.gems=宝石
+tag.gems/diamond=钻石
+tag.gems/emerald=绿宝石
+tag.gems/quartz=石英
+tag.gems/lapis=青金石
+tag.gems/coal=煤炭
+tag.gems/charcoal=木炭
+tag.gems/ghast_tear=恶魂之泪
+tag.ingots=锭
+tag.ingots/iron=铁锭
+tag.ingots/gold=金锭
+tag.nuggets=粒
+tag.nuggets/iron=铁粒
+tag.nuggets/gold=金粒
+tag.dusts=粉
+tag.dusts/redstone=红石
+tag.dusts/glowstone=荧石粉
+tag.dusts/gunpowder=火药
+tag.dusts/bone=骨粉
+tag.dusts/blaze=烈焰粉
+tag.ores=矿石
+tag.ores/diamond=钻石矿石
+tag.ores/iron=铁矿石
+tag.ores/gold=金矿石
+tag.ores/coal=煤矿石
+tag.ores/lapis=青金石矿石
+tag.ores/redstone=红石矿石
+tag.ores/emerald=绿宝石矿石
+tag.ores/quartz=石英矿石
+tag.storage_blocks=存储方块
+tag.storage_blocks/diamond=钻石块
+tag.storage_blocks/iron=铁块
+tag.storage_blocks/gold=金块
+tag.storage_blocks/coal=煤炭块
+tag.storage_blocks/lapis=青金石块
+tag.storage_blocks/redstone=红石块
+tag.storage_blocks/emerald=绿宝石块
+tag.storage_blocks/quartz=石英块
+tag.storage_blocks/glowstone=荧石块
+tag.rods=棒
+tag.rods/blaze=烈焰棒
+tag.slimeballs=粘液球
+tag.magma_creams=岩浆膏
+tag.feathers=羽毛
+tag.leather=皮革
+tag.string=线
+tag.sugar=糖
+tag.ender_pearls=末影珍珠
+tag.ender_eyes=末影之眼
+tag.balls=球
+tag.snowballs=雪球
+tag.coal=煤炭
+tag.charcoal=木炭
+tag.dyes=染料
+tag.dyes/black=黑色染料
+tag.hides=皮
+tag.hides/rabbit=兔子皮
+tag.tears=泪
+tag.pearls=珍珠
+tag.eyes=眼
+tag.bottles=瓶
+tag.bottles/experience=附魔瓶
+tag.foods=食物
+tag.fruits=水果
+tag.fruits/chorus=紫颂果
+tag.maps=地图
+tag.maps/filled=已探索地图
+tag.lights=光源
+tag.lights/torch=火把
+tag.fireballs=火焰弹
+tag.charges=弹

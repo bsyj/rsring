@@ -22,6 +22,7 @@ import net.minecraftforge.energy.IEnergyStorage;
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
 import com.rsring.filter.FilterMode;
+import com.rsring.filter.ItemAttribute;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -66,10 +67,66 @@ public class ItemAbsorbRing extends Item implements IBauble {
             String dim = getDimensionName(cap.getTerminalDimension());
             tooltip.add(TextFormatting.GRAY + "已绑定: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
                 + "," + pos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.AQUA + dim + TextFormatting.GRAY + ")");
-            tooltip.add(TextFormatting.GRAY + "过滤模式: " + (cap.isWhitelistMode() ? TextFormatting.AQUA + "白名单"
-                : TextFormatting.AQUA + "黑名单"));
+            
+            // 显示垃圾箱绑定状态（在已绑定和过滤模式之间）
+            if (cap.isTrashCanBound()) {
+                BlockPos trashPos = cap.getTrashCanPos();
+                String trashDim = getDimensionName(cap.getTrashCanDimension());
+                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.RED + trashPos.getX() + "," + trashPos.getY()
+                    + "," + trashPos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.RED + trashDim + TextFormatting.GRAY + ")");
+            } else {
+                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.DARK_GRAY + "未绑定");
+            }
+            
+            // 显示过滤模式类型和黑白名单状态
+            FilterMode filterMode = cap.getFilterMode();
+            String modeType;
+            switch (filterMode) {
+                case MOD:
+                    modeType = "模组";
+                    break;
+                case ATTRIBUTE:
+                    modeType = "属性";
+                    break;
+                case ITEM:
+                default:
+                    modeType = "ID";
+                    break;
+            }
+            String listMode = cap.isWhitelistMode() ? "白名单" : "黑名单";
+            tooltip.add(TextFormatting.GRAY + "过滤模式: " + TextFormatting.AQUA + modeType + "-" + listMode);
+            
+            // 显示销毁模式状态
+            FilterMode destroyFilterMode = cap.getDestroyFilterMode();
+            String destroyModeType;
+            switch (destroyFilterMode) {
+                case MOD:
+                    destroyModeType = "模组";
+                    break;
+                case ATTRIBUTE:
+                    destroyModeType = "属性";
+                    break;
+                case ITEM:
+                default:
+                    destroyModeType = "ID";
+                    break;
+            }
+            String destroyListMode = cap.isDestroyWhitelistMode() ? "白名单" : "黑名单";
+            String destroyStatus = cap.isDestroyEnabled() ? "开" : "关";
+            TextFormatting statusColor = cap.isDestroyEnabled() ? TextFormatting.RED : TextFormatting.GREEN;
+            tooltip.add(TextFormatting.GRAY + "销毁模式: " + TextFormatting.RED + destroyModeType + "-" + destroyListMode 
+                + TextFormatting.GRAY + " (" + statusColor + destroyStatus + TextFormatting.GRAY + ")");
         } else {
             tooltip.add(TextFormatting.GRAY + "未绑定");
+            // 未绑定主容器时，垃圾箱显示在未绑定下方
+            if (cap.isTrashCanBound()) {
+                BlockPos trashPos = cap.getTrashCanPos();
+                String trashDim = getDimensionName(cap.getTrashCanDimension());
+                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.RED + trashPos.getX() + "," + trashPos.getY()
+                    + "," + trashPos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.RED + trashDim + TextFormatting.GRAY + ")");
+            } else {
+                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.DARK_GRAY + "未绑定");
+            }
         }
 
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
@@ -90,9 +147,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
         tooltip.add(TextFormatting.GOLD + "使用方法:");
         tooltip.add(TextFormatting.GRAY + "  1. 右键空气点击打开过滤设置");
         tooltip.add(TextFormatting.GRAY + "  2. 潜行右键rs控制器/箱子绑定");
-        tooltip.add(TextFormatting.GRAY + "  3. 按K键切换吸收开关");
-        tooltip.add(TextFormatting.GRAY + "  4. 可在背包/饰品槽中使用");
-        tooltip.add(TextFormatting.GRAY + "  5. 工作台放戒指切换密封模式");
+        tooltip.add(TextFormatting.GRAY + "  3. 潜行左键容器绑定垃圾箱");
+        tooltip.add(TextFormatting.GRAY + "  4. 按K键切换吸收开关");
+        tooltip.add(TextFormatting.GRAY + "  5. 可在背包/饰品槽中使用");
+        tooltip.add(TextFormatting.GRAY + "  6. 工作台放戒指切换密封模式");
 
         // 显示绑定目标类型
         if (cap.isBound() && worldIn != null) {
@@ -389,6 +447,33 @@ public class ItemAbsorbRing extends Item implements IBauble {
             if (itemStack.isEmpty()) continue;
             if (costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) continue;
 
+            // 先检查销毁模式
+            if (capability.isDestroyEnabled() && shouldDestroyItem(capability, itemStack)) {
+                // 优先尝试送入垃圾箱
+                int sentToTrash = trySendToTrashCan(capability, itemStack);
+                if (sentToTrash > 0) {
+                    // 成功送入垃圾箱（全部或部分）
+                    if (costPerItem > 0) {
+                        energyStorage.extractEnergy(costPerItem, false);
+                    }
+                    int remaining = itemStack.getCount() - sentToTrash;
+                    if (remaining <= 0) {
+                        item.setDead();
+                    } else {
+                        itemStack.setCount(remaining);
+                        item.setItem(itemStack);
+                    }
+                } else {
+                    // 无法送入垃圾箱，直接销毁
+                    if (costPerItem > 0) {
+                        energyStorage.extractEnergy(costPerItem, false);
+                    }
+                    item.setDead();
+                }
+                continue;
+            }
+
+            // 再检查吸收过滤
             if (shouldFilterItem(capability, itemStack)) continue;
 
             int originalCount = itemStack.getCount();
@@ -424,19 +509,276 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         }
     }
+    
+    /**
+     * 尝试将物品送入垃圾箱
+     * @return 成功送入的物品数量（0表示未绑定或无法放入）
+     */
+    private int trySendToTrashCan(IRsRingCapability capability, ItemStack itemStack) {
+        if (!capability.isTrashCanBound()) return 0;
+        
+        World trashWorld = capability.getTrashCanWorld();
+        BlockPos trashPos = capability.getTrashCanPos();
+        
+        if (trashWorld == null || trashPos == null) return 0;
+        
+        // 检查目标位置是否有效
+        if (!trashWorld.isBlockLoaded(trashPos)) return 0;
+        
+        TileEntity te = trashWorld.getTileEntity(trashPos);
+        if (te == null) return 0;
+        
+        // 获取物品栏能力
+        IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (handler == null) return 0;
+        
+        // 尝试放入物品
+        ItemStack remainder = ItemHandlerHelper.insertItem(handler, itemStack.copy(), false);
+        
+        // 返回成功放入的数量
+        if (remainder.isEmpty()) {
+            return itemStack.getCount();
+        } else {
+            return itemStack.getCount() - remainder.getCount();
+        }
+    }
+    
+    /**
+     * 检查物品是否应该被销毁
+     * 销毁模式使用独立的过滤系统，与吸收模式完全独立
+     */
+    private boolean shouldDestroyItem(IRsRingCapability capability, ItemStack itemStack) {
+        FilterMode destroyFilterMode = capability.getDestroyFilterMode();
+        boolean isDestroyWhitelist = capability.isDestroyWhitelistMode();
+        
+        // 检查销毁过滤条件是否存在
+        if (isDestroyWhitelist && !hasAnyDestroyFilter(capability)) {
+            // 白名单模式但没有过滤条件：不销毁任何物品
+            return false;
+        }
+        
+        switch (destroyFilterMode) {
+            case MOD:
+                return shouldDestroyByMod(capability, itemStack, isDestroyWhitelist);
+            case ATTRIBUTE:
+                return shouldDestroyByAttribute(capability, itemStack, isDestroyWhitelist);
+            case ITEM:
+            default:
+                return shouldDestroyByItem(capability, itemStack, isDestroyWhitelist);
+        }
+    }
+    
+    /**
+     * 检查销毁模式是否有任何过滤条件
+     */
+    private boolean hasAnyDestroyFilter(IRsRingCapability capability) {
+        FilterMode filterMode = capability.getDestroyFilterMode();
+        
+        switch (filterMode) {
+            case ATTRIBUTE:
+                java.util.List<com.rsring.util.Pair<ItemAttribute, Boolean>> attrs = capability.getDestroyFilterAttributes();
+                return attrs != null && !attrs.isEmpty();
+                
+            case MOD:
+                List<String> filterMods = capability.getDestroyFilterMods();
+                if (filterMods != null && !filterMods.isEmpty()) {
+                    return true;
+                }
+                for (int i = 0; i < 9; i++) {
+                    String filterName = capability.getDestroyFilterSlot(i);
+                    if (filterName != null && !filterName.isEmpty()) {
+                        return true;
+                    }
+                }
+                return false;
+                
+            case ITEM:
+            default:
+                for (int i = 0; i < 9; i++) {
+                    String filterName = capability.getDestroyFilterSlot(i);
+                    if (filterName != null && !filterName.isEmpty()) {
+                        return true;
+                    }
+                }
+                return false;
+        }
+    }
+    
+    /**
+     * 销毁模式 - 物品ID过滤
+     */
+    private boolean shouldDestroyByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+        String itemName = itemStack.getItem().getRegistryName().toString();
+        boolean matchNbt = capability.shouldDestroyMatchNbt();
+        boolean matchDurability = capability.shouldDestroyMatchDurability();
+        
+        boolean isInList = false;
+        for (int i = 0; i < 9; i++) {
+            String filterName = capability.getDestroyFilterSlot(i);
+            if (filterName != null && !filterName.isEmpty()) {
+                if (matchesDestroyItemFilter(filterName, itemStack, itemName, matchNbt, matchDurability)) {
+                    isInList = true;
+                    break;
+                }
+            }
+        }
+        
+        return isWhitelist ? isInList : !isInList;
+    }
+    
+    /**
+     * 销毁模式 - 物品匹配检查
+     */
+    private boolean matchesDestroyItemFilter(String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
+        if (!filterName.equals(itemName)) {
+            return false;
+        }
+        
+        if (!matchNbt && !matchDurability) {
+            return true;
+        }
+        
+        try {
+            net.minecraft.item.Item filterItem = net.minecraft.item.Item.REGISTRY.getObject(new net.minecraft.util.ResourceLocation(filterName));
+            if (filterItem == null) return true;
+            ItemStack filterStack = new ItemStack(filterItem);
+            
+            if (matchDurability) {
+                int filterDamage = filterStack.getItemDamage();
+                int itemDamage = itemStack.getItemDamage();
+                if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
+                    return false;
+                }
+            }
+            
+            if (matchNbt) {
+                net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
+                net.minecraft.nbt.NBTTagCompound filterNbt = filterStack.getTagCompound();
+                
+                if (itemNbt == null && filterNbt == null) return true;
+                if (itemNbt == null || filterNbt == null) return false;
+                
+                net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+                net.minecraft.nbt.NBTTagCompound filterNbtCopy = filterNbt.copy();
+                if (!matchDurability) {
+                    itemNbtCopy.removeTag("Damage");
+                    filterNbtCopy.removeTag("Damage");
+                }
+                return itemNbtCopy.equals(filterNbtCopy);
+            }
+        } catch (Exception e) {
+            // 忽略
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 销毁模式 - 模组过滤
+     */
+    private boolean shouldDestroyByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+        String itemModId = itemStack.getItem().getRegistryName().getNamespace();
+        List<String> filterMods = capability.getDestroyFilterMods();
+        
+        boolean isInList = false;
+        for (String modId : filterMods) {
+            if (modId != null && !modId.isEmpty() && modId.equals(itemModId)) {
+                isInList = true;
+                break;
+            }
+        }
+        
+        if (!isInList) {
+            for (int i = 0; i < 9; i++) {
+                String filterName = capability.getDestroyFilterSlot(i);
+                if (filterName != null && !filterName.isEmpty()) {
+                    String filterModId = filterName.contains(":") ? 
+                        filterName.substring(0, filterName.indexOf(":")) : "minecraft";
+                    if (filterModId.equals(itemModId)) {
+                        isInList = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return isWhitelist ? isInList : !isInList;
+    }
+    
+    /**
+     * 销毁模式 - 属性过滤
+     */
+    private boolean shouldDestroyByAttribute(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+        java.util.List<com.rsring.util.Pair<ItemAttribute, Boolean>> attributeTests = capability.getDestroyFilterAttributes();
+        boolean matchAllMode = capability.isDestroyMatchAllMode();
+        
+        if (attributeTests == null || attributeTests.isEmpty()) {
+            return isWhitelist ? false : true;
+        }
+        
+        for (com.rsring.util.Pair<ItemAttribute, Boolean> test : attributeTests) {
+            ItemAttribute attribute = test.getKey();
+            boolean inverted = test.getValue();
+            boolean matches = attribute.appliesTo(itemStack) != inverted;
+            
+            if (matches) {
+                if (!isWhitelist) {
+                    return true;
+                } else if (!matchAllMode) {
+                    return false;
+                }
+            } else {
+                if (isWhitelist && matchAllMode) {
+                    return true;
+                }
+            }
+        }
+        
+        if (isWhitelist) {
+            return matchAllMode ? false : true;
+        } else {
+            return false;
+        }
+    }
 
 
     private boolean hasAnyFilter(IRsRingCapability capability) {
-        if (hasAnyDefaultFilter(capability.isWhitelistMode())) {
-            return true;
+        FilterMode filterMode = capability.getFilterMode();
+        
+        switch (filterMode) {
+            case ATTRIBUTE:
+                // 属性过滤模式：检查属性列表是否为空
+                java.util.List<com.rsring.util.Pair<ItemAttribute, Boolean>> attrs = capability.getFilterAttributes();
+                return attrs != null && !attrs.isEmpty();
+                
+            case MOD:
+                // 模组过滤模式：检查模组列表或槽位
+                List<String> filterMods = capability.getFilterMods();
+                if (filterMods != null && !filterMods.isEmpty()) {
+                    return true;
+                }
+                for (int i = 0; i < 9; i++) {
+                    String filterName = capability.getFilterSlot(i);
+                    if (filterName != null && !filterName.isEmpty()) {
+                        return true;
+                    }
+                }
+                return false;
+                
+            case ITEM:
+            default:
+                // 物品过滤模式：检查槽位
+                if (hasAnyDefaultFilter(capability.isWhitelistMode())) {
+                    return true;
+                }
+                for (int i = 0; i < 9; i++) {
+                    String filterName = capability.getFilterSlot(i);
+                    if (filterName != null && !filterName.isEmpty()) {
+                        return true;
+                    }
+                }
+                return false;
         }
-        for (int i = 0; i < 9; i++) {
-            String filterName = capability.getFilterSlot(i);
-            if (filterName != null && !filterName.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean shouldFilterItem(IRsRingCapability capability, ItemStack itemStack) {
@@ -454,15 +796,25 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
     }
     
+    /**
+     * 物品ID过滤匹配逻辑
+     * 支持NBT和耐久匹配选项
+     */
     private boolean shouldFilterByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
         String itemName = itemStack.getItem().getRegistryName().toString();
+        boolean matchNbt = capability.shouldMatchNbt();
+        boolean matchDurability = capability.shouldMatchDurability();
+        
         boolean isInList = isInDefaultList(itemName, isWhitelistMode);
 
+        // 遍历过滤槽位进行匹配
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);
-            if (filterName != null && !filterName.isEmpty() && filterName.equals(itemName)) {
-                isInList = true;
-                break;
+            if (filterName != null && !filterName.isEmpty()) {
+                if (matchesItemFilter(filterName, itemStack, itemName, matchNbt, matchDurability)) {
+                    isInList = true;
+                    break;
+                }
             }
         }
 
@@ -473,6 +825,73 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
     }
     
+    /**
+     * 检查物品是否匹配过滤条件
+     */
+    private boolean matchesItemFilter(String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
+        // 简单ID匹配
+        if (!filterName.equals(itemName)) {
+            return false;
+        }
+        
+        // 如果不需要匹配NBT和耐久，ID匹配即成功
+        if (!matchNbt && !matchDurability) {
+            return true;
+        }
+        
+        // 尝试获取过滤物品的参考
+        try {
+            net.minecraft.item.Item filterItem = net.minecraft.item.Item.REGISTRY.getObject(new net.minecraft.util.ResourceLocation(filterName));
+            if (filterItem == null) {
+                return true; // 物品不存在，回退到ID匹配
+            }
+            ItemStack filterStack = new ItemStack(filterItem);
+            
+            // 耐久匹配
+            if (matchDurability) {
+                int filterDamage = filterStack.getItemDamage();
+                int itemDamage = itemStack.getItemDamage();
+                // 检查是否都是损坏工具或有相同的损坏值
+                if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
+                    return false;
+                }
+            }
+            
+            // NBT匹配
+            if (matchNbt) {
+                net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
+                net.minecraft.nbt.NBTTagCompound filterNbt = filterStack.getTagCompound();
+                
+                // 如果两者都没有NBT，认为匹配
+                if (itemNbt == null && filterNbt == null) {
+                    return true;
+                }
+                // 如果一个有NBT一个没有，不匹配
+                if (itemNbt == null || filterNbt == null) {
+                    return false;
+                }
+                // 比较NBT数据（忽略耐久相关的NBT，因为已经单独处理）
+                net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+                net.minecraft.nbt.NBTTagCompound filterNbtCopy = filterNbt.copy();
+                if (!matchDurability) {
+                    itemNbtCopy.removeTag("Damage");
+                    filterNbtCopy.removeTag("Damage");
+                }
+                if (!itemNbtCopy.equals(filterNbtCopy)) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            // 解析失败，回退到ID匹配
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 模组过滤匹配逻辑
+     * 支持NBT和耐久匹配选项（仅对槽位中的参考物品生效）
+     */
     private boolean shouldFilterByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
         String itemModId = itemStack.getItem().getRegistryName().getNamespace();
         List<String> filterMods = capability.getFilterMods();
@@ -509,14 +928,67 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
     }
     
+    /**
+     * 属性过滤匹配逻辑
+     * 参照机械动力的 AttributeFilterItemStack.test() 实现
+     * 支持三种匹配模式：白名单-或(WHITELIST_DISJ)、白名单-与(WHITELIST_CONJ)、黑名单(BLACKLIST)
+     */
     private boolean shouldFilterByAttribute(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
-        // 属性过滤模式：检查物品是否匹配槽位中的物品（包括NBT）
+        java.util.List<com.rsring.util.Pair<ItemAttribute, Boolean>> attributeTests = capability.getFilterAttributes();
+        boolean matchAllMode = capability.isMatchAllMode();
+        
+        // 如果没有属性过滤器，根据黑白名单模式决定行为
+        // 白名单模式：没有属性 = 没有物品被允许 = 拒绝所有
+        // 黑名单模式：没有属性 = 没有物品被禁止 = 放行所有
+        if (attributeTests == null || attributeTests.isEmpty()) {
+            return isWhitelistMode; // 白名单返回true（拒绝），黑名单返回false（放行）
+        }
+        
+        // 遍历所有属性测试
+        for (com.rsring.util.Pair<ItemAttribute, Boolean> test : attributeTests) {
+            ItemAttribute attribute = test.getKey();
+            boolean inverted = test.getValue();
+            boolean matches = attribute.appliesTo(itemStack) != inverted;
+            
+            if (matches) {
+                // 属性匹配成功
+                if (!isWhitelistMode) {
+                    // 黑名单模式：匹配成功则拒绝
+                    return true;
+                } else if (!matchAllMode) {
+                    // 白名单-或模式：任意匹配成功即可通过
+                    return false;
+                }
+                // 白名单-与模式：继续检查其他属性
+            } else {
+                // 属性匹配失败
+                if (isWhitelistMode && matchAllMode) {
+                    // 白名单-与模式：任意失败则拒绝
+                    return true;
+                }
+                // 黑名单模式或白名单-或模式：继续检查
+            }
+        }
+        
+        // 所有属性检查完毕
+        if (isWhitelistMode) {
+            // 白名单模式：全部匹配成功（与模式）或至少有一个匹配（或模式）
+            return matchAllMode ? false : true;
+        } else {
+            // 黑名单模式：没有匹配成功，允许通过
+            return false;
+        }
+    }
+    
+    /**
+     * 属性过滤的备用物品ID匹配
+     */
+    private boolean shouldFilterByItemFallback(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
         boolean isInList = false;
         
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);
             if (filterName != null && !filterName.isEmpty()) {
-                // 解析过滤项：格式为 "modid:itemid" 或 "modid:itemid{nbttag}"
                 if (matchesItemWithNBT(filterName, itemStack)) {
                     isInList = true;
                     break;
@@ -524,11 +996,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             }
         }
         
-        if (isWhitelistMode) {
-            return !isInList;
-        } else {
-            return isInList;
-        }
+        return isWhitelistMode ? !isInList : isInList;
     }
     
     private boolean matchesItemWithNBT(String filterName, ItemStack itemStack) {

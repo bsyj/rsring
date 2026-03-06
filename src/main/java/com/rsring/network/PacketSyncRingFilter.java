@@ -11,16 +11,24 @@ import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
 import net.minecraft.item.ItemStack;
 
-/** 客户端 -> 服务端：同步指定戒指的过滤槽位和黑白名单模式 */
+/** 客户端 -> 服务端：同步指定戒指的过滤槽位和黑白名单模式（支持销毁模式） */
 public class PacketSyncRingFilter implements IMessage {
 
     private boolean whitelistMode;
     private String[] slots = new String[9];
+    private boolean isDestroyMode; // 是否为销毁模式
 
     public PacketSyncRingFilter() {}
 
+    /** 吸收模式构造函数（兼容旧代码） */
     public PacketSyncRingFilter(boolean whitelistMode, String[] slots) {
+        this(whitelistMode, slots, false);
+    }
+
+    /** 完整构造函数 */
+    public PacketSyncRingFilter(boolean whitelistMode, String[] slots, boolean isDestroyMode) {
         this.whitelistMode = whitelistMode;
+        this.isDestroyMode = isDestroyMode;
         if (slots != null) {
             for (int i = 0; i < Math.min(9, slots.length); i++) this.slots[i] = slots[i];
         }
@@ -33,6 +41,12 @@ public class PacketSyncRingFilter implements IMessage {
             boolean has = buf.readBoolean();
             if (has) slots[i] = ByteBufUtils.readUTF8String(buf);
             else slots[i] = "";
+        }
+        // 兼容旧版本数据包（没有isDestroyMode字段）
+        if (buf.isReadable()) {
+            isDestroyMode = buf.readBoolean();
+        } else {
+            isDestroyMode = false;
         }
     }
 
@@ -48,6 +62,7 @@ public class PacketSyncRingFilter implements IMessage {
                 buf.writeBoolean(false);
             }
         }
+        buf.writeBoolean(isDestroyMode);
     }
 
     public static class Handler implements IMessageHandler<PacketSyncRingFilter, IMessage> {
@@ -70,9 +85,17 @@ public class PacketSyncRingFilter implements IMessage {
                 if (cap == null) return;
                 if (!com.rsring.config.RsRingConfig.absorbRing.allowCustomFilters) return;
 
-                cap.setWhitelistMode(msg.whitelistMode);
-                for (int i = 0; i < 9; i++) {
-                    cap.setFilterSlot(i, msg.slots[i] == null ? "" : msg.slots[i]);
+                // 根据isDestroyMode设置对应模式的黑白名单和槽位
+                if (msg.isDestroyMode) {
+                    cap.setDestroyWhitelistMode(msg.whitelistMode);
+                    for (int i = 0; i < 9; i++) {
+                        cap.setDestroyFilterSlot(i, msg.slots[i] == null ? "" : msg.slots[i]);
+                    }
+                } else {
+                    cap.setWhitelistMode(msg.whitelistMode);
+                    for (int i = 0; i < 9; i++) {
+                        cap.setFilterSlot(i, msg.slots[i] == null ? "" : msg.slots[i]);
+                    }
                 }
                 RsRingCapability.syncCapabilityToStack(stack, cap);
                 
@@ -91,8 +114,6 @@ public class PacketSyncRingFilter implements IMessage {
                     new com.rsring.network.PacketSyncCapabilityToClient(cap),
                     player
                 );
-                
-                // 不同步时不发聊天提示，避免放一个物品就刷屏
             });
             return null;
         }

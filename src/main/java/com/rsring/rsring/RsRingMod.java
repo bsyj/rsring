@@ -40,6 +40,8 @@ import com.rsring.config.RsRingConfig;
 import com.rsring.config.ExperienceTankConfig;
 import net.minecraftforge.fml.common.SidedProxy;
 import com.rsring.experience.InventoryChangeHandler;
+import com.rsring.experience.InventoryIntegrationLayer;
+import com.rsring.experience.ExperiencePumpController;
 import com.rsring.experience.ExperienceTankManager;
 
 @Mod(modid = RsRingMod.MODID, name = RsRingMod.NAME, version = RsRingMod.VERSION, guiFactory = "com.rsring.client.GuiFactory")
@@ -121,6 +123,8 @@ public class RsRingMod
         network.registerMessage(com.rsring.network.PacketSyncCapabilityToClient.Handler.class, com.rsring.network.PacketSyncCapabilityToClient.class, 7, Side.CLIENT);
         // Register packet for syncing advanced filter from client -> server
         network.registerMessage(com.rsring.network.PacketSyncAdvancedFilter.Handler.class, com.rsring.network.PacketSyncAdvancedFilter.class, 8, Side.SERVER);
+        // Register packet for syncing destroy toggle from client -> server
+        network.registerMessage(com.rsring.network.PacketSyncDestroyToggle.Handler.class, com.rsring.network.PacketSyncDestroyToggle.class, 9, Side.SERVER);
     }
 
     @EventHandler
@@ -131,8 +135,13 @@ public class RsRingMod
         // 注册 GUI 处理器
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new com.rsring.client.GuiHandler());
 
+        // 初始化属性注册表（用于属性过滤模式）
+        com.rsring.filter.AttributeRegistry.init();
+
         // 初始化经验系统基础设施
         InventoryChangeHandler.initialize();
+        InventoryIntegrationLayer.initialize();
+        ExperiencePumpController.initialize();
         ExperienceTankManager.initialize();
 
         // 注册经验泵控制器的合成配方

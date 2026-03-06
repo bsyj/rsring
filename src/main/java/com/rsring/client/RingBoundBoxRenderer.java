@@ -50,34 +50,43 @@ public class RingBoundBoxRenderer {
             return;
         }
         
-        if (!cap.isBound()) {
-            return; // 未绑定则不渲染
+        // 渲染吸收箱边框（绿色系跑马灯）
+        if (cap.isBound()) {
+            BlockPos chestPos = cap.getTerminalPos();
+            int chestDim = cap.getTerminalDimension();
+            
+            // 检查维度是否匹配
+            if (player.dimension == chestDim) {
+                // 检查距离限制
+                double distance = player.getDistanceSq(chestPos);
+                if (distance <= MAX_RENDER_DISTANCE * MAX_RENDER_DISTANCE) {
+                    // 渲染绿色系边框
+                    renderBoundingBoxGreen(chestPos, event.getPartialTicks(), player);
+                }
+            }
         }
-
-        // 获取绑定的箱子位置
-        BlockPos chestPos = cap.getTerminalPos();
-        int chestDim = cap.getTerminalDimension();
         
-        // 检查维度是否匹配
-        if (player.dimension != chestDim) {
-            return; // 不同维度不渲染
+        // 渲染垃圾箱边框（红色系跑马灯）
+        if (cap.isTrashCanBound()) {
+            BlockPos trashPos = cap.getTrashCanPos();
+            int trashDim = cap.getTrashCanDimension();
+            
+            // 检查维度是否匹配
+            if (player.dimension == trashDim) {
+                // 检查距离限制
+                double distance = player.getDistanceSq(trashPos);
+                if (distance <= MAX_RENDER_DISTANCE * MAX_RENDER_DISTANCE) {
+                    // 渲染红色系边框
+                    renderBoundingBoxRed(trashPos, event.getPartialTicks(), player);
+                }
+            }
         }
-
-        // 检查距离限制
-        double distance = player.getDistanceSq(chestPos);
-        if (distance > MAX_RENDER_DISTANCE * MAX_RENDER_DISTANCE) {
-            return; // 超出渲染距离
-        }
-
-        // 渲染边框
-        renderBoundingBox(chestPos, event.getPartialTicks(), player);
     }
 
     /**
-     * 渲染方块边框，使用炫酷的RGB彩色循环效果
-     * 参考XRay的渲染方法，增强视觉效果
+     * 渲染吸收箱边框，使用绿色系跑马灯效果
      */
-    private void renderBoundingBox(BlockPos pos, float partialTicks, EntityPlayer player) {
+    private void renderBoundingBoxGreen(BlockPos pos, float partialTicks, EntityPlayer player) {
         // 获取玩家视角偏移（使用插值以实现平滑渲染）
         double playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
         double playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
@@ -86,39 +95,56 @@ public class RingBoundBoxRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
-        // 应用OpenGL状态（参考XRay的Profile.BLOCKS.apply()）
+        // 应用OpenGL状态
         GlStateManager.disableTexture2D();
         GlStateManager.disableDepth();
         GlStateManager.depthMask(false);
         GlStateManager.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         GlStateManager.enableBlend();
-        GlStateManager.glLineWidth(3.0F); // 加粗线条
+        GlStateManager.glLineWidth(3.0F);
 
         // 设置平移（相对于玩家位置）
         buffer.setTranslation(-playerX, -playerY, -playerZ);
 
-        // 计算时间因子
+        // 计算时间因子 - 绿色系跑马灯
         long time = System.currentTimeMillis();
-        float timeOffset = (time % 2000) / 2000.0F; // 2秒一个循环，更快的变化
+        float timeOffset = (time % 2000) / 2000.0F;
 
         // 绘制多层边框，创造发光效果
-        for (int layer = 0; layer < 3; layer++) {
-            // 每层使用不同的颜色偏移，创造彩虹流动效果
-            float hueOffset = (layer * 0.15F + timeOffset) % 1.0F;
-            int rgb = getRGBFromHSB(hueOffset, 1.0F, 1.0F);
+        for (int layer = 0; layer < 4; layer++) {
+            // 绿色系：色相在 0.20-0.45 之间变化（黄绿色到青绿色）
+            // 使用更复杂的波形创造更丰富的颜色变化
+            float hueBase = 0.33F; // 纯绿色
+            float hueVariation1 = (float)Math.sin((timeOffset + layer * 0.15F) * Math.PI * 2) * 0.12F;
+            float hueVariation2 = (float)Math.sin((timeOffset * 1.5F + layer * 0.3F) * Math.PI * 2) * 0.05F;
+            float hue = hueBase + hueVariation1 + hueVariation2;
+            // 限制在绿色系范围内 (0.20 - 0.45)
+            hue = Math.max(0.20F, Math.min(0.45F, hue));
+            
+            // 饱和度也在变化，创造更丰富的视觉效果
+            float satBase = 0.85F;
+            float satVariation = (float)Math.sin((timeOffset * 0.8F + layer * 0.25F) * Math.PI * 2) * 0.15F;
+            float saturation = satBase + satVariation;
+            
+            // 亮度也有轻微变化
+            float brightBase = 0.95F;
+            float brightVariation = (float)Math.sin((timeOffset * 1.2F + layer * 0.2F) * Math.PI * 2) * 0.08F;
+            float brightness = brightBase + brightVariation;
+            
+            int rgb = getRGBFromHSB(hue, saturation, brightness);
             int red = (rgb >> 16) & 0xFF;
             int green = (rgb >> 8) & 0xFF;
             int blue = rgb & 0xFF;
             
-            // 外层更透明，创造发光扩散效果
-            int alpha = 255 - (layer * 60); // 第0层=255, 第1层=195, 第2层=135
+            // 外层更透明
+            int alpha = 255 - (layer * 50);
 
             // 开始绘制
             buffer.begin(GL_LINES, DefaultVertexFormats.POSITION_COLOR);
             
-            // 每层稍微扩大一点，创造光晕效果
-            float expansion = layer * 0.02F;
+            // 每层稍微扩大一点
+            float expansion = layer * 0.015F;
             renderBlockBoundingWithExpansion(buffer, pos, red, green, blue, alpha, expansion);
             
             tessellator.draw();
@@ -127,7 +153,87 @@ public class RingBoundBoxRenderer {
         // 重置平移
         buffer.setTranslation(0, 0, 0);
 
-        // 清理OpenGL状态（参考XRay的Profile.BLOCKS.clean()）
+        // 清理OpenGL状态
+        GlStateManager.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        GlStateManager.disableBlend();
+        GlStateManager.enableDepth();
+        GlStateManager.depthMask(true);
+        GlStateManager.enableTexture2D();
+    }
+
+    /**
+     * 渲染垃圾箱边框，使用红色系跑马灯效果
+     */
+    private void renderBoundingBoxRed(BlockPos pos, float partialTicks, EntityPlayer player) {
+        // 获取玩家视角偏移（使用插值以实现平滑渲染）
+        double playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
+        double playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
+        double playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+
+        // 应用OpenGL状态
+        GlStateManager.disableTexture2D();
+        GlStateManager.disableDepth();
+        GlStateManager.depthMask(false);
+        GlStateManager.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.enableBlend();
+        GlStateManager.glLineWidth(3.0F);
+
+        // 设置平移（相对于玩家位置）
+        buffer.setTranslation(-playerX, -playerY, -playerZ);
+
+        // 计算时间因子 - 红色系跑马灯
+        long time = System.currentTimeMillis();
+        float timeOffset = (time % 2000) / 2000.0F;
+
+        // 绘制多层边框，创造发光效果
+        for (int layer = 0; layer < 4; layer++) {
+            // 红色系：色相在 0.92-0.08 之间变化（深红色到橙红色）
+            // 使用更复杂的波形创造更丰富的颜色变化
+            float hueBase = 0.0F; // 纯红色
+            float hueVariation1 = (float)Math.sin((timeOffset + layer * 0.15F) * Math.PI * 2) * 0.06F;
+            float hueVariation2 = (float)Math.sin((timeOffset * 1.3F + layer * 0.25F) * Math.PI * 2) * 0.03F;
+            float hue = hueBase + hueVariation1 + hueVariation2;
+            // 处理跨越0/1边界的情况，限制在红色系范围内 (-0.08 到 0.08)
+            if (hue > 0.5F) hue -= 1.0F;
+            hue = Math.max(-0.08F, Math.min(0.08F, hue));
+            if (hue < 0) hue += 1.0F;
+            
+            // 饱和度也在变化，创造更丰富的视觉效果
+            float satBase = 0.9F;
+            float satVariation = (float)Math.sin((timeOffset * 0.7F + layer * 0.3F) * Math.PI * 2) * 0.1F;
+            float saturation = satBase + satVariation;
+            
+            // 亮度也有轻微变化
+            float brightBase = 0.95F;
+            float brightVariation = (float)Math.sin((timeOffset * 1.1F + layer * 0.2F) * Math.PI * 2) * 0.08F;
+            float brightness = brightBase + brightVariation;
+            
+            int rgb = getRGBFromHSB(hue, saturation, brightness);
+            int red = (rgb >> 16) & 0xFF;
+            int green = (rgb >> 8) & 0xFF;
+            int blue = rgb & 0xFF;
+            
+            // 外层更透明
+            int alpha = 255 - (layer * 50);
+
+            // 开始绘制
+            buffer.begin(GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+            
+            // 每层稍微扩大一点
+            float expansion = layer * 0.015F;
+            renderBlockBoundingWithExpansion(buffer, pos, red, green, blue, alpha, expansion);
+            
+            tessellator.draw();
+        }
+
+        // 重置平移
+        buffer.setTranslation(0, 0, 0);
+
+        // 清理OpenGL状态
         GlStateManager.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         GlStateManager.disableBlend();
         GlStateManager.enableDepth();

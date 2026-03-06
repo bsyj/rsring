@@ -45,6 +45,9 @@ public class CommonEventHandler {
 
     private static KeyBinding toggleKeyBinding;
     private static final Map<UUID, Integer> lastPlayerXp = new HashMap<>();
+    // 左键绑定冷却时间（毫秒）
+    private static final long BIND_COOLDOWN_MS = 500;
+    private final Map<UUID, Long> lastLeftClickBindTime = new HashMap<>();
 
     public CommonEventHandler() {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
@@ -354,20 +357,97 @@ public class CommonEventHandler {
         boolean wasBound = capability.isBound();
         BlockPos oldPos = wasBound ? capability.getTerminalPos() : null;
         int oldDim = wasBound ? capability.getTerminalDimension() : 0;
+        int currentDim = world.provider.getDimension();
 
+        // 检查是否点击已绑定的位置
+        if (wasBound && oldPos != null && oldPos.equals(pos) && oldDim == currentDim) {
+            // 取消绑定
+            capability.unbindTerminal();
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            String targetType = isRSController ? "RS控制器" : "容器";
+            player.sendMessage(new TextComponentString(
+                TextFormatting.YELLOW + "成功解除绑定 " + targetType + ": " +
+                pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
+            event.setCanceled(true);
+            return;
+        }
+
+        // 绑定新位置
         capability.bindTerminal(world, pos);
         RsRingCapability.syncCapabilityToStack(ringStack, capability);
 
-        BlockPos newPos = capability.getTerminalPos();
-        int newDim = capability.getTerminalDimension();
+        String targetType = isRSController ? "RS控制器" : "容器";
+        player.sendMessage(new TextComponentString(
+            TextFormatting.GREEN + "成功绑定到 " + targetType + ": " +
+            pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
 
-        if (!wasBound || (oldPos != null && (!oldPos.equals(newPos) || oldDim != newDim))) {
-            int dim = world.provider.getDimension();
-            String targetType = isRSController ? "RS控制器" : "容器";
-            String statusMsg = TextFormatting.GREEN + "成功绑定到 " + targetType + ": " +
-                pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + dim + ")";
-            player.sendMessage(new TextComponentString(statusMsg));
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public void onPlayerLeftClick(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getHand() != EnumHand.MAIN_HAND) return;
+
+        EntityPlayer player = event.getEntityPlayer();
+        World world = event.getWorld();
+        BlockPos pos = event.getPos();
+
+        if (player == null || world == null || pos == null) return;
+        if (world.isRemote) return;
+        if (!player.isSneaking()) return;
+
+        // 检查冷却时间，防止刷屏
+        UUID playerId = player.getUniqueID();
+        long currentTime = System.currentTimeMillis();
+        Long lastBindTime = lastLeftClickBindTime.get(playerId);
+        if (lastBindTime != null && (currentTime - lastBindTime) < BIND_COOLDOWN_MS) {
+            event.setCanceled(true);
+            return;
         }
+
+        // 检查目标是否为容器或RS控制器
+        boolean isContainer = isChestOrContainer(world, pos);
+        boolean isRSController = isRSController(world, pos);
+
+        if (!isContainer && !isRSController) return;
+
+        // 检查手持戒指
+        ItemStack ringStack = findHeldRing(player, ItemAbsorbRing.class);
+        if (ringStack.isEmpty()) return;
+
+        IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (capability == null) return;
+
+        boolean wasBound = capability.isTrashCanBound();
+        BlockPos oldPos = wasBound ? capability.getTrashCanPos() : null;
+        int oldDim = wasBound ? capability.getTrashCanDimension() : 0;
+        int currentDim = world.provider.getDimension();
+
+        // 检查是否点击已绑定的位置
+        if (wasBound && oldPos != null && oldPos.equals(pos) && oldDim == currentDim) {
+            // 解除绑定
+            capability.unbindTrashCan();
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            // 记录冷却时间
+            lastLeftClickBindTime.put(playerId, System.currentTimeMillis());
+            String targetType = isRSController ? "RS控制器" : "容器";
+            player.sendMessage(new TextComponentString(
+                TextFormatting.YELLOW + "成功解除垃圾箱绑定 " + targetType + ": " +
+                pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
+            event.setCanceled(true);
+            return;
+        }
+
+        // 绑定新位置
+        capability.bindTrashCan(world, pos);
+        RsRingCapability.syncCapabilityToStack(ringStack, capability);
+        // 记录冷却时间
+        lastLeftClickBindTime.put(playerId, System.currentTimeMillis());
+
+        String targetType = isRSController ? "RS控制器" : "容器";
+        player.sendMessage(new TextComponentString(
+            TextFormatting.GREEN + "成功绑定垃圾箱到 " + targetType + ": " +
+            pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
 
         event.setCanceled(true);
     }

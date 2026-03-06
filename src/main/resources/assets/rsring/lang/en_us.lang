@@ -31,7 +31,13 @@ config.rsring.ring.initialEnergy=Initial Energy
 config.rsring.ring.energyCostMultiplier=Energy Cost Multiplier
 config.rsring.ring.manualChargeAmount=Manual Charge Amount
 config.rsring.ring.blockExternalCharging=Default Sealed State
-config.rsring.ring.blockExternalCharging.comment=Whether newly crafted rings are sealed by default (sealed rings cannot accept external charging, can be toggled via crafting)
+config.rsring.ring.blockExternalCharging.comment=Whether newly crafted rings are sealed by default\nSealed rings cannot accept external charging\nCan be toggled via crafting
+config.rsring.ring.destroyDefaultBlacklistItems=Destroy Mode Default Blacklist
+config.rsring.ring.destroyDefaultWhitelistItems=Destroy Mode Default Whitelist
+config.rsring.ring.destroyUseBlacklistModeByDefault=Destroy Mode Use Blacklist By Default
+config.rsring.ring.destroyWhitelistOnly=Destroy Mode Whitelist Only
+config.rsring.ring.strictMode=Strict Mode
+config.rsring.ring.strictMode.comment=Ring only works when equipped in bauble slot\nDefault: off
 
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings
@@ -54,7 +60,58 @@ config.rsring.tank.enableSpecialTanks=Enable Special Tanks
 config.rsring.tank.xpToBottleEfficiency=XP to Bottle Efficiency
 config.rsring.tank.xpMendingEfficiency=XP Mending Efficiency
 config.rsring.tank.enableSMECompatibility=Enable So Many Enchantments Compatibility
+config.rsring.tank.strictMode=Strict Mode
+config.rsring.tank.strictMode.comment=Tank only works when equipped in bauble slot\nDefault: off
 
 # Pump Controller Configuration
 config.rsring.controller=Pump Controller Settings
 config.rsring.controller.maxManagedTanks=Maximum Managed Tanks
+
+# ==================== Item Attributes ====================
+# Standard Traits
+item_attributes.placeable=Placeable
+item_attributes.placeable.inverted=Not Placeable
+item_attributes.consumable=Consumable
+item_attributes.consumable.inverted=Not Consumable
+item_attributes.enchanted=Enchanted
+item_attributes.enchanted.inverted=Not Enchanted
+item_attributes.max_enchanted=Max Enchanted
+item_attributes.max_enchanted.inverted=Not Max Enchanted
+item_attributes.renamed=Renamed
+item_attributes.renamed.inverted=Not Renamed
+item_attributes.damaged=Damaged
+item_attributes.damaged.inverted=Not Damaged
+item_attributes.badly_damaged=Badly Damaged
+item_attributes.badly_damaged.inverted=Not Badly Damaged
+item_attributes.not_stackable=Not Stackable
+item_attributes.not_stackable.inverted=Stackable
+item_attributes.equipable=Equipable
+item_attributes.equipable.inverted=Not Equipable
+item_attributes.furnace_fuel=Furnace Fuel
+item_attributes.furnace_fuel.inverted=Not Furnace Fuel
+
+# Tag Attribute
+item_attributes.in_tag=In Tag %s
+item_attributes.in_tag.inverted=Not In Tag %s
+
+# Mod Attribute
+item_attributes.added_by=Added By %s
+item_attributes.added_by.inverted=Not Added By %s
+
+# Enchantment Attribute
+item_attributes.enchantment=Enchantment %s
+item_attributes.enchantment.inverted=No Enchantment %s
+
+# NBT Attribute
+item_attributes.nbt_tag=NBT: %s
+item_attributes.nbt_tag.inverted=No NBT: %s
+
+# GUI Button Tooltips
+gui.rsring.match_nbt=NBT Matching
+gui.rsring.match_nbt.enabled=Enabled
+gui.rsring.match_nbt.disabled=Disabled
+gui.rsring.match_durability=Durability Matching
+gui.rsring.match_durability.enabled=Enabled
+gui.rsring.match_durability.disabled=Disabled
+gui.rsring.add_inverted=Right-click to add inverted attribute
+gui.rsring.add_normal=Left-click to add attribute

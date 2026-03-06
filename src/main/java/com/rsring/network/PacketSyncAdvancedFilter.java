@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * 客户端 -> 服务端：同步高级过滤系统数据
  * 支持三种过滤模式和属性过滤列表
+ * 支持销毁模式和吸收模式
  */
 public class PacketSyncAdvancedFilter implements IMessage {
 
@@ -36,17 +37,36 @@ public class PacketSyncAdvancedFilter implements IMessage {
     // 属性过滤
     private List<NBTTagCompound> attributeTags = new ArrayList<>();
     private boolean[] attributeInverted = new boolean[9];
+    
+    // NBT和耐久匹配选项
+    private boolean matchNbt;
+    private boolean matchDurability;
+    
+    // 是否为销毁模式
+    private boolean isDestroyMode;
 
     public PacketSyncAdvancedFilter() {
         this.filterMode = FilterMode.ITEM;
+        this.isDestroyMode = false;
     }
 
     public PacketSyncAdvancedFilter(FilterMode filterMode, boolean whitelistMode, boolean matchAllMode,
                                     String[] itemSlots, String[] modSlots, 
-                                    List<Pair<ItemAttribute, Boolean>> attributes) {
+                                    List<Pair<ItemAttribute, Boolean>> attributes,
+                                    boolean matchNbt, boolean matchDurability) {
+        this(filterMode, whitelistMode, matchAllMode, itemSlots, modSlots, attributes, matchNbt, matchDurability, false);
+    }
+
+    public PacketSyncAdvancedFilter(FilterMode filterMode, boolean whitelistMode, boolean matchAllMode,
+                                    String[] itemSlots, String[] modSlots, 
+                                    List<Pair<ItemAttribute, Boolean>> attributes,
+                                    boolean matchNbt, boolean matchDurability, boolean isDestroyMode) {
         this.filterMode = filterMode;
         this.whitelistMode = whitelistMode;
         this.matchAllMode = matchAllMode;
+        this.matchNbt = matchNbt;
+        this.matchDurability = matchDurability;
+        this.isDestroyMode = isDestroyMode;
         
         if (itemSlots != null) {
             System.arraycopy(itemSlots, 0, this.itemSlots, 0, Math.min(9, itemSlots.length));
@@ -60,7 +80,7 @@ public class PacketSyncAdvancedFilter implements IMessage {
             for (int i = 0; i < Math.min(9, attributes.size()); i++) {
                 Pair<ItemAttribute, Boolean> pair = attributes.get(i);
                 NBTTagCompound tag = new NBTTagCompound();
-                pair.getKey().writeNBT(tag);
+                pair.getKey().serializeNBT(tag); // 使用serializeNBT包含完整的属性信息
                 attributeTags.add(tag);
                 attributeInverted[i] = pair.getValue();
             }
@@ -101,6 +121,17 @@ public class PacketSyncAdvancedFilter implements IMessage {
             attributeTags.add(tag);
             attributeInverted[i] = buf.readBoolean();
         }
+        
+        // 读取NBT和耐久匹配选项
+        matchNbt = buf.readBoolean();
+        matchDurability = buf.readBoolean();
+        
+        // 兼容旧版本数据包
+        if (buf.isReadable()) {
+            isDestroyMode = buf.readBoolean();
+        } else {
+            isDestroyMode = false;
+        }
     }
 
     @Override
@@ -137,6 +168,13 @@ public class PacketSyncAdvancedFilter implements IMessage {
             ByteBufUtils.writeTag(buf, attributeTags.get(i));
             buf.writeBoolean(attributeInverted[i]);
         }
+        
+        // 写入NBT和耐久匹配选项
+        buf.writeBoolean(matchNbt);
+        buf.writeBoolean(matchDurability);
+        
+        // 写入是否为销毁模式
+        buf.writeBoolean(isDestroyMode);
     }
 
     public static class Handler implements IMessageHandler<PacketSyncAdvancedFilter, IMessage> {
@@ -169,31 +207,70 @@ public class PacketSyncAdvancedFilter implements IMessage {
                     return;
                 }
 
-                // 同步过滤模式
-                cap.setFilterMode(msg.filterMode);
-                cap.setWhitelistMode(msg.whitelistMode);
-                cap.setMatchAllMode(msg.matchAllMode);
-                
-                // 同步物品槽
-                for (int i = 0; i < 9; i++) {
-                    cap.setFilterSlot(i, msg.itemSlots[i] == null ? "" : msg.itemSlots[i]);
-                }
-                
-                // 同步模组槽
-                cap.getFilterMods().clear();
-                for (int i = 0; i < 9; i++) {
-                    if (msg.modSlots[i] != null && !msg.modSlots[i].isEmpty()) {
-                        cap.getFilterMods().add(msg.modSlots[i]);
+                if (msg.isDestroyMode) {
+                    // 销毁模式数据同步
+                    cap.setDestroyFilterMode(msg.filterMode);
+                    cap.setDestroyWhitelistMode(msg.whitelistMode);
+                    cap.setDestroyMatchAllMode(msg.matchAllMode);
+                    
+                    // 同步销毁物品槽
+                    for (int i = 0; i < 9; i++) {
+                        cap.setDestroyFilterSlot(i, msg.itemSlots[i] == null ? "" : msg.itemSlots[i]);
                     }
-                }
-                
-                // 同步属性列表
-                cap.getFilterAttributes().clear();
-                for (NBTTagCompound tag : msg.attributeTags) {
-                    ItemAttribute attr = ItemAttribute.fromNBT(tag);
-                    if (attr != null) {
-                        cap.addFilterAttribute(attr, false); // TODO: 从 tag 读取 inverted
+                    
+                    // 同步销毁模组槽
+                    cap.getDestroyFilterMods().clear();
+                    for (int i = 0; i < 9; i++) {
+                        if (msg.modSlots[i] != null && !msg.modSlots[i].isEmpty()) {
+                            cap.getDestroyFilterMods().add(msg.modSlots[i]);
+                        }
                     }
+                    
+                    // 同步销毁属性列表
+                    cap.getDestroyFilterAttributes().clear();
+                    for (int i = 0; i < msg.attributeTags.size(); i++) {
+                        NBTTagCompound tag = msg.attributeTags.get(i);
+                        ItemAttribute attr = ItemAttribute.fromNBT(tag);
+                        if (attr != null) {
+                            cap.addDestroyFilterAttribute(attr, msg.attributeInverted[i]);
+                        }
+                    }
+                    
+                    // 同步销毁NBT和耐久匹配选项
+                    cap.setDestroyMatchNbt(msg.matchNbt);
+                    cap.setDestroyMatchDurability(msg.matchDurability);
+                } else {
+                    // 吸收模式数据同步
+                    cap.setFilterMode(msg.filterMode);
+                    cap.setWhitelistMode(msg.whitelistMode);
+                    cap.setMatchAllMode(msg.matchAllMode);
+                    
+                    // 同步物品槽
+                    for (int i = 0; i < 9; i++) {
+                        cap.setFilterSlot(i, msg.itemSlots[i] == null ? "" : msg.itemSlots[i]);
+                    }
+                    
+                    // 同步模组槽
+                    cap.getFilterMods().clear();
+                    for (int i = 0; i < 9; i++) {
+                        if (msg.modSlots[i] != null && !msg.modSlots[i].isEmpty()) {
+                            cap.getFilterMods().add(msg.modSlots[i]);
+                        }
+                    }
+                    
+                    // 同步属性列表
+                    cap.getFilterAttributes().clear();
+                    for (int i = 0; i < msg.attributeTags.size(); i++) {
+                        NBTTagCompound tag = msg.attributeTags.get(i);
+                        ItemAttribute attr = ItemAttribute.fromNBT(tag);
+                        if (attr != null) {
+                            cap.addFilterAttribute(attr, msg.attributeInverted[i]);
+                        }
+                    }
+                    
+                    // 同步NBT和耐久匹配选项
+                    cap.setMatchNbt(msg.matchNbt);
+                    cap.setMatchDurability(msg.matchDurability);
                 }
                 
                 RsRingCapability.syncCapabilityToStack(stack, cap);

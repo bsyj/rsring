@@ -40,7 +40,13 @@ config.rsring.ring.destroyDefaultWhitelistItems=销毁模式默认白名单
 config.rsring.ring.destroyUseBlacklistModeByDefault=销毁模式默认使用黑名单
 config.rsring.ring.destroyWhitelistOnly=销毁模式仅允许白名单
 config.rsring.ring.strictMode=严格模式
-config.rsring.ring.strictMode.comment=只有戴在饰品栏时戒指才能使用\n默认关闭
+config.rsring.ring.strictMode.comment=只有戴在饰品栏时戒指才能使用
+config.rsring.ring.enableLowEnergyWarning=启用低电量提醒
+config.rsring.ring.enableLowEnergyWarning.comment=当戒指电量低于阈值时发送提醒消息
+config.rsring.ring.lowEnergyWarningThreshold=低电量提醒阈值
+config.rsring.ring.lowEnergyWarningThreshold.comment=电量低于此百分比时触发提醒\n范围: 1-50，默认: 5
+config.rsring.ring.lowEnergyWarningCooldown=低电量提醒冷却时间
+config.rsring.ring.lowEnergyWarningCooldown.comment=两次提醒之间的最小间隔秒数\n范围: 10-300，默认: 180（3分钟）
 
 # 经验储罐配置
 config.rsring.tank=经验储罐设置
@@ -79,6 +85,8 @@ item_attributes.placeable=可放置
 item_attributes.placeable.inverted=不可放置
 item_attributes.consumable=可食用
 item_attributes.consumable.inverted=不可食用
+item_attributes.drinkable=可饮用
+item_attributes.drinkable.inverted=不可饮用
 item_attributes.enchanted=已附魔
 item_attributes.enchanted.inverted=未附魔
 item_attributes.max_enchanted=满级附魔
@@ -89,12 +97,98 @@ item_attributes.damaged=已损坏
 item_attributes.damaged.inverted=未损坏
 item_attributes.badly_damaged=严重损坏
 item_attributes.badly_damaged.inverted=未严重损坏
+item_attributes.slightly_damaged=轻微损坏
+item_attributes.slightly_damaged.inverted=未轻微损坏
+item_attributes.undamaged=完好无损
+item_attributes.undamaged.inverted=有损坏
 item_attributes.not_stackable=不可堆叠
 item_attributes.not_stackable.inverted=可堆叠
+item_attributes.stackable=可堆叠
+item_attributes.stackable.inverted=不可堆叠
+item_attributes.high_stackable=高堆叠数
+item_attributes.high_stackable.inverted=低堆叠数
+item_attributes.max_stackable=最大堆叠
+item_attributes.max_stackable.inverted=非最大堆叠
 item_attributes.equipable=可装备
 item_attributes.equipable.inverted=不可装备
+item_attributes.main_hand_equipable=主手装备
+item_attributes.main_hand_equipable.inverted=非主手装备
+item_attributes.off_hand_equipable=副手装备
+item_attributes.off_hand_equipable.inverted=非副手装备
 item_attributes.furnace_fuel=燃料
 item_attributes.furnace_fuel.inverted=非燃料
+item_attributes.high_grade_fuel=高品质燃料
+item_attributes.high_grade_fuel.inverted=非高品质燃料
+item_attributes.low_grade_fuel=低品质燃料
+item_attributes.low_grade_fuel.inverted=非低品质燃料
+item_attributes.potion_item=药水物品
+item_attributes.potion_item.inverted=非药水物品
+item_attributes.has_potion_effect=有药水效果
+item_attributes.has_potion_effect.inverted=无药水效果
+item_attributes.splash_potion=溅射药水
+item_attributes.splash_potion.inverted=非溅射药水
+item_attributes.lingering_potion=滞留药水
+item_attributes.lingering_potion.inverted=非滞留药水
+item_attributes.drinkable_potion=可饮用药水
+item_attributes.drinkable_potion.inverted=非可饮用药水
+item_attributes.rare_item=稀有物品
+item_attributes.rare_item.inverted=非稀有物品
+item_attributes.epic_item=史诗物品
+item_attributes.epic_item.inverted=非史诗物品
+item_attributes.common_item=常见物品
+item_attributes.common_item.inverted=非常见物品
+item_attributes.uncommon_item=不常见物品
+item_attributes.uncommon_item.inverted=非不常见物品
+item_attributes.has_repair_cost=有修复成本
+item_attributes.has_repair_cost.inverted=无修复成本
+item_attributes.high_repair_cost=高修复成本
+item_attributes.high_repair_cost.inverted=非高修复成本
+item_attributes.unbreakable=不可破坏
+item_attributes.unbreakable.inverted=可破坏
+item_attributes.repairable=可修复
+item_attributes.repairable.inverted=不可修复
+item_attributes.diamond_item=钻石物品
+item_attributes.diamond_item.inverted=非钻石物品
+item_attributes.iron_item=铁物品
+item_attributes.iron_item.inverted=非铁物品
+item_attributes.golden_item=金物品
+item_attributes.golden_item.inverted=非金物品
+item_attributes.stone_tool=石制工具
+item_attributes.stone_tool.inverted=非石制工具
+item_attributes.wooden_tool=木制工具
+item_attributes.wooden_tool.inverted=非木制工具
+item_attributes.leather_armor=皮革盔甲
+item_attributes.leather_armor.inverted=非皮革盔甲
+item_attributes.chainmail_armor=锁链盔甲
+item_attributes.chainmail_armor.inverted=非锁链盔甲
+item_attributes.has_cooldown=有冷却时间
+item_attributes.has_cooldown.inverted=无冷却时间
+item_attributes.glint_effect=发光效果
+item_attributes.glint_effect.inverted=无发光效果
+item_attributes.dyeable=可染色
+item_attributes.dyeable.inverted=不可染色
+item_attributes.dyed=已染色
+item_attributes.dyed.inverted=未染色
+item_attributes.has_block_entity_tag=有方块实体标签
+item_attributes.has_block_entity_tag.inverted=无方块实体标签
+item_attributes.creative_only=创造模式专用
+item_attributes.creative_only.inverted=非创造模式专用
+item_attributes.can_repair=可修复
+item_attributes.can_repair.inverted=不可修复
+item_attributes.banner=旗帜
+item_attributes.banner.inverted=非旗帜
+item_attributes.shield=盾牌
+item_attributes.shield.inverted=非盾牌
+item_attributes.patterned_shield=有图案盾牌
+item_attributes.patterned_shield.inverted=无图案盾牌
+item_attributes.firework_rocket=烟花火箭
+item_attributes.firework_rocket.inverted=非烟花火箭
+item_attributes.firework_star=烟花之星
+item_attributes.firework_star.inverted=非烟花之星
+item_attributes.beacon_payment=信标供品
+item_attributes.beacon_payment.inverted=非信标供品
+item_attributes.redstone_related=红石相关
+item_attributes.redstone_related.inverted=非红石相关
 
 # 标签属性
 item_attributes.in_tag=属于标签 %s
@@ -238,6 +332,652 @@ behavior_tag.golden_swords=金剑
 behavior_tag.diamond_swords=钻石剑
 behavior_tag.arrows=箭矢
 behavior_tag.shields=盾牌
+
+# 工具细分
+behavior_tag.pickaxes=镐
+behavior_tag.wooden_pickaxes=木镐
+behavior_tag.stone_pickaxes=石镐
+behavior_tag.iron_pickaxes=铁镐
+behavior_tag.golden_pickaxes=金镐
+behavior_tag.diamond_pickaxes=钻石镐
+behavior_tag.axes=斧
+behavior_tag.wooden_axes=木斧
+behavior_tag.stone_axes=石斧
+behavior_tag.iron_axes=铁斧
+behavior_tag.golden_axes=金斧
+behavior_tag.diamond_axes=钻石斧
+behavior_tag.shovels=铲
+behavior_tag.wooden_shovels=木铲
+behavior_tag.stone_shovels=石铲
+behavior_tag.iron_shovels=铁铲
+behavior_tag.golden_shovels=金铲
+behavior_tag.diamond_shovels=钻石铲
+behavior_tag.hoes=锄
+behavior_tag.wooden_hoes=木锄
+behavior_tag.stone_hoes=石锄
+behavior_tag.iron_hoes=铁锄
+behavior_tag.golden_hoes=金锄
+behavior_tag.diamond_hoes=钻石锄
+
+# 特殊工具
+behavior_tag.shears=剪刀
+behavior_tag.fishing_rods=钓鱼竿
+behavior_tag.flint_and_steel=打火石
+behavior_tag.compasses=指南针
+behavior_tag.clocks=时钟
+behavior_tag.lead=拴绳
+behavior_tag.name_tags=命名牌
+behavior_tag.saddles=鞍
+
+# 食物细分
+behavior_tag.meats=肉类
+behavior_tag.raw_meats=生肉
+behavior_tag.cooked_meats=熟肉
+behavior_tag.fishes=鱼类
+behavior_tag.raw_fishes=生鱼
+behavior_tag.cooked_fishes=熟鱼
+behavior_tag.fruits=水果
+behavior_tag.vegetables=蔬菜
+behavior_tag.seeds=种子
+behavior_tag.golden_foods=金苹果类
+behavior_tag.soups=汤类
+behavior_tag.sweets=甜点
+
+# 药水相关
+behavior_tag.potions=药水
+behavior_tag.splash_potions=溅射药水
+behavior_tag.lingering_potions=滞留药水
+behavior_tag.tipped_arrows=药箭
+
+# 矿物相关
+behavior_tag.gems=宝石
+behavior_tag.ingots=锭
+behavior_tag.nuggets=粒
+behavior_tag.dusts=粉末
+behavior_tag.ores=矿石
+
+# 特殊物品
+behavior_tag.ender_pearls=末影珍珠
+behavior_tag.ender_eyes=末影之眼
+behavior_tag.blaze_rods=烈焰棒
+behavior_tag.ghast_tears=恶魂之泪
+behavior_tag.slimeballs=粘液球
+behavior_tag.magma_creams=岩浆膏
+behavior_tag.nether_stars=下界之星
+behavior_tag.dragon_breath=龙息
+behavior_tag.chorus_fruits=紫颂果
+behavior_tag.popped_chorus_fruits=紫颂果（爆裂）
+behavior_tag.experience_bottles=附魔瓶
+
+# 染料相关
+behavior_tag.dyes=染料
+behavior_tag.black_dyes=黑色染料
+behavior_tag.red_dyes=红色染料
+behavior_tag.green_dyes=绿色染料
+behavior_tag.brown_dyes=棕色染料
+behavior_tag.blue_dyes=蓝色染料
+behavior_tag.purple_dyes=紫色染料
+behavior_tag.cyan_dyes=青色染料
+behavior_tag.light_gray_dyes=淡灰色染料
+behavior_tag.gray_dyes=灰色染料
+behavior_tag.pink_dyes=粉色染料
+behavior_tag.lime_dyes=黄绿色染料
+behavior_tag.yellow_dyes=黄色染料
+behavior_tag.light_blue_dyes=淡蓝色染料
+behavior_tag.magenta_dyes=品红色染料
+behavior_tag.orange_dyes=橙色染料
+behavior_tag.white_dyes=白色染料
+
+# 桶类
+behavior_tag.buckets=桶
+behavior_tag.water_buckets=水桶
+behavior_tag.lava_buckets=岩浆桶
+behavior_tag.milk_buckets=奶桶
+behavior_tag.empty_buckets=空桶
+
+# 书本类
+behavior_tag.books=书
+behavior_tag.enchanted_books=附魔书
+behavior_tag.written_books=成书
+behavior_tag.writable_books=书与笔
+behavior_tag.paper=纸
+
+# 附魔书细分
+behavior_tag.enchanted_books.any=附魔书（有附魔）
+behavior_tag.enchanted_books.multiple=多附魔书
+behavior_tag.enchanted_books.single=单附魔书
+behavior_tag.enchanted_books.max_level=满级附魔书
+
+# 附魔书 - 武器附魔
+behavior_tag.enchanted_books.weapon=武器附魔书
+behavior_tag.enchanted_books.sharpness=锋利附魔书
+behavior_tag.enchanted_books.smite=亡灵杀手附魔书
+behavior_tag.enchanted_books.bane_of_arthropods=节肢杀手附魔书
+behavior_tag.enchanted_books.fire_aspect=火焰附加附魔书
+behavior_tag.enchanted_books.looting=抢夺附魔书
+behavior_tag.enchanted_books.knockback=击退附魔书
+behavior_tag.enchanted_books.sweeping=横扫之刃附魔书
+behavior_tag.enchanted_books.power=力量附魔书
+behavior_tag.enchanted_books.punch=冲击附魔书
+behavior_tag.enchanted_books.flame=火矢附魔书
+behavior_tag.enchanted_books.infinity=无限附魔书
+
+# 附魔书 - 工具附魔
+behavior_tag.enchanted_books.tool=工具附魔书
+behavior_tag.enchanted_books.efficiency=效率附魔书
+behavior_tag.enchanted_books.silk_touch=精准采集附魔书
+behavior_tag.enchanted_books.fortune=时运附魔书
+
+# 附魔书 - 盔甲附魔
+behavior_tag.enchanted_books.armor=盔甲附魔书
+behavior_tag.enchanted_books.protection=保护附魔书
+behavior_tag.enchanted_books.fire_protection=火焰保护附魔书
+behavior_tag.enchanted_books.feather_falling=摔落保护附魔书
+behavior_tag.enchanted_books.blast_protection=爆炸保护附魔书
+behavior_tag.enchanted_books.projectile_protection=弹射物保护附魔书
+behavior_tag.enchanted_books.respiration=水下呼吸附魔书
+behavior_tag.enchanted_books.aqua_affinity=水下速掘附魔书
+behavior_tag.enchanted_books.thorns=荆棘附魔书
+behavior_tag.enchanted_books.depth_strider=深海探索者附魔书
+behavior_tag.enchanted_books.frost_walker=冰霜行者附魔书
+
+# 附魔书 - 通用附魔
+behavior_tag.enchanted_books.utility=通用附魔书
+behavior_tag.enchanted_books.unbreaking=耐久附魔书
+behavior_tag.enchanted_books.mending=经验修补附魔书
+behavior_tag.enchanted_books.binding_curse=绑定诅咒附魔书
+behavior_tag.enchanted_books.vanishing_curse=消失诅咒附魔书
+
+# 附魔书 - 特殊附魔
+behavior_tag.enchanted_books.fishing=钓鱼附魔书
+behavior_tag.enchanted_books.luck_of_the_sea=海之眷顾附魔书
+behavior_tag.enchanted_books.lure=饵钓附魔书
+
+# 附魔书 - 诅咒附魔
+behavior_tag.enchanted_books.cursed=诅咒附魔书
+
+# 附魔书 - 基于类型的通用检测（支持模组附魔）
+behavior_tag.enchanted_books.weapon_type=剑类附魔书
+behavior_tag.enchanted_books.bow_type=弓类附魔书
+behavior_tag.enchanted_books.digger_type=工具类附魔书
+behavior_tag.enchanted_books.armor_type=盔甲类附魔书
+behavior_tag.enchanted_books.armor_head_type=头盔附魔书
+behavior_tag.enchanted_books.armor_chest_type=胸甲附魔书
+behavior_tag.enchanted_books.armor_legs_type=护腿附魔书
+behavior_tag.enchanted_books.armor_feet_type=靴子附魔书
+behavior_tag.enchanted_books.fishing_rod_type=钓鱼竿附魔书
+behavior_tag.enchanted_books.breakable_type=耐久类附魔书
+behavior_tag.enchanted_books.all_type=通用附魔书
+behavior_tag.enchanted_books.protection_type=保护类附魔书
+behavior_tag.enchanted_books.damage_type=伤害类附魔书
+behavior_tag.enchanted_books.curse_type=诅咒类附魔书
+behavior_tag.enchanted_books.treasure_type=宝藏附魔书
+
+# 生物掉落物
+behavior_tag.mob_drops=生物掉落物
+behavior_tag.bones=骨头
+behavior_tag.rotten_flesh=腐肉
+behavior_tag.strings=线
+behavior_tag.feathers=羽毛
+behavior_tag.leathers=皮革
+behavior_tag.rabbit_hides=兔子皮
+behavior_tag.rabbit_feet=兔子脚
+
+# 红石机械
+behavior_tag.redstone_components=红石元件
+behavior_tag.hoppers=漏斗
+behavior_tag.dispensers=发射器
+behavior_tag.droppers=投掷器
+behavior_tag.observers=侦测器
+behavior_tag.pistons=活塞
+
+# 装饰类
+behavior_tag.decorations=装饰品
+behavior_tag.paintings=画
+behavior_tag.item_frames=物品展示框
+behavior_tag.flower_pots=花盆
+behavior_tag.armor_stands=盔甲架
+behavior_tag.end_crystals=末影水晶
+
+# 杂项
+behavior_tag.fireworks=烟花
+behavior_tag.music_discs=音乐唱片
+behavior_tag.maps=地图
+behavior_tag.eggs=鸡蛋
+behavior_tag.snowballs=雪球
+behavior_tag.fire_charges=火焰弹
+
+# 矿物词典属性
+attribute.ore_dict=矿物词典: %s
+
+# 1.12.2 矿物词典兼容标签
+behavior_tag.ingot_iron=铁锭(矿辞)
+behavior_tag.ingot_gold=金锭(矿辞)
+behavior_tag.ingot_copper=铜锭(矿辞)
+behavior_tag.ingot_tin=锡锭(矿辞)
+behavior_tag.ingot_silver=银锭(矿辞)
+behavior_tag.ingot_lead=铅锭(矿辞)
+behavior_tag.ingot_aluminum=铝锭(矿辞)
+behavior_tag.ingot_nickel=镍锭(矿辞)
+behavior_tag.ingot_platinum=铂锭(矿辞)
+behavior_tag.ingot_steel=钢锭(矿辞)
+behavior_tag.ingot_bronze=青铜锭(矿辞)
+behavior_tag.ingot_brass=黄铜锭(矿辞)
+behavior_tag.ingot_electrum=琥珀金锭(矿辞)
+behavior_tag.ingot_invar=因瓦合金锭(矿辞)
+behavior_tag.ingot_constantan=康铜锭(矿辞)
+behavior_tag.ingot_uranium=铀锭(矿辞)
+behavior_tag.ingot_osmium=锇锭(矿辞)
+
+behavior_tag.nugget_iron=铁粒(矿辞)
+behavior_tag.nugget_gold=金粒(矿辞)
+behavior_tag.nugget_copper=铜粒(矿辞)
+behavior_tag.nugget_silver=银粒(矿辞)
+behavior_tag.nugget_lead=铅粒(矿辞)
+
+behavior_tag.block_iron=铁块(矿辞)
+behavior_tag.block_gold=金块(矿辞)
+behavior_tag.block_copper=铜块(矿辞)
+behavior_tag.block_coal=煤炭块(矿辞)
+behavior_tag.block_diamond=钻石块(矿辞)
+behavior_tag.block_emerald=绿宝石块(矿辞)
+behavior_tag.block_lapis=青金石块(矿辞)
+behavior_tag.block_redstone=红石块(矿辞)
+
+behavior_tag.ore_iron=铁矿石(矿辞)
+behavior_tag.ore_gold=金矿石(矿辞)
+behavior_tag.ore_copper=铜矿石(矿辞)
+behavior_tag.ore_tin=锡矿石(矿辞)
+behavior_tag.ore_silver=银矿石(矿辞)
+behavior_tag.ore_lead=铅矿石(矿辞)
+behavior_tag.ore_aluminum=铝矿石(矿辞)
+behavior_tag.ore_nickel=镍矿石(矿辞)
+behavior_tag.ore_platinum=铂矿石(矿辞)
+behavior_tag.ore_uranium=铀矿石(矿辞)
+behavior_tag.ore_osmium=锇矿石(矿辞)
+
+behavior_tag.dust_iron=铁粉(矿辞)
+behavior_tag.dust_gold=金粉(矿辞)
+behavior_tag.dust_copper=铜粉(矿辞)
+behavior_tag.dust_tin=锡粉(矿辞)
+behavior_tag.dust_silver=银粉(矿辞)
+behavior_tag.dust_lead=铅粉(矿辞)
+behavior_tag.dust_coal=煤粉(矿辞)
+behavior_tag.dust_charcoal=木炭粉(矿辞)
+behavior_tag.dust_obsidian=黑曜石粉(矿辞)
+behavior_tag.dust_wood=木浆(矿辞)
+
+behavior_tag.gem_diamond=钻石(矿辞)
+behavior_tag.gem_emerald=绿宝石(矿辞)
+behavior_tag.gem_quartz=石英(矿辞)
+behavior_tag.gem_lapis=青金石(矿辞)
+behavior_tag.gem_ruby=红宝石(矿辞)
+behavior_tag.gem_sapphire=蓝宝石(矿辞)
+behavior_tag.gem_peridot=橄榄石(矿辞)
+
+behavior_tag.material_wood=木材(矿辞)
+behavior_tag.material_stone=石头(矿辞)
+behavior_tag.material_cobblestone=圆石(矿辞)
+behavior_tag.material_gravel=沙砾(矿辞)
+behavior_tag.material_sand=沙子(矿辞)
+behavior_tag.material_dirt=泥土(矿辞)
+behavior_tag.material_clay=黏土(矿辞)
+behavior_tag.material_glass=玻璃(矿辞)
+behavior_tag.material_wool=羊毛(矿辞)
+
+behavior_tag.crop_wheat=小麦(矿辞)
+behavior_tag.crop_carrot=胡萝卜(矿辞)
+behavior_tag.crop_potato=马铃薯(矿辞)
+behavior_tag.crop_beetroot=甜菜根(矿辞)
+behavior_tag.crop_nether_wart=地狱疣(矿辞)
+behavior_tag.crop_cactus=仙人掌(矿辞)
+behavior_tag.crop_sugarcane=甘蔗(矿辞)
+behavior_tag.crop_melon=西瓜(矿辞)
+behavior_tag.crop_pumpkin=南瓜(矿辞)
+
+behavior_tag.seed_wheat=小麦种子(矿辞)
+behavior_tag.seed_carrot=胡萝卜种子(矿辞)
+behavior_tag.seed_potato=马铃薯种子(矿辞)
+behavior_tag.seed_beetroot=甜菜种子(矿辞)
+behavior_tag.seed_pumpkin=南瓜种子(矿辞)
+behavior_tag.seed_melon=西瓜种子(矿辞)
+
+behavior_tag.food_meat_raw=生肉(矿辞)
+behavior_tag.food_meat_cooked=熟肉(矿辞)
+behavior_tag.food_fish_raw=生鱼(矿辞)
+behavior_tag.food_fish_cooked=熟鱼(矿辞)
+behavior_tag.food_vegetable=蔬菜(矿辞)
+behavior_tag.food_fruit=水果(矿辞)
+behavior_tag.food_berry=浆果(矿辞)
+behavior_tag.food_mushroom=蘑菇(矿辞)
+behavior_tag.food_nut=坚果(矿辞)
+behavior_tag.food_spice=香料(矿辞)
+behavior_tag.food_egg=蛋(矿辞)
+behavior_tag.food_sugar=糖(矿辞)
+
+behavior_tag.tool_pickaxe=镐(矿辞)
+behavior_tag.tool_axe=斧(矿辞)
+behavior_tag.tool_shovel=铲(矿辞)
+behavior_tag.tool_hoe=锄(矿辞)
+behavior_tag.tool_sword=剑(矿辞)
+behavior_tag.tool_shears=剪刀(矿辞)
+behavior_tag.tool_bow=弓(矿辞)
+behavior_tag.tool_fishing_rod=钓鱼竿(矿辞)
+
+behavior_tag.armor_helmet=头盔(矿辞)
+behavior_tag.armor_chestplate=胸甲(矿辞)
+behavior_tag.armor_leggings=护腿(矿辞)
+behavior_tag.armor_boots=靴子(矿辞)
+
+behavior_tag.circuit_basic=基础电路(矿辞)
+behavior_tag.circuit_advanced=高级电路(矿辞)
+behavior_tag.circuit_elite=精英电路(矿辞)
+behavior_tag.circuit_ultimate=终极电路(矿辞)
+
+behavior_tag.cable_copper=铜线缆(矿辞)
+behavior_tag.cable_gold=金线缆(矿辞)
+behavior_tag.cable_iron=铁线缆(矿辞)
+behavior_tag.pipe_fluid=流体管道(矿辞)
+behavior_tag.pipe_item=物品管道(矿辞)
+behavior_tag.pipe_energy=能量管道(矿辞)
+
+behavior_tag.battery=电池(矿辞)
+behavior_tag.capacitor=电容(矿辞)
+behavior_tag.cell_empty=空单元(矿辞)
+behavior_tag.cell_fluid=流体单元(矿辞)
+
+behavior_tag.rubber=橡胶(矿辞)
+behavior_tag.plastic=塑料(矿辞)
+behavior_tag.silicon=硅(矿辞)
+behavior_tag.sulfur=硫磺(矿辞)
+behavior_tag.saltpeter=硝石(矿辞)
+behavior_tag.salt=盐(矿辞)
+
+behavior_tag.container_empty=空容器(矿辞)
+behavior_tag.bucket_empty=空桶(矿辞)
+behavior_tag.bucket_water=水桶(矿辞)
+behavior_tag.bucket_lava=岩浆桶(矿辞)
+behavior_tag.bucket_milk=牛奶桶(矿辞)
+
+# ===== 冰与火之歌(Ice and Fire)模组标签 =====
+behavior_tag.iceandfire_dragon_scales=龙鳞
+behavior_tag.iceandfire_dragon_bones=龙骨
+behavior_tag.iceandfire_wither_bones=凋零龙骨
+behavior_tag.iceandfire_fire_dragon_heart=火龙心脏
+behavior_tag.iceandfire_ice_dragon_heart=冰龙心脏
+behavior_tag.iceandfire_lightning_dragon_heart=电龙心脏
+behavior_tag.iceandfire_dragon_heart=龙心脏
+behavior_tag.iceandfire_fire_dragon_blood=火龙血
+behavior_tag.iceandfire_ice_dragon_blood=冰龙血
+behavior_tag.iceandfire_lightning_dragon_blood=电龙血
+behavior_tag.iceandfire_dragon_blood=龙血
+behavior_tag.iceandfire_fire_dragonsteel=火龙钢
+behavior_tag.iceandfire_ice_dragonsteel=冰龙钢
+behavior_tag.iceandfire_lightning_dragonsteel=电龙钢
+behavior_tag.iceandfire_dragonsteel=龙钢
+behavior_tag.iceandfire_dragon_egg=龙蛋
+behavior_tag.iceandfire_fire_dragon_egg=火龙蛋
+behavior_tag.iceandfire_ice_dragon_egg=冰龙蛋
+behavior_tag.iceandfire_pixie_dust=精灵尘
+behavior_tag.iceandfire_pixie_wings=精灵翅膀
+behavior_tag.iceandfire_siren_tear=塞壬眼泪
+behavior_tag.iceandfire_shiny_scales=闪光鳞片
+behavior_tag.iceandfire_hippogryph_talon=骏鹰利爪
+behavior_tag.iceandfire_hippogryph_feather=骏鹰羽毛
+behavior_tag.iceandfire_cyclops_eye=独眼巨人眼
+behavior_tag.iceandfire_troll_leather=巨魔皮革
+behavior_tag.iceandfire_amphithere_feather=飞蛇羽毛
+behavior_tag.iceandfire_amphithere_macaw=飞蛇鹦鹉
+behavior_tag.iceandfire_deathworm_chitin=死亡蠕虫甲壳
+behavior_tag.iceandfire_myremex_jaw=蚁狮颚
+behavior_tag.iceandfire_myremex_resin=蚁狮树脂
+behavior_tag.iceandfire_stymphalian_bird_feather=斯廷法利斯湖怪鸟羽毛
+behavior_tag.iceandfire_stymphalian_arrow=怪鸟箭
+behavior_tag.iceandfire_ectoplasm=灵质
+behavior_tag.iceandfire_dread_shard=恐惧碎片
+behavior_tag.iceandfire_dread_key=恐惧钥匙
+behavior_tag.iceandfire_dragon_armor=龙盔甲
+behavior_tag.iceandfire_dragon_weapon=龙武器
+behavior_tag.iceandfire_silver_weapon=银武器
+behavior_tag.iceandfire_silver_armor=银盔甲
+behavior_tag.iceandfire_sapphire_item=蓝宝石物品
+behavior_tag.iceandfire_bestiary=龙之书
+behavior_tag.iceandfire_lectern=龙书台
+behavior_tag.iceandfire_dragon_skull=龙头骨
+behavior_tag.iceandfire_dragon_horn=龙号角
+behavior_tag.iceandfire_summoning_crystal=召唤水晶
+behavior_tag.iceandfire_dragon_meal=龙食
+behavior_tag.iceandfire_fire_stew=火龙炖菜
+behavior_tag.iceandfire_frost_stew=冰霜炖菜
+behavior_tag.iceandfire_lightning_stew=雷电炖菜
+
+# ===== 斯巴达武器(SpartanWeaponry)模组标签 =====
+behavior_tag.spartan_dagger=匕首
+behavior_tag.spartan_longsword=长剑
+behavior_tag.spartan_katana=武士刀
+behavior_tag.spartan_saber=军刀
+behavior_tag.spartan_rapier=刺剑
+behavior_tag.spartan_greatsword=巨剑
+behavior_tag.spartan_hammer=锤子
+behavior_tag.spartan_warhammer=战锤
+behavior_tag.spartan_spear=长矛
+behavior_tag.spartan_halberd=戟
+behavior_tag.spartan_pike=长枪
+behavior_tag.spartan_lance=骑枪
+behavior_tag.spartan_longbow=长弓
+behavior_tag.spartan_crossbow=弩
+behavior_tag.spartan_throwing_knife=飞刀
+behavior_tag.spartan_throwing_axe=飞斧
+behavior_tag.spartan_javelin=标枪
+behavior_tag.spartan_boomerang=回旋镖
+behavior_tag.spartan_battleaxe=战斧
+behavior_tag.spartan_mace=钉头锤
+behavior_tag.spartan_glaive=长柄刀
+behavior_tag.spartan_staff=法杖
+behavior_tag.spartan_wooden_weapon=木武器
+behavior_tag.spartan_stone_weapon=石武器
+behavior_tag.spartan_iron_weapon=铁武器
+behavior_tag.spartan_golden_weapon=金武器
+behavior_tag.spartan_diamond_weapon=钻石武器
+behavior_tag.spartan_bronze_weapon=青铜武器
+behavior_tag.spartan_steel_weapon=钢武器
+behavior_tag.spartan_silver_weapon=银武器
+behavior_tag.spartan_shield=斯巴达盾牌
+behavior_tag.spartan_basic_shield=基础盾
+behavior_tag.spartan_tower_shield=塔盾
+behavior_tag.spartan_heat_shield=隔热盾
+behavior_tag.spartan_riot_shield=防暴盾
+
+# ===== 饰品栏(Baubles)模组标签 =====
+behavior_tag.bauble_amulet=护身符饰品
+behavior_tag.bauble_ring=戒指饰品
+behavior_tag.bauble_belt=腰带饰品
+behavior_tag.bauble_head=头部饰品
+behavior_tag.bauble_body=身体饰品
+behavior_tag.bauble_charm=护符饰品
+behavior_tag.bauble_trinket=小饰品
+behavior_tag.bauble_any=任意饰品
+behavior_tag.bountiful_bauble=丰富饰品
+behavior_tag.trinkets_bauble=饰品与护符
+behavior_tag.bauble_vault_item=饰品库物品
+behavior_tag.bauble_speed=速度饰品
+behavior_tag.bauble_strength=力量饰品
+behavior_tag.bauble_resistance=抗性饰品
+behavior_tag.bauble_regeneration=恢复饰品
+behavior_tag.bauble_jump=跳跃饰品
+behavior_tag.bauble_night_vision=夜视饰品
+behavior_tag.bauble_water_breathing=水下呼吸饰品
+behavior_tag.bauble_fire_resistance=火焰抗性饰品
+behavior_tag.bauble_flight=飞行饰品
+behavior_tag.bauble_invisibility=隐身饰品
+behavior_tag.bauble_luck=幸运饰品
+behavior_tag.bauble_mining=挖掘饰品
+
+# ===== 恐怖生物(Lycanites Mobs)模组标签 =====
+behavior_tag.lycanites_part=生物部件
+behavior_tag.lycanites_soulstone=灵魂石
+behavior_tag.lycanites_soulgazer=灵魂凝视者
+behavior_tag.lycanites_creature_soul=生物灵魂
+behavior_tag.lycanites_summoning_staff=召唤法杖
+behavior_tag.lycanites_scepter=权杖
+behavior_tag.lycanites_equipment=生物装备
+behavior_tag.lycanites_mob_drop=生物掉落物
+
+# ===== 战斗塔(Battle Towers)模组标签 =====
+behavior_tag.battletowers_key=战斗塔钥匙
+behavior_tag.battletowers_loot=战斗塔战利品
+
+# ===== 失落城市(Lost Cities)模组标签 =====
+behavior_tag.lostcities_item=失落城市物品
+
+# ===== 更好的矿井(Better Mineshafts)模组标签 =====
+behavior_tag.bettermineshafts_item=更好的矿井物品
+
+# ===== 悬赏(Bountiful)模组标签 =====
+behavior_tag.bountiful_bounty=悬赏令
+behavior_tag.bountiful_decree=法令
+behavior_tag.bountiful_item=悬赏模组物品
+
+# ===== 任务(FTB Quests)模组标签 =====
+behavior_tag.ftbquests_book=任务书
+behavior_tag.ftbquests_lootcrate=战利品箱
+behavior_tag.ftbquests_item=FTB任务物品
+
+# ===== 传送石碑(Waystones)模组标签 =====
+behavior_tag.waystones_waystone=传送石碑
+behavior_tag.waystones_scroll=传送卷轴
+behavior_tag.waystones_warp_stone=传送石
+behavior_tag.waystones_item=传送石碑物品
+
+# ===== 自然指南针(Nature's Compass)模组标签 =====
+behavior_tag.naturescompass_compass=自然指南针
+
+# ===== 四季(Serene Seasons)模组标签 =====
+behavior_tag.sereneseasons_calendar=季节日历
+behavior_tag.sereneseasons_greenhouse_glass=温室玻璃
+behavior_tag.sereneseasons_season_sensor=季节传感器
+
+# ===== 缩放生命(Scaling Health)模组标签 =====
+behavior_tag.scalinghealth_cursed_heart=诅咒之心
+behavior_tag.scalinghealth_enchanted_heart=附魔之心
+behavior_tag.scalinghealth_champion_heart=冠军之心
+behavior_tag.scalinghealth_difficulty_changer=难度调节器
+behavior_tag.scalinghealth_bandages=绷带
+behavior_tag.scalinghealth_medkit=医疗包
+behavior_tag.scalinghealth_heart_container=心之容器
+
+# ===== 精英怪(Champions/Infernal Mobs)模组标签 =====
+behavior_tag.champions_rank_item=精英物品
+behavior_tag.infernalmobs_loot=精英怪战利品
+
+# ===== 简单难度(Simple Difficulty)模组标签 =====
+behavior_tag.simpledifficulty_canteen=水壶
+behavior_tag.simpledifficulty_juice=果汁
+behavior_tag.simpledifficulty_purified_water=净化水
+behavior_tag.simpledifficulty_water_filter=滤水器
+behavior_tag.simpledifficulty_heater=加热器
+behavior_tag.simpledifficulty_chiller=冷却器
+behavior_tag.simpledifficulty_thermometer=温度计
+behavior_tag.simpledifficulty_item=简单难度物品
+
+# ===== 闪避系统(Elenai Dodge)模组标签 =====
+behavior_tag.elenaidodge_ring=闪避戒指
+behavior_tag.elenaidodge_item=闪避系统物品
+
+# ===== 战斗革新(RLCombat)模组标签 =====
+behavior_tag.rlcompat_item=RL战斗物品
+
+# ===== 史诗攻城(Epic Siege Mod)模组标签 =====
+behavior_tag.epicsiege_item=史诗攻城物品
+
+# ===== 更多生物群系(Biomes O' Plenty)模组标签 =====
+behavior_tag.biomesoplenty_gem=生物群系宝石
+behavior_tag.biomesoplenty_wood=生物群系木材
+behavior_tag.biomesoplenty_plant=生物群系植物
+behavior_tag.biomesoplenty_food=生物群系食物
+behavior_tag.biomesoplenty_item=生物群系物品
+
+# ===== 遍历(Traverse)模组标签 =====
+behavior_tag.traverse_item=遍历模组物品
+
+# ===== 真实地形(RTG)模组标签 =====
+behavior_tag.rtg_item=真实地形物品
+
+# ===== 更好的洞穴(Better Caves)模组标签 =====
+behavior_tag.bettercaves_item=更好的洞穴物品
+
+# ===== 更好的下界(Better Nether)模组标签 =====
+behavior_tag.betternether_item=更好的下界物品
+
+# ===== 地牢(DLDungeons)模组标签 =====
+behavior_tag.dldungeons_item=地牢物品
+
+# ===== 肉鸽地牢(Roguelike Dungeons)模组标签 =====
+behavior_tag.roguelike_dungeon_loot=肉鸽地牢战利品
+
+# ===== 遗迹(Ruins)模组标签 =====
+behavior_tag.ruins_item=遗迹物品
+
+# ===== 复杂结构(Recurrent Complex)模组标签 =====
+behavior_tag.reccomplex_item=复杂结构物品
+
+# ===== 古代城市(Antique Cities)模组标签 =====
+behavior_tag.antiquecities_item=古代城市物品
+
+# ===== 深层维度(Deeper Depths)模组标签 =====
+behavior_tag.deeperdepths_item=深层维度物品
+
+# ===== 狩猎维度(Hunting Dimension)模组标签 =====
+behavior_tag.huntingdim_frame=狩猎维度框架
+behavior_tag.huntingdim_item=狩猎维度物品
+
+# ===== 重制下界(Netherized)模组标签 =====
+behavior_tag.netherized_item=重制下界物品
+
+# ===== 冰冻海洋(Frozen Ocean)模组标签 =====
+behavior_tag.frozenocean_item=冰冻海洋物品
+
+# ===== 卷轴(Scrolls)模组标签 =====
+behavior_tag.scrolls_scroll=魔法卷轴
+behavior_tag.scrolls_item=卷轴模组物品
+
+# ===== 神器(RLArtifacts)模组标签 =====
+behavior_tag.rlartifacts_artifact=神器
+
+# ===== 龙钢(RLDragonsteel)模组标签 =====
+behavior_tag.rldragonsteel_dragonsteel=RL龙钢
+behavior_tag.rldragonsteel_item=RL龙钢物品
+
+# ===== 寄生虫(SRParasites)模组标签 =====
+behavior_tag.srparasites_lure=寄生虫诱饵
+behavior_tag.srparasites_evolution=进化物品
+behavior_tag.srparasites_living=活体物品
+behavior_tag.srparasites_dropped_item=掉落物
+behavior_tag.srparasites_item=寄生虫物品
+
+# ===== 亡灵崛起(Fish's Undead Rising)模组标签 =====
+behavior_tag.undeadrising_item=亡灵崛起物品
+
+# ===== 喇叭骷髅(Trumpet Skeleton)模组标签 =====
+behavior_tag.trumpetskeleton_trumpet=喇叭
+behavior_tag.trumpetskeleton_item=喇叭骷髅物品
+
+# ===== 动物伙伴(Familiar Fauna)模组标签 =====
+behavior_tag.familiarfauna_item=动物伙伴物品
+
+# ===== 通用冒险分类标签 =====
+behavior_tag.adventure_weapon=冒险武器
+behavior_tag.adventure_armor=冒险盔甲
+behavior_tag.adventure_boss_loot=Boss战利品
+behavior_tag.adventure_consumable=冒险消耗品
+behavior_tag.adventure_tool=冒险工具
+behavior_tag.adventure_treasure=冒险宝藏
+behavior_tag.adventure_key=冒险钥匙
+behavior_tag.adventure_map_item=冒险地图物品
+behavior_tag.adventure_teleport=冒险传送物品
+behavior_tag.adventure_quest_item=冒险任务物品
+behavior_tag.adventure_bauble=冒险饰品
+behavior_tag.adventure_material_rare=稀有冒险材料
 
 # InTag 标签翻译（forge命名空间）
 tag.armors=盔甲

@@ -113,7 +113,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             }
             String destroyListMode = cap.isDestroyWhitelistMode() ? "白名单" : "黑名单";
             String destroyStatus = cap.isDestroyEnabled() ? "开" : "关";
-            TextFormatting statusColor = cap.isDestroyEnabled() ? TextFormatting.RED : TextFormatting.GREEN;
+            TextFormatting statusColor = cap.isDestroyEnabled() ? TextFormatting.GREEN : TextFormatting.RED;
             tooltip.add(TextFormatting.GRAY + "销毁模式: " + TextFormatting.RED + destroyModeType + "-" + destroyListMode 
                 + TextFormatting.GRAY + " (" + statusColor + destroyStatus + TextFormatting.GRAY + ")");
         } else {
@@ -580,15 +580,17 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 return attrs != null && !attrs.isEmpty();
                 
             case MOD:
+                // 检查模组过滤槽位
+                for (int i = 0; i < 9; i++) {
+                    String modId = capability.getDestroyModFilterSlot(i);
+                    if (modId != null && !modId.isEmpty()) {
+                        return true;
+                    }
+                }
+                // 兼容旧数据：检查模组过滤列表
                 List<String> filterMods = capability.getDestroyFilterMods();
                 if (filterMods != null && !filterMods.isEmpty()) {
                     return true;
-                }
-                for (int i = 0; i < 9; i++) {
-                    String filterName = capability.getDestroyFilterSlot(i);
-                    if (filterName != null && !filterName.isEmpty()) {
-                        return true;
-                    }
                 }
                 return false;
                 
@@ -616,7 +618,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getDestroyFilterSlot(i);
             if (filterName != null && !filterName.isEmpty()) {
-                if (matchesDestroyItemFilter(filterName, itemStack, itemName, matchNbt, matchDurability)) {
+                if (matchesDestroyItemFilter(capability, i, filterName, itemStack, itemName, matchNbt, matchDurability)) {
                     isInList = true;
                     break;
                 }
@@ -629,7 +631,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
     /**
      * 销毁模式 - 物品匹配检查
      */
-    private boolean matchesDestroyItemFilter(String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
+    private boolean matchesDestroyItemFilter(IRsRingCapability capability, int slotIndex, String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
         if (!filterName.equals(itemName)) {
             return false;
         }
@@ -638,36 +640,29 @@ public class ItemAbsorbRing extends Item implements IBauble {
             return true;
         }
         
-        try {
-            net.minecraft.item.Item filterItem = net.minecraft.item.Item.REGISTRY.getObject(new net.minecraft.util.ResourceLocation(filterName));
-            if (filterItem == null) return true;
-            ItemStack filterStack = new ItemStack(filterItem);
-            
-            if (matchDurability) {
-                int filterDamage = filterStack.getItemDamage();
-                int itemDamage = itemStack.getItemDamage();
-                if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
-                    return false;
-                }
+        // 获取存储的参考NBT
+        net.minecraft.nbt.NBTTagCompound storedNbt = capability.getDestroyFilterSlotNBT(slotIndex);
+        
+        if (matchDurability) {
+            int itemDamage = itemStack.getItemDamage();
+            int filterDamage = (storedNbt != null && storedNbt.hasKey("rsring_filter_damage")) ? storedNbt.getInteger("rsring_filter_damage") : 0;
+            if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
+                return false;
             }
+        }
+        
+        if (matchNbt) {
+            net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
             
-            if (matchNbt) {
-                net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
-                net.minecraft.nbt.NBTTagCompound filterNbt = filterStack.getTagCompound();
-                
-                if (itemNbt == null && filterNbt == null) return true;
-                if (itemNbt == null || filterNbt == null) return false;
-                
-                net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
-                net.minecraft.nbt.NBTTagCompound filterNbtCopy = filterNbt.copy();
-                if (!matchDurability) {
-                    itemNbtCopy.removeTag("Damage");
-                    filterNbtCopy.removeTag("Damage");
-                }
-                return itemNbtCopy.equals(filterNbtCopy);
-            }
-        } catch (Exception e) {
-            // 忽略
+            if (itemNbt == null && storedNbt == null) return true;
+            if (itemNbt == null || storedNbt == null) return false;
+            
+            net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+            net.minecraft.nbt.NBTTagCompound filterNbtCopy = storedNbt.copy();
+            // 移除内部使用的耐久度标记，不作为NBT匹配的一部分
+            itemNbtCopy.removeTag("rsring_filter_damage");
+            filterNbtCopy.removeTag("rsring_filter_damage");
+            return itemNbtCopy.equals(filterNbtCopy);
         }
         
         return true;
@@ -675,25 +670,42 @@ public class ItemAbsorbRing extends Item implements IBauble {
     
     /**
      * 销毁模式 - 模组过滤
+     * 模组过滤槽位存储完整物品ID（modId:itemName格式），过滤时提取模组ID
+     * 支持NBT和耐久匹配选项
      */
     private boolean shouldDestroyByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
         String itemModId = itemStack.getItem().getRegistryName().getNamespace();
-        List<String> filterMods = capability.getDestroyFilterMods();
+        boolean matchNbt = capability.shouldDestroyMatchNbt();
+        boolean matchDurability = capability.shouldDestroyMatchDurability();
         
+        // 检查模组过滤槽位
         boolean isInList = false;
-        for (String modId : filterMods) {
-            if (modId != null && !modId.isEmpty() && modId.equals(itemModId)) {
-                isInList = true;
-                break;
+        for (int i = 0; i < 9; i++) {
+            String slotData = capability.getDestroyModFilterSlot(i);
+            if (slotData != null && !slotData.isEmpty()) {
+                // 提取模组ID（支持完整物品ID格式 modId:itemName 或纯modId格式）
+                String filterModId;
+                if (slotData.contains(":")) {
+                    filterModId = slotData.substring(0, slotData.indexOf(":"));
+                } else {
+                    filterModId = slotData;
+                }
+                if (filterModId.equals(itemModId)) {
+                    // 模组ID匹配，进一步检查NBT和耐久（如果启用）
+                    if (matchesDestroyModFilterItem(capability, i, slotData, itemStack, matchNbt, matchDurability)) {
+                        isInList = true;
+                        break;
+                    }
+                }
             }
         }
         
+        // 兼容旧数据：检查模组过滤列表
         if (!isInList) {
-            for (int i = 0; i < 9; i++) {
-                String filterName = capability.getDestroyFilterSlot(i);
-                if (filterName != null && !filterName.isEmpty()) {
-                    String filterModId = filterName.contains(":") ? 
-                        filterName.substring(0, filterName.indexOf(":")) : "minecraft";
+            List<String> filterMods = capability.getDestroyFilterMods();
+            for (String modId : filterMods) {
+                if (modId != null && !modId.isEmpty()) {
+                    String filterModId = modId.contains(":") ? modId.substring(0, modId.indexOf(":")) : modId;
                     if (filterModId.equals(itemModId)) {
                         isInList = true;
                         break;
@@ -703,6 +715,48 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
         
         return isWhitelist ? isInList : !isInList;
+    }
+    
+    /**
+     * 销毁模式 - 模组过滤的NBT和耐久匹配
+     * 使用精确耐久值匹配（与精妙背包一致）
+     */
+    private boolean matchesDestroyModFilterItem(IRsRingCapability capability, int slotIndex, String filterItemId, ItemStack itemStack, boolean matchNbt, boolean matchDurability) {
+        if (!matchNbt && !matchDurability) {
+            return true;
+        }
+        
+        // 获取存储的参考NBT
+        net.minecraft.nbt.NBTTagCompound storedNbt = capability.getDestroyModFilterSlotNBT(slotIndex);
+        
+        // 检查耐久（精确值匹配）
+        if (matchDurability && itemStack.getItem().isDamageable()) {
+            int itemDamage = itemStack.getItemDamage();
+            int filterDamage = (storedNbt != null && storedNbt.hasKey("rsring_filter_damage")) ? storedNbt.getInteger("rsring_filter_damage") : 0;
+            if (filterDamage != itemDamage) {
+                return false;
+            }
+        }
+        
+        // 检查NBT
+        if (matchNbt) {
+            net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
+            
+            if (itemNbt == null && storedNbt == null) return true;
+            if (itemNbt == null || storedNbt == null) return false;
+            
+            net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+            net.minecraft.nbt.NBTTagCompound filterNbtCopy = storedNbt.copy();
+            // 移除内部使用的耐久度标记，不作为NBT匹配的一部分
+            itemNbtCopy.removeTag("rsring_filter_damage");
+            filterNbtCopy.removeTag("rsring_filter_damage");
+            
+            if (!itemNbtCopy.equals(filterNbtCopy)) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
@@ -752,16 +806,17 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 return attrs != null && !attrs.isEmpty();
                 
             case MOD:
-                // 模组过滤模式：检查模组列表或槽位
+                // 模组过滤模式：检查模组过滤槽位
+                for (int i = 0; i < 9; i++) {
+                    String modId = capability.getModFilterSlot(i);
+                    if (modId != null && !modId.isEmpty()) {
+                        return true;
+                    }
+                }
+                // 兼容旧数据：检查模组过滤列表
                 List<String> filterMods = capability.getFilterMods();
                 if (filterMods != null && !filterMods.isEmpty()) {
                     return true;
-                }
-                for (int i = 0; i < 9; i++) {
-                    String filterName = capability.getFilterSlot(i);
-                    if (filterName != null && !filterName.isEmpty()) {
-                        return true;
-                    }
                 }
                 return false;
                 
@@ -811,7 +866,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         for (int i = 0; i < 9; i++) {
             String filterName = capability.getFilterSlot(i);
             if (filterName != null && !filterName.isEmpty()) {
-                if (matchesItemFilter(filterName, itemStack, itemName, matchNbt, matchDurability)) {
+                if (matchesItemFilter(capability, i, filterName, itemStack, itemName, matchNbt, matchDurability)) {
                     isInList = true;
                     break;
                 }
@@ -827,8 +882,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
     
     /**
      * 检查物品是否匹配过滤条件
+     * @param capability 用于获取存储的NBT数据
+     * @param slotIndex 槽位索引，用于获取对应的NBT数据
      */
-    private boolean matchesItemFilter(String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
+    private boolean matchesItemFilter(IRsRingCapability capability, int slotIndex, String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
         // 简单ID匹配
         if (!filterName.equals(itemName)) {
             return false;
@@ -839,50 +896,40 @@ public class ItemAbsorbRing extends Item implements IBauble {
             return true;
         }
         
-        // 尝试获取过滤物品的参考
-        try {
-            net.minecraft.item.Item filterItem = net.minecraft.item.Item.REGISTRY.getObject(new net.minecraft.util.ResourceLocation(filterName));
-            if (filterItem == null) {
-                return true; // 物品不存在，回退到ID匹配
+        // 获取存储的参考NBT（用户放入物品时的NBT）
+        net.minecraft.nbt.NBTTagCompound storedNbt = capability.getFilterSlotNBT(slotIndex);
+        
+        // 耐久匹配
+        if (matchDurability) {
+            int itemDamage = itemStack.getItemDamage();
+            // 从存储的NBT中读取耐久值
+            int filterDamage = (storedNbt != null && storedNbt.hasKey("rsring_filter_damage")) ? storedNbt.getInteger("rsring_filter_damage") : 0;
+            if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
+                return false;
             }
-            ItemStack filterStack = new ItemStack(filterItem);
+        }
+        
+        // NBT匹配
+        if (matchNbt) {
+            net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
             
-            // 耐久匹配
-            if (matchDurability) {
-                int filterDamage = filterStack.getItemDamage();
-                int itemDamage = itemStack.getItemDamage();
-                // 检查是否都是损坏工具或有相同的损坏值
-                if (itemStack.getItem().isDamageable() && filterDamage != itemDamage) {
-                    return false;
-                }
+            // 如果两者都没有NBT，认为匹配
+            if (itemNbt == null && storedNbt == null) {
+                return true;
             }
-            
-            // NBT匹配
-            if (matchNbt) {
-                net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
-                net.minecraft.nbt.NBTTagCompound filterNbt = filterStack.getTagCompound();
-                
-                // 如果两者都没有NBT，认为匹配
-                if (itemNbt == null && filterNbt == null) {
-                    return true;
-                }
-                // 如果一个有NBT一个没有，不匹配
-                if (itemNbt == null || filterNbt == null) {
-                    return false;
-                }
-                // 比较NBT数据（忽略耐久相关的NBT，因为已经单独处理）
-                net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
-                net.minecraft.nbt.NBTTagCompound filterNbtCopy = filterNbt.copy();
-                if (!matchDurability) {
-                    itemNbtCopy.removeTag("Damage");
-                    filterNbtCopy.removeTag("Damage");
-                }
-                if (!itemNbtCopy.equals(filterNbtCopy)) {
-                    return false;
-                }
+            // 如果一个有NBT一个没有，不匹配
+            if (itemNbt == null || storedNbt == null) {
+                return false;
             }
-        } catch (Exception e) {
-            // 解析失败，回退到ID匹配
+            // 比较NBT数据
+            net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+            net.minecraft.nbt.NBTTagCompound filterNbtCopy = storedNbt.copy();
+            // 移除内部使用的耐久度标记，不作为NBT匹配的一部分
+            itemNbtCopy.removeTag("rsring_filter_damage");
+            filterNbtCopy.removeTag("rsring_filter_damage");
+            if (!itemNbtCopy.equals(filterNbtCopy)) {
+                return false;
+            }
         }
         
         return true;
@@ -890,30 +937,44 @@ public class ItemAbsorbRing extends Item implements IBauble {
     
     /**
      * 模组过滤匹配逻辑
-     * 支持NBT和耐久匹配选项（仅对槽位中的参考物品生效）
+     * 模组过滤槽位存储完整物品ID（modId:itemName格式），过滤时提取模组ID
+     * 支持NBT和耐久匹配选项
      */
     private boolean shouldFilterByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
         String itemModId = itemStack.getItem().getRegistryName().getNamespace();
-        List<String> filterMods = capability.getFilterMods();
+        boolean matchNbt = capability.shouldMatchNbt();
+        boolean matchDurability = capability.shouldMatchDurability();
         
-        // 检查是否在模组过滤列表中
+        // 检查模组过滤槽位
         boolean isInList = false;
-        for (String modId : filterMods) {
-            if (modId != null && !modId.isEmpty() && modId.equals(itemModId)) {
-                isInList = true;
-                break;
+        for (int i = 0; i < 9; i++) {
+            String slotData = capability.getModFilterSlot(i);
+            if (slotData != null && !slotData.isEmpty()) {
+                // 提取模组ID（支持完整物品ID格式 modId:itemName 或纯modId格式）
+                String filterModId;
+                if (slotData.contains(":")) {
+                    filterModId = slotData.substring(0, slotData.indexOf(":"));
+                } else {
+                    filterModId = slotData;
+                }
+                if (filterModId.equals(itemModId)) {
+                    // 模组ID匹配，进一步检查NBT和耐久（如果启用）
+                    if (matchesModFilterItem(capability, i, slotData, itemStack, matchNbt, matchDurability)) {
+                        isInList = true;
+                        break;
+                    }
+                }
             }
         }
         
-        // 如果没有配置模组过滤，检查槽位中的物品所属模组
+        // 兼容旧数据：检查模组过滤列表
         if (!isInList) {
-            for (int i = 0; i < 9; i++) {
-                String filterName = capability.getFilterSlot(i);
-                if (filterName != null && !filterName.isEmpty()) {
-                    // 从物品ID提取模组ID
-                    String filterModId = filterName.contains(":") ? 
-                        filterName.substring(0, filterName.indexOf(":")) : "minecraft";
+            List<String> filterMods = capability.getFilterMods();
+            for (String modId : filterMods) {
+                if (modId != null && !modId.isEmpty()) {
+                    String filterModId = modId.contains(":") ? modId.substring(0, modId.indexOf(":")) : modId;
                     if (filterModId.equals(itemModId)) {
+                        // 兼容旧数据不支持NBT/耐久匹配
                         isInList = true;
                         break;
                     }
@@ -926,6 +987,53 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             return isInList;
         }
+    }
+    
+    /**
+     * 检查物品是否匹配模组过滤槽位的参考物品（支持NBT和耐久匹配）
+     * 注意：模组过滤的耐久匹配使用精确值匹配（与精妙背包一致）
+     */
+    private boolean matchesModFilterItem(IRsRingCapability capability, int slotIndex, String filterItemId, ItemStack itemStack, boolean matchNbt, boolean matchDurability) {
+        // 如果不需要匹配NBT和耐久，直接返回true（模组ID已匹配）
+        if (!matchNbt && !matchDurability) {
+            return true;
+        }
+        
+        // 获取存储的参考NBT
+        net.minecraft.nbt.NBTTagCompound storedNbt = capability.getModFilterSlotNBT(slotIndex);
+        
+        // 检查耐久（精确值匹配）
+        if (matchDurability && itemStack.getItem().isDamageable()) {
+            int itemDamage = itemStack.getItemDamage();
+            int filterDamage = (storedNbt != null && storedNbt.hasKey("rsring_filter_damage")) ? storedNbt.getInteger("rsring_filter_damage") : 0;
+            if (filterDamage != itemDamage) {
+                return false;
+            }
+        }
+        
+        // 检查NBT
+        if (matchNbt) {
+            net.minecraft.nbt.NBTTagCompound itemNbt = itemStack.getTagCompound();
+            
+            if (itemNbt == null && storedNbt == null) {
+                return true;
+            }
+            if (itemNbt == null || storedNbt == null) {
+                return false;
+            }
+            
+            // 比较NBT（移除内部使用的耐久度标记）
+            net.minecraft.nbt.NBTTagCompound itemNbtCopy = itemNbt.copy();
+            net.minecraft.nbt.NBTTagCompound filterNbtCopy = storedNbt.copy();
+            itemNbtCopy.removeTag("rsring_filter_damage");
+            filterNbtCopy.removeTag("rsring_filter_damage");
+            
+            if (!itemNbtCopy.equals(filterNbtCopy)) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**

@@ -29,6 +29,12 @@ public class RsRingConfig implements IHasConfig {
         public boolean blockExternalCharging = true;
         // 严格模式：只有戴在饰品栏才能使用，默认为false
         public boolean strictMode = false;
+        // 低电量提醒阈值（百分比，0-100）
+        public int lowEnergyWarningThreshold = 5;
+        // 低电量提醒冷却时间（秒）
+        public int lowEnergyWarningCooldown = 180;
+        // 是否启用低电量提醒
+        public boolean enableLowEnergyWarning = true;
     }
     
     /**
@@ -137,17 +143,38 @@ public class RsRingConfig implements IHasConfig {
             "config.rsring.ring.manualChargeAmount",
             "config.rsring.ring.manualChargeAmount");
 
-        absorbRing.blockExternalCharging = config.getBoolean("blockExternalCharging",
+        net.minecraftforge.common.config.Property blockExternalChargingProp = config.get(RsRingMod.MODID + ".ring", "blockExternalCharging", true);
+        blockExternalChargingProp.setLanguageKey("config.rsring.ring.blockExternalCharging");
+        blockExternalChargingProp.setComment("新合成的戒指默认是否密封");
+        absorbRing.blockExternalCharging = blockExternalChargingProp.getBoolean();
+        
+        net.minecraftforge.common.config.Property strictModeProp = config.get(RsRingMod.MODID + ".ring", "strictMode", false);
+        strictModeProp.setLanguageKey("config.rsring.ring.strictMode");
+        strictModeProp.setComment("只有戴在饰品栏时戒指才能使用");
+        absorbRing.strictMode = strictModeProp.getBoolean();
+        
+        // 低电量提醒配置
+        absorbRing.enableLowEnergyWarning = config.getBoolean("enableLowEnergyWarning",
             RsRingMod.MODID + ".ring",
             true,
-            "config.rsring.ring.blockExternalCharging",
-            "config.rsring.ring.blockExternalCharging.comment");
+            "config.rsring.ring.enableLowEnergyWarning",
+            "config.rsring.ring.enableLowEnergyWarning");
         
-        absorbRing.strictMode = config.getBoolean("strictMode",
+        absorbRing.lowEnergyWarningThreshold = config.getInt("lowEnergyWarningThreshold",
             RsRingMod.MODID + ".ring",
-            false,
-            "config.rsring.ring.strictMode",
-            "config.rsring.ring.strictMode.comment");
+            5,
+            1,
+            50,
+            "config.rsring.ring.lowEnergyWarningThreshold",
+            "config.rsring.ring.lowEnergyWarningThreshold");
+        
+        absorbRing.lowEnergyWarningCooldown = config.getInt("lowEnergyWarningCooldown",
+            RsRingMod.MODID + ".ring",
+            180,
+            10,
+            300,
+            "config.rsring.ring.lowEnergyWarningCooldown",
+            "config.rsring.ring.lowEnergyWarningCooldown");
         
         // ==================== 销毁模式配置（放在吸收戒指设置下）====================
         destroyMode.defaultBlacklistItems = config.getStringList("destroyDefaultBlacklistItems",

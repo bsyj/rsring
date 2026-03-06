@@ -33,6 +33,7 @@ public class AttributeRegistry {
         ItemAttribute.register(new ItemNameAttribute());
         ItemAttribute.register(new BookAuthorAttribute());
         ItemAttribute.register(new BookCopyAttribute());
+        ItemAttribute.register(new OreDictAttribute());
     }
     
     /**

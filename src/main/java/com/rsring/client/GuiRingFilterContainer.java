@@ -738,6 +738,8 @@ private static final int PAD = 8;
         
         // 根据销毁模式UI状态决定使用哪套过滤槽
         boolean isDestroyModeUI = capability.isDestroyModeUI();
+        // 获取当前过滤模式
+        FilterMode currentMode = isDestroyModeUI ? capability.getDestroyFilterMode() : capability.getFilterMode();
         
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(SLOT_TEXTURE);
@@ -749,19 +751,112 @@ private static final int PAD = 8;
         }
         GlStateManager.pushMatrix();
         RenderHelper.enableGUIStandardItemLighting();
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            String itemName = isDestroyModeUI ? capability.getDestroyFilterSlot(i) : capability.getFilterSlot(i);
-            if (itemName == null || itemName.isEmpty()) continue;
-            try {
-                ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
-                if (!display.isEmpty()) {
-                    int slotX = this.guiLeft + SLOTX_START + i * SQ;
-                    int slotY = this.guiTop + SLOTY;
-                    this.mc.getRenderItem().renderItemAndEffectIntoGUI(display, slotX, slotY);
-                }
-            } catch (Exception ignored) {}
+        
+        // 根据过滤模式绘制不同的槽位内容
+        if (currentMode == FilterMode.MOD) {
+            // 模组过滤模式：显示模组图标（使用模组过滤槽位）
+            for (int i = 0; i < SLOT_COUNT; i++) {
+                String modId = isDestroyModeUI ? capability.getDestroyModFilterSlot(i) : capability.getModFilterSlot(i);
+                if (modId == null || modId.isEmpty()) continue;
+                drawSlotItem(i, modId, isDestroyModeUI, true);
+            }
+        } else {
+            // 物品ID过滤模式：显示物品图标（带NBT和耐久条）
+            for (int i = 0; i < SLOT_COUNT; i++) {
+                String itemName = isDestroyModeUI ? capability.getDestroyFilterSlot(i) : capability.getFilterSlot(i);
+                if (itemName == null || itemName.isEmpty()) continue;
+                drawSlotItem(i, itemName, isDestroyModeUI, false);
+            }
         }
         GlStateManager.popMatrix();
+    }
+    
+    /**
+     * 绘制槽位物品（包括耐久条）
+     */
+    private void drawSlotItem(int slotIndex, String itemId, boolean isDestroyModeUI, boolean isModFilter) {
+        int slotX = this.guiLeft + SLOTX_START + slotIndex * SQ;
+        int slotY = this.guiTop + SLOTY;
+        
+        try {
+            net.minecraft.item.Item item = net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemId));
+            if (item == null) return;
+            
+            ItemStack display = new ItemStack(item);
+            // 应用存储的NBT数据
+            net.minecraft.nbt.NBTTagCompound storedNbt;
+            if (isModFilter) {
+                storedNbt = isDestroyModeUI ? 
+                    capability.getDestroyModFilterSlotNBT(slotIndex) : capability.getModFilterSlotNBT(slotIndex);
+            } else {
+                storedNbt = isDestroyModeUI ? 
+                    capability.getDestroyFilterSlotNBT(slotIndex) : capability.getFilterSlotNBT(slotIndex);
+            }
+            if (storedNbt != null) {
+                // 复制NBT并移除我们添加的耐久度标记
+                net.minecraft.nbt.NBTTagCompound displayNbt = storedNbt.copy();
+                // 读取并应用耐久度
+                if (displayNbt.hasKey("rsring_filter_damage")) {
+                    int damage = displayNbt.getInteger("rsring_filter_damage");
+                    display.setItemDamage(damage);
+                    displayNbt.removeTag("rsring_filter_damage");
+                }
+                if (displayNbt.getSize() > 0) {
+                    display.setTagCompound(displayNbt);
+                }
+            }
+            
+            // 使用RenderItem的标准渲染方法（与GuiContainer一致）
+            net.minecraft.client.renderer.RenderItem renderItem = this.mc.getRenderItem();
+            
+            // 渲染物品模型
+            renderItem.renderItemAndEffectIntoGUI(display, slotX, slotY);
+            // 渲染耐久条（原版方法，只有损坏的物品才显示）
+            renderItem.renderItemOverlayIntoGUI(this.mc.fontRenderer, display, slotX, slotY, "");
+        } catch (Exception ignored) {}
+    }
+    
+    /**
+     * 绘制模组过滤槽位
+     * 显示用户放入的物品图标（带NBT和耐久条）
+     */
+    private void drawModIcon(int slotIndex, String modId, boolean isDestroyModeUI) {
+        // 使用统一的绘制方法
+        drawSlotItem(slotIndex, modId, isDestroyModeUI, true);
+    }
+    
+    /**
+     * 获取模组的代表性物品（用于模组过滤模式显示）
+     */
+    private ItemStack getRepresentativeItemForMod(String modId) {
+        // 遍历物品注册表，找到该模组的第一个物品
+        for (net.minecraft.item.Item item : net.minecraft.item.Item.REGISTRY) {
+            if (item != null && item.getRegistryName() != null) {
+                if (item.getRegistryName().getNamespace().equals(modId)) {
+                    try {
+                        return new ItemStack(item);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                }
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+    
+    /**
+     * 根据模组ID生成颜色
+     */
+    private int getModColor(String modId) {
+        int hash = modId.hashCode();
+        int r = (hash & 0xFF0000) >> 16;
+        int g = (hash & 0x00FF00) >> 8;
+        int b = hash & 0x0000FF;
+        // 确保颜色足够亮
+        r = Math.max(80, Math.min(255, r));
+        g = Math.max(80, Math.min(255, g));
+        b = Math.max(80, Math.min(255, b));
+        return (r << 16) | (g << 8) | b;
     }
 
     private void drawCustomButtons(int mouseX, int mouseY) {
@@ -1080,26 +1175,76 @@ private static final int PAD = 8;
                 int slotX = SLOTX_START + i * SQ;
                 int slotY = SLOTY;
                 if (isPointInRegion(slotX, slotY, SQ - 2, SQ - 2, mouseX, mouseY)) {
-                    String itemName = isDestroyModeUI ? capability.getDestroyFilterSlot(i) : capability.getFilterSlot(i);
-                    if (itemName == null || itemName.isEmpty()) {
-                        this.drawHoveringText(java.util.Arrays.asList(
-                            TextFormatting.GRAY + "点击添加过滤物品",
-                            TextFormatting.DARK_GRAY + "锁定时只读"
-                        ), mouseX, mouseY);
-                    } else {
-                        try {
-                            ItemStack display = new ItemStack(net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName)));
-                            if (!display.isEmpty()) {
-                                java.util.List<String> tooltip = display.getTooltip(this.mc.player, this.mc.gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
-                                // 添加模组名称到tooltip（原版风格：灰色斜体）
-                                String modName = getModName(itemName);
-                                if (!modName.isEmpty()) {
-                                    tooltip.add(TextFormatting.GRAY + TextFormatting.ITALIC.toString() + modName);
+                    // 根据过滤模式获取不同的槽位内容
+                    if (currentFilterMode == FilterMode.MOD) {
+                        // 模组过滤模式：槽位存储完整物品ID，显示物品tooltip（带NBT）
+                        String itemId = isDestroyModeUI ? capability.getDestroyModFilterSlot(i) : capability.getModFilterSlot(i);
+                        if (itemId == null || itemId.isEmpty()) {
+                            this.drawHoveringText(java.util.Arrays.asList(
+                                TextFormatting.GRAY + "点击添加过滤模组",
+                                TextFormatting.DARK_GRAY + "放入任意物品自动提取模组ID"
+                            ), mouseX, mouseY);
+                        } else {
+                            try {
+                                net.minecraft.item.Item item = net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemId));
+                                if (item != null) {
+                                    ItemStack display = new ItemStack(item);
+                                    // 应用存储的NBT数据
+                                    net.minecraft.nbt.NBTTagCompound storedNbt = isDestroyModeUI ? 
+                                        capability.getDestroyModFilterSlotNBT(i) : capability.getModFilterSlotNBT(i);
+                                    if (storedNbt != null) {
+                                        display.setTagCompound(storedNbt.copy());
+                                    }
+                                    java.util.List<String> tooltip = display.getTooltip(this.mc.player, this.mc.gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
+                                    // 添加模组名称到tooltip（原版风格：灰色斜体）
+                                    String modName = getModName(itemId);
+                                    if (!modName.isEmpty()) {
+                                        tooltip.add(TextFormatting.GRAY + TextFormatting.ITALIC.toString() + modName);
+                                    }
+                                    this.drawHoveringText(tooltip, mouseX, mouseY);
                                 }
-                                this.drawHoveringText(tooltip, mouseX, mouseY);
+                            } catch (Exception e) {
+                                this.drawHoveringText(java.util.Arrays.asList(itemId), mouseX, mouseY);
                             }
-                        } catch (Exception e) {
-                            this.drawHoveringText(java.util.Arrays.asList(itemName), mouseX, mouseY);
+                        }
+                    } else {
+                        // 物品ID过滤模式：显示物品信息（带NBT）
+                        String itemName = isDestroyModeUI ? capability.getDestroyFilterSlot(i) : capability.getFilterSlot(i);
+                        if (itemName == null || itemName.isEmpty()) {
+                            this.drawHoveringText(java.util.Arrays.asList(
+                                TextFormatting.GRAY + "点击添加过滤物品",
+                                TextFormatting.DARK_GRAY + "锁定时只读"
+                            ), mouseX, mouseY);
+                        } else {
+                            try {
+                                net.minecraft.item.Item item = net.minecraft.item.Item.REGISTRY.getObject(new ResourceLocation(itemName));
+                                if (item != null) {
+                                    ItemStack display = new ItemStack(item);
+                                    // 应用存储的NBT数据和耐久度
+                                    net.minecraft.nbt.NBTTagCompound storedNbt = isDestroyModeUI ? 
+                                        capability.getDestroyFilterSlotNBT(i) : capability.getFilterSlotNBT(i);
+                                    if (storedNbt != null) {
+                                        net.minecraft.nbt.NBTTagCompound displayNbt = storedNbt.copy();
+                                        // 读取并应用耐久度
+                                        if (displayNbt.hasKey("rsring_filter_damage")) {
+                                            display.setItemDamage(displayNbt.getInteger("rsring_filter_damage"));
+                                            displayNbt.removeTag("rsring_filter_damage");
+                                        }
+                                        if (displayNbt.getSize() > 0) {
+                                            display.setTagCompound(displayNbt);
+                                        }
+                                    }
+                                    java.util.List<String> tooltip = display.getTooltip(this.mc.player, this.mc.gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
+                                    // 添加模组名称到tooltip（原版风格：灰色斜体）
+                                    String modName = getModName(itemName);
+                                    if (!modName.isEmpty()) {
+                                        tooltip.add(TextFormatting.GRAY + TextFormatting.ITALIC.toString() + modName);
+                                    }
+                                    this.drawHoveringText(tooltip, mouseX, mouseY);
+                                }
+                            } catch (Exception e) {
+                                this.drawHoveringText(java.util.Arrays.asList(itemName), mouseX, mouseY);
+                            }
                         }
                     }
                     return;
@@ -1150,7 +1295,7 @@ private static final int PAD = 8;
         }
         
         // 黑白名单按钮 tooltip（左边竖排，在过滤模式按钮下方）
-        int whitelistBtnY = filterModeBtnY + FILTER_MODE_BTN_HEIGHT + 4;
+        int whitelistBtnY = filterModeBtnY + SQ; // 与绘制位置一致
         if (isMouseOverButton(relativeX, relativeY, leftBtnX, whitelistBtnY)) {
             if (!customAllowed) {
                 java.util.List<String> tooltip = new java.util.ArrayList<>();
@@ -1204,14 +1349,14 @@ private static final int PAD = 8;
             return;
         }
         
-        // 销毁模式按钮 tooltip
+        // 销毁模式按钮 tooltip（位置与绘制一致）
         int destroyBtnX, destroyBtnY;
         if (currentFilterMode == FilterMode.ITEM || currentFilterMode == FilterMode.MOD) {
-            destroyBtnX = leftBtnX + SQ;
+            destroyBtnX = leftBtnX + SQ; // 黑白名单右侧
             destroyBtnY = whitelistBtnY;
         } else {
             destroyBtnX = leftBtnX;
-            destroyBtnY = whitelistBtnY + SQ;
+            destroyBtnY = whitelistBtnY + SQ; // 黑白名单下方
         }
         
         if (isMouseOverButton(relativeX, relativeY, destroyBtnX, destroyBtnY)) {
@@ -1256,11 +1401,11 @@ private static final int PAD = 8;
         if (isDestroyModeUI) {
             int toggleBtnX, toggleBtnY;
             if (currentFilterMode == FilterMode.ITEM || currentFilterMode == FilterMode.MOD) {
-                toggleBtnX = destroyBtnX + SQ + 1; // 与绘制位置一致
+                toggleBtnX = destroyBtnX + SQ + 1; // 销毁按钮右侧，与绘制一致
                 toggleBtnY = destroyBtnY;
             } else {
                 toggleBtnX = destroyBtnX;
-                toggleBtnY = destroyBtnY + SQ + 1; // 与绘制位置一致
+                toggleBtnY = destroyBtnY + SQ + 1; // 销毁按钮下方，与绘制一致
             }
             
             if (isMouseOverButton(relativeX, relativeY, toggleBtnX, toggleBtnY)) {
@@ -1922,40 +2067,124 @@ RsRingCapability.syncCapabilityToStack(ringStack, capability);
         
         // 根据销毁模式UI状态使用对应的槽位
         boolean isDestroyModeUI = capability.isDestroyModeUI();
+        FilterMode currentMode = isDestroyModeUI ? capability.getDestroyFilterMode() : capability.getFilterMode();
         
-        String currentFilter = isDestroyModeUI ? capability.getDestroyFilterSlot(slotIndex) : capability.getFilterSlot(slotIndex);
-        if (stackInMouse.isEmpty() && (currentFilter == null || currentFilter.isEmpty())) {
-            return;
-        }
-
-        if (stackInMouse.isEmpty()) {
-            if (isDestroyModeUI) {
-                capability.setDestroyFilterSlot(slotIndex, "");
-            } else {
-                capability.setFilterSlot(slotIndex, "");
+        if (currentMode == FilterMode.MOD) {
+            // 模组过滤模式：使用模组过滤槽位
+            // 存储完整物品ID（modId:itemName格式），以便显示物品图标
+            String currentMod = isDestroyModeUI ? capability.getDestroyModFilterSlot(slotIndex) : capability.getModFilterSlot(slotIndex);
+            if (stackInMouse.isEmpty() && (currentMod == null || currentMod.isEmpty())) {
+                return;
             }
-        } else {
-            String name = stackInMouse.getItem().getRegistryName() != null ?
-                stackInMouse.getItem().getRegistryName().toString() : "";
-            if (!name.isEmpty()) {
+            
+            if (stackInMouse.isEmpty()) {
+                // 清除槽位和NBT数据
                 if (isDestroyModeUI) {
-                    capability.setDestroyFilterSlot(slotIndex, name);
+                    capability.setDestroyModFilterSlot(slotIndex, "");
+                    capability.setDestroyModFilterSlotNBT(slotIndex, null);
                 } else {
-                    capability.setFilterSlot(slotIndex, name);
+                    capability.setModFilterSlot(slotIndex, "");
+                    capability.setModFilterSlotNBT(slotIndex, null);
+                }
+            } else {
+                // 存储完整物品ID（格式：modId:itemName），方便显示物品图标
+                // 过滤时提取模组ID使用
+                String itemId = stackInMouse.getItem().getRegistryName() != null ?
+                    stackInMouse.getItem().getRegistryName().toString() : "minecraft:stone";
+                // 保存物品的NBT数据（用于NBT匹配）
+                net.minecraft.nbt.NBTTagCompound itemNbt = stackInMouse.getTagCompound();
+                if (isDestroyModeUI) {
+                    capability.setDestroyModFilterSlot(slotIndex, itemId);
+                    capability.setDestroyModFilterSlotNBT(slotIndex, itemNbt);
+                } else {
+                    capability.setModFilterSlot(slotIndex, itemId);
+                    capability.setModFilterSlotNBT(slotIndex, itemNbt);
                 }
             }
+            
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            // 同步模组过滤槽位
+            String[] modSlots = new String[SLOT_COUNT];
+            for (int j = 0; j < SLOT_COUNT; j++) {
+                modSlots[j] = isDestroyModeUI ? capability.getDestroyModFilterSlot(j) : capability.getModFilterSlot(j);
+            }
+            com.rsring.rsring.RsRingMod.network.sendToServer(
+                new com.rsring.network.PacketSyncModFilter(
+                    modSlots,
+                    isDestroyModeUI));
+            // 同步NBT数据
+            int slotType = isDestroyModeUI ? 3 : 1; // 3=销毁模组过滤, 1=模组过滤
+            com.rsring.rsring.RsRingMod.network.sendToServer(
+                new com.rsring.network.PacketSyncFilterNBT(
+                    slotIndex,
+                    stackInMouse.isEmpty() ? null : stackInMouse.getTagCompound(),
+                    slotType));
+        } else {
+            // 物品ID过滤模式：使用物品过滤槽位
+            String currentFilter = isDestroyModeUI ? capability.getDestroyFilterSlot(slotIndex) : capability.getFilterSlot(slotIndex);
+            if (stackInMouse.isEmpty() && (currentFilter == null || currentFilter.isEmpty())) {
+                return;
+            }
+            
+            if (stackInMouse.isEmpty()) {
+                // 清除槽位和NBT数据
+                if (isDestroyModeUI) {
+                    capability.setDestroyFilterSlot(slotIndex, "");
+                    capability.setDestroyFilterSlotNBT(slotIndex, null);
+                } else {
+                    capability.setFilterSlot(slotIndex, "");
+                    capability.setFilterSlotNBT(slotIndex, null);
+                }
+            } else {
+                String name = stackInMouse.getItem().getRegistryName() != null ?
+                    stackInMouse.getItem().getRegistryName().toString() : "";
+                if (!name.isEmpty()) {
+                    // 保存物品的NBT数据（用于NBT匹配）和耐久度
+                    net.minecraft.nbt.NBTTagCompound itemNbt = stackInMouse.getTagCompound();
+                    // 创建一个新的NBT来存储所有数据（包括耐久度）
+                    net.minecraft.nbt.NBTTagCompound storageNbt = itemNbt != null ? itemNbt.copy() : new net.minecraft.nbt.NBTTagCompound();
+                    // 存储耐久度（Damage）
+                    int damage = stackInMouse.getItemDamage();
+                    if (damage > 0) {
+                        storageNbt.setInteger("rsring_filter_damage", damage);
+                    }
+                    if (isDestroyModeUI) {
+                        capability.setDestroyFilterSlot(slotIndex, name);
+                        capability.setDestroyFilterSlotNBT(slotIndex, storageNbt);
+                    } else {
+                        capability.setFilterSlot(slotIndex, name);
+                        capability.setFilterSlotNBT(slotIndex, storageNbt);
+                    }
+                }
+            }
+            
+            RsRingCapability.syncCapabilityToStack(ringStack, capability);
+            String[] slots = new String[SLOT_COUNT];
+            for (int j = 0; j < SLOT_COUNT; j++) {
+                slots[j] = isDestroyModeUI ? capability.getDestroyFilterSlot(j) : capability.getFilterSlot(j);
+            }
+            com.rsring.rsring.RsRingMod.network.sendToServer(
+                new com.rsring.network.PacketSyncRingFilter(
+                    isDestroyModeUI ? capability.isDestroyWhitelistMode() : capability.isWhitelistMode(),
+                    slots,
+                    isDestroyModeUI));
+            // 同步NBT数据（包含耐久度）
+            int slotType = isDestroyModeUI ? 2 : 0; // 2=销毁物品ID过滤, 0=物品ID过滤
+            net.minecraft.nbt.NBTTagCompound syncNbt = null;
+            if (!stackInMouse.isEmpty()) {
+                // 创建包含耐久度的同步NBT
+                syncNbt = stackInMouse.getTagCompound() != null ? stackInMouse.getTagCompound().copy() : new net.minecraft.nbt.NBTTagCompound();
+                int damage = stackInMouse.getItemDamage();
+                if (damage > 0) {
+                    syncNbt.setInteger("rsring_filter_damage", damage);
+                }
+            }
+            com.rsring.rsring.RsRingMod.network.sendToServer(
+                new com.rsring.network.PacketSyncFilterNBT(
+                    slotIndex,
+                    syncNbt,
+                    slotType));
         }
-
-RsRingCapability.syncCapabilityToStack(ringStack, capability);
-        String[] slots = new String[SLOT_COUNT];
-        for (int j = 0; j < SLOT_COUNT; j++) {
-            slots[j] = isDestroyModeUI ? capability.getDestroyFilterSlot(j) : capability.getFilterSlot(j);
-        }
-        com.rsring.rsring.RsRingMod.network.sendToServer(
-            new com.rsring.network.PacketSyncRingFilter(
-                isDestroyModeUI ? capability.isDestroyWhitelistMode() : capability.isWhitelistMode(),
-                slots,
-                isDestroyModeUI));
     }
 
     /**

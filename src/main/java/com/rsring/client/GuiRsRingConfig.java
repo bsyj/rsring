@@ -30,8 +30,11 @@ public class GuiRsRingConfig extends GuiConfig {
         List<IConfigElement> filteredElements = new ArrayList<>();
         for (IConfigElement element : allElements) {
             String name = element.getName();
-            // 排除 general 和 network 配置类别
-            if (!name.equals(RsRingMod.MODID + ".general") && !name.equals(RsRingMod.MODID + ".network")) {
+            // 排除 general、network 和 destroy 配置类别
+            // destroy 配置已集成到吸收戒指设置中
+            if (!name.equals(RsRingMod.MODID + ".general") 
+                && !name.equals(RsRingMod.MODID + ".network")
+                && !name.equals(RsRingMod.MODID + ".destroy")) {
                 filteredElements.add(element);
             }
         }

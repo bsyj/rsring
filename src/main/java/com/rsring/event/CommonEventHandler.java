@@ -11,6 +11,7 @@ import com.rsring.network.PacketToggleRsRing;
 import com.rsring.rsring.RsRingMod;
 import com.rsring.config.ConfigRegistry;
 import com.rsring.util.BaublesHelper;
+import com.rsring.util.ItemLocationTracker;
 import com.rsring.util.XpHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CommonEventHandler {
 
@@ -48,6 +50,12 @@ public class CommonEventHandler {
     // 左键绑定冷却时间（毫秒）
     private static final long BIND_COOLDOWN_MS = 500;
     private final Map<UUID, Long> lastLeftClickBindTime = new HashMap<>();
+    
+    // 低电量提醒冷却记录（玩家UUID -> 上次提醒时间戳）
+    private static final Map<UUID, Long> lowEnergyWarningCache = new ConcurrentHashMap<>();
+    // 低电量提醒检测间隔（tick），每5秒检测一次
+    private static final int LOW_ENERGY_CHECK_INTERVAL = 100;
+    private int lowEnergyCheckCounter = 0;
 
     public CommonEventHandler() {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
@@ -225,15 +233,48 @@ public class CommonEventHandler {
         }
     }
 
+    /**
+     * 检查物品是否在饰品栏中（用于严格模式）
+     * @param player 玩家
+     * @param targetStack 目标物品
+     * @return 是否在饰品栏中
+     */
+    private boolean isInBaublesSlot(EntityPlayer player, ItemStack targetStack) {
+        if (targetStack == null || targetStack.isEmpty()) return false;
+        if (!BaublesHelper.isBaublesLoaded()) return false;
+        
+        Object handler = BaublesHelper.getBaublesHandler(player);
+        if (handler == null) return false;
+        
+        int size = BaublesHelper.getSlots(handler);
+        for (int i = 0; i < size; i++) {
+            ItemStack slotStack = BaublesHelper.getStackInSlot(handler, i);
+            if (slotStack == targetStack) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         EntityPlayer player = event.player;
         if (player == null || player.world.isRemote) return;
 
+        // 戒指功能 - 支持严格模式
         ItemStack absorbRingStack = findRing(player, ItemAbsorbRing.class);
         if (!absorbRingStack.isEmpty()) {
-            ((ItemAbsorbRing) absorbRingStack.getItem()).onWornTick(absorbRingStack, player);
+            // 检查严格模式：开启时只有饰品栏中的戒指才能工作
+            boolean strictMode = com.rsring.config.RsRingConfig.absorbRing.strictMode;
+            boolean inBaubles = isInBaublesSlot(player, absorbRingStack);
+            
+            if (!strictMode || inBaubles) {
+                ((ItemAbsorbRing) absorbRingStack.getItem()).onWornTick(absorbRingStack, player);
+            }
+            
+            // 低电量提醒检测（降低检测频率）
+            checkLowEnergyWarning(player, absorbRingStack);
         }
 
         // Controller-driven behavior (sync all tanks and pump via central controller)
@@ -285,12 +326,20 @@ public class CommonEventHandler {
             }
         }
 
+        // 储罐功能 - 支持严格模式
         ItemStack pumpStack = findExperiencePump(player);
         if (!pumpStack.isEmpty()) {
-            ((ItemExperiencePump) pumpStack.getItem()).onWornTick(pumpStack, player);
+            // 检查严格模式：开启时只有饰品栏中的储罐才能工作
+            boolean tankStrictMode = com.rsring.config.ExperienceTankConfig.tank.strictMode;
+            boolean inBaubles = isInBaublesSlot(player, pumpStack);
+            
+            if (!tankStrictMode || inBaubles) {
+                ((ItemExperiencePump) pumpStack.getItem()).onWornTick(pumpStack, player);
+                checkPlayerExperienceChange(player, pumpStack);
+            }
+        } else {
+            lastPlayerXp.remove(player.getUniqueID());
         }
-
-        checkPlayerExperienceChange(player, pumpStack);
     }
 
     private void checkPlayerExperienceChange(EntityPlayer player, ItemStack pumpStack) {
@@ -520,5 +569,73 @@ public class CommonEventHandler {
         if (regName == null) return false;
         String blockName = regName.toString().toLowerCase();
         return blockName.equals("refinedstorage:controller");
+    }
+    
+    /**
+     * 低电量提醒检测
+     * - 仅在戒指启用时检测
+     * - 有冷却时间，避免刷屏
+     * - 电量低于阈值时发送提醒
+     */
+    private void checkLowEnergyWarning(EntityPlayer player, ItemStack ringStack) {
+        // 检查配置是否启用
+        if (!com.rsring.config.RsRingConfig.absorbRing.enableLowEnergyWarning) {
+            return;
+        }
+        
+        // 降低检测频率：每5秒检测一次
+        lowEnergyCheckCounter++;
+        if (lowEnergyCheckCounter < LOW_ENERGY_CHECK_INTERVAL) {
+            return;
+        }
+        lowEnergyCheckCounter = 0;
+        
+        // 获取戒指能力
+        IRsRingCapability cap = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap == null) return;
+        
+        // 仅在戒指启用时检测
+        if (!cap.isEnabled()) return;
+        
+        // 获取能量状态
+        net.minecraftforge.energy.IEnergyStorage energy = cap.getEnergyStorage();
+        if (energy == null) return;
+        
+        int currentEnergy = energy.getEnergyStored();
+        int maxEnergy = energy.getMaxEnergyStored();
+        int threshold = com.rsring.config.RsRingConfig.absorbRing.lowEnergyWarningThreshold;
+        int cooldownSeconds = com.rsring.config.RsRingConfig.absorbRing.lowEnergyWarningCooldown;
+        
+        // 计算当前电量百分比
+        int percentage = (int) ((currentEnergy * 100.0) / maxEnergy);
+        
+        // 检查是否低于阈值
+        if (percentage > threshold) {
+            return;
+        }
+        
+        // 检查冷却时间
+        UUID playerId = player.getUniqueID();
+        long currentTime = System.currentTimeMillis();
+        Long lastWarningTime = lowEnergyWarningCache.get(playerId);
+        
+        if (lastWarningTime != null) {
+            long elapsedSeconds = (currentTime - lastWarningTime) / 1000;
+            if (elapsedSeconds < cooldownSeconds) {
+                return; // 冷却中，不提醒
+            }
+        }
+        
+        // 更新提醒时间
+        lowEnergyWarningCache.put(playerId, currentTime);
+        
+        // 发送提醒消息
+        String message = String.format(
+            TextFormatting.YELLOW + "⚠ " + TextFormatting.GOLD + "戒指电量不足！" + 
+            TextFormatting.GRAY + " 当前: " + TextFormatting.RED + "%d%%" + 
+            TextFormatting.GRAY + " (%d/%d FE)",
+            percentage, currentEnergy, maxEnergy
+        );
+        player.sendMessage(new TextComponentString(message));
     }
 }

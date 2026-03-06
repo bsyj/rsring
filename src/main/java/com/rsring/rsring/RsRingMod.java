@@ -125,6 +125,10 @@ public class RsRingMod
         network.registerMessage(com.rsring.network.PacketSyncAdvancedFilter.Handler.class, com.rsring.network.PacketSyncAdvancedFilter.class, 8, Side.SERVER);
         // Register packet for syncing destroy toggle from client -> server
         network.registerMessage(com.rsring.network.PacketSyncDestroyToggle.Handler.class, com.rsring.network.PacketSyncDestroyToggle.class, 9, Side.SERVER);
+        // Register packet for syncing mod filter slots from client -> server
+        network.registerMessage(com.rsring.network.PacketSyncModFilter.Handler.class, com.rsring.network.PacketSyncModFilter.class, 10, Side.SERVER);
+        // Register packet for syncing filter slot NBT from client -> server
+        network.registerMessage(com.rsring.network.PacketSyncFilterNBT.Handler.class, com.rsring.network.PacketSyncFilterNBT.class, 11, Side.SERVER);
     }
 
     @EventHandler

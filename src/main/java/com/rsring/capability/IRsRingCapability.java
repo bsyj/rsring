@@ -36,9 +36,21 @@ public interface IRsRingCapability {
     void setWhitelistMode(boolean whitelistMode);
     java.util.List<String> getBlacklistItems();
 
-    /** 9 格过滤槽：仅读取匹配，不消耗物品。slot 0~8 */
+    /** 9格物品ID过滤槽：仅读取匹配，不消耗物品。slot 0~8 */
     void setFilterSlot(int slot, String itemRegistryName);
     String getFilterSlot(int slot);
+    
+    /** 物品ID过滤槽的NBT数据（用于NBT匹配） */
+    void setFilterSlotNBT(int slot, net.minecraft.nbt.NBTTagCompound nbt);
+    net.minecraft.nbt.NBTTagCompound getFilterSlotNBT(int slot);
+    
+    /** 9格模组过滤槽：用于模组过滤模式。slot 0~8 */
+    void setModFilterSlot(int slot, String modId);
+    String getModFilterSlot(int slot);
+    
+    /** 模组过滤槽的NBT数据（用于NBT匹配） */
+    void setModFilterSlotNBT(int slot, net.minecraft.nbt.NBTTagCompound nbt);
+    net.minecraft.nbt.NBTTagCompound getModFilterSlotNBT(int slot);
 
     // 密封状态：密封后无法接受外部充电
     boolean isSealed();
@@ -99,6 +111,18 @@ public interface IRsRingCapability {
     // 销毁物品ID过滤槽
     void setDestroyFilterSlot(int slot, String itemRegistryName);
     String getDestroyFilterSlot(int slot);
+    
+    // 销毁物品ID过滤槽的NBT数据
+    void setDestroyFilterSlotNBT(int slot, net.minecraft.nbt.NBTTagCompound nbt);
+    net.minecraft.nbt.NBTTagCompound getDestroyFilterSlotNBT(int slot);
+    
+    // 销毁模组过滤槽
+    void setDestroyModFilterSlot(int slot, String modId);
+    String getDestroyModFilterSlot(int slot);
+    
+    // 销毁模组过滤槽的NBT数据
+    void setDestroyModFilterSlotNBT(int slot, net.minecraft.nbt.NBTTagCompound nbt);
+    net.minecraft.nbt.NBTTagCompound getDestroyModFilterSlotNBT(int slot);
     
     // 销毁属性过滤
     List<Pair<ItemAttribute, Boolean>> getDestroyFilterAttributes();

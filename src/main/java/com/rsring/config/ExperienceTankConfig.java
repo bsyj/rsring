@@ -166,11 +166,10 @@ public class ExperienceTankConfig implements IHasConfig {
             "config.rsring.tank.enableSMECompatibility",
             "config.rsring.tank.enableSMECompatibility");
 
-        tank.strictMode = config.getBoolean("strictMode",
-            RsRingMod.MODID + ".tank",
-            false,
-            "config.rsring.tank.strictMode",
-            "config.rsring.tank.strictMode.comment");
+        net.minecraftforge.common.config.Property tankStrictModeProp = config.get(RsRingMod.MODID + ".tank", "strictMode", false);
+        tankStrictModeProp.setLanguageKey("config.rsring.tank.strictMode");
+        tankStrictModeProp.setComment("只有戴在饰品栏时储罐才能使用");
+        tank.strictMode = tankStrictModeProp.getBoolean();
 
         controller.maxManagedTanks = config.getInt("maxManagedTanks",
             RsRingMod.MODID + ".controller",

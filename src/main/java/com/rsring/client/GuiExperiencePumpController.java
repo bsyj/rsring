@@ -357,26 +357,45 @@ public class GuiExperiencePumpController extends GuiScreen {
 
     /**
      * 绘制经验存储进度条
+     * 当经验值较少时，采用最小可见宽度策略确保用户能看到
      */
     private void drawXpProgressBar() {
         int barX = guiLeft + 8;
         int barY = guiTop + 68;  // 操作按钮下方，文字上方
         int barWidth = 160;      // 进度条宽度
         int barHeight = 16;      // 进度条高度（加高）
+        int minVisibleWidth = 8; // 最小可见宽度（像素）
 
         // 绘制进度条背景
         drawRect(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
 
         // 计算进度 - 使用总容量
         float progress = totalCapacity > 0 ? (float) totalStored / totalCapacity : 0;
-        int fillWidth = Math.max(1, (int) (barWidth * progress)); // 至少1像素
+        float lowEnergyThreshold = 0.1f; // 10%以下视为低经验
+        
+        // 计算填充宽度：当有经验时，确保至少显示最小可见宽度
+        int fillWidth;
+        boolean isLowEnergy = progress > 0 && progress < lowEnergyThreshold;
+        if (totalStored > 0 && isLowEnergy) {
+            // 经验值太少时，使用最小可见宽度
+            fillWidth = minVisibleWidth;
+        } else {
+            fillWidth = Math.max(1, (int) (barWidth * progress));
+        }
 
         // 绘制进度条填充（带动态效果）
         if (totalStored > 0) {
             long t = System.currentTimeMillis();
             
-            // 基础绿色
-            int baseColor = 0xFF7EFF05;
+            // 根据是否使用最小宽度调整颜色
+            int baseColor;
+            if (isLowEnergy) {
+                // 低经验时用橙红色提示，更醒目
+                baseColor = 0xFFFF6600;
+            } else {
+                // 正常绿色
+                baseColor = 0xFF7EFF05;
+            }
             
             // 动态效果1：光泽流动（从左到右的光带）
             int shinePos = (int) ((t / 10) % (fillWidth + 40)) - 20;  // 光带位置

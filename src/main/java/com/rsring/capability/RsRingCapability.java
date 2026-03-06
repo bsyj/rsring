@@ -20,6 +20,8 @@ import com.rsring.util.Pair;
 import com.rsring.config.RsRingConfig;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class RsRingCapability implements IRsRingCapability {
 
@@ -38,6 +40,11 @@ public class RsRingCapability implements IRsRingCapability {
     private boolean matchAllMode = false;
     private List<Pair<ItemAttribute, Boolean>> filterAttributes = new ArrayList<>();
     private List<String> filterMods = new ArrayList<>();
+    private List<String> modFilterSlots = new ArrayList<>(); // 模组过滤槽位（独立于物品ID过滤槽）
+    
+    // NBT存储：用于NBT匹配
+    private Map<Integer, NBTTagCompound> filterSlotNBTs = new HashMap<>(); // 物品ID过滤槽NBT
+    private Map<Integer, NBTTagCompound> modFilterSlotNBTs = new HashMap<>(); // 模组过滤槽NBT
 
     // NBT和耐久匹配选项
     private boolean matchNbt = false;
@@ -49,12 +56,17 @@ public class RsRingCapability implements IRsRingCapability {
     private FilterMode destroyFilterMode = FilterMode.ITEM; // 销毁过滤模式
     private boolean destroyWhitelistMode = true; // 销毁黑白名单模式（默认为白名单）
     private List<String> destroyFilterSlots = new ArrayList<>(); // 销毁物品过滤槽
+    private List<String> destroyModFilterSlots = new ArrayList<>(); // 销毁模组过滤槽
     private List<Pair<ItemAttribute, Boolean>> destroyFilterAttributes = new ArrayList<>(); // 销毁属性过滤列表
     private List<String> destroyFilterMods = new ArrayList<>(); // 销毁模组过滤列表
     private NBTTagCompound destroyAttributeInputSlotNBT = new NBTTagCompound(); // 销毁属性输入槽NBT
     private boolean destroyMatchAllMode = false; // 销毁AND/OR模式
     private boolean destroyMatchNbt = false; // 销毁NBT匹配
     private boolean destroyMatchDurability = false; // 销毁耐久匹配
+    
+    // 销毁模式NBT存储
+    private Map<Integer, NBTTagCompound> destroyFilterSlotNBTs = new HashMap<>(); // 销毁物品ID过滤槽NBT
+    private Map<Integer, NBTTagCompound> destroyModFilterSlotNBTs = new HashMap<>(); // 销毁模组过滤槽NBT
     
     // ==================== 垃圾箱绑定字段 ====================
     private BlockPos trashCanPos; // 垃圾箱位置
@@ -311,6 +323,55 @@ public class RsRingCapability implements IRsRingCapability {
     }
 
     @Override
+    public void setModFilterSlot(int slot, String modId) {
+        if (!allowCustomFilters()) return;
+        if (slot < 0 || slot > 8) return;
+        while (modFilterSlots.size() <= slot) modFilterSlots.add("");
+        modFilterSlots.set(slot, modId == null || modId.isEmpty() ? "" : modId);
+    }
+
+    @Override
+    public String getModFilterSlot(int slot) {
+        if (!allowCustomFilters()) return "";
+        if (slot < 0 || slot > 8) return "";
+        if (slot >= modFilterSlots.size()) return "";
+        String s = modFilterSlots.get(slot);
+        return s == null ? "" : s;
+    }
+
+    @Override
+    public void setFilterSlotNBT(int slot, NBTTagCompound nbt) {
+        if (slot < 0 || slot > 8) return;
+        if (nbt == null) {
+            filterSlotNBTs.remove(slot);
+        } else {
+            filterSlotNBTs.put(slot, nbt);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getFilterSlotNBT(int slot) {
+        if (slot < 0 || slot > 8) return null;
+        return filterSlotNBTs.get(slot);
+    }
+
+    @Override
+    public void setModFilterSlotNBT(int slot, NBTTagCompound nbt) {
+        if (slot < 0 || slot > 8) return;
+        if (nbt == null) {
+            modFilterSlotNBTs.remove(slot);
+        } else {
+            modFilterSlotNBTs.put(slot, nbt);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getModFilterSlotNBT(int slot) {
+        if (slot < 0 || slot > 8) return null;
+        return modFilterSlotNBTs.get(slot);
+    }
+
+    @Override
     public boolean isSealed() {
         return sealed;
     }
@@ -546,6 +607,55 @@ public class RsRingCapability implements IRsRingCapability {
     }
     
     @Override
+    public void setDestroyModFilterSlot(int slot, String modId) {
+        if (!allowCustomFilters()) return;
+        if (slot < 0 || slot > 8) return;
+        while (destroyModFilterSlots.size() <= slot) destroyModFilterSlots.add("");
+        destroyModFilterSlots.set(slot, modId == null || modId.isEmpty() ? "" : modId);
+    }
+    
+    @Override
+    public String getDestroyModFilterSlot(int slot) {
+        if (!allowCustomFilters()) return "";
+        if (slot < 0 || slot > 8) return "";
+        if (slot >= destroyModFilterSlots.size()) return "";
+        String s = destroyModFilterSlots.get(slot);
+        return s == null ? "" : s;
+    }
+
+    @Override
+    public void setDestroyFilterSlotNBT(int slot, NBTTagCompound nbt) {
+        if (slot < 0 || slot > 8) return;
+        if (nbt == null) {
+            destroyFilterSlotNBTs.remove(slot);
+        } else {
+            destroyFilterSlotNBTs.put(slot, nbt);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getDestroyFilterSlotNBT(int slot) {
+        if (slot < 0 || slot > 8) return null;
+        return destroyFilterSlotNBTs.get(slot);
+    }
+
+    @Override
+    public void setDestroyModFilterSlotNBT(int slot, NBTTagCompound nbt) {
+        if (slot < 0 || slot > 8) return;
+        if (nbt == null) {
+            destroyModFilterSlotNBTs.remove(slot);
+        } else {
+            destroyModFilterSlotNBTs.put(slot, nbt);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getDestroyModFilterSlotNBT(int slot) {
+        if (slot < 0 || slot > 8) return null;
+        return destroyModFilterSlotNBTs.get(slot);
+    }
+    
+    @Override
     public List<Pair<ItemAttribute, Boolean>> getDestroyFilterAttributes() {
         return this.destroyFilterAttributes;
     }
@@ -741,6 +851,27 @@ public class RsRingCapability implements IRsRingCapability {
             }
             tag.setTag("filterMods", modList);
             
+            // 保存模组过滤槽位
+            net.minecraft.nbt.NBTTagList modSlotList = new net.minecraft.nbt.NBTTagList();
+            for (String modId : cap.modFilterSlots) {
+                modSlotList.appendTag(new net.minecraft.nbt.NBTTagString(modId));
+            }
+            tag.setTag("modFilterSlots", modSlotList);
+            
+            // 保存物品ID过滤槽的NBT数据
+            NBTTagCompound filterSlotNBTsTag = new NBTTagCompound();
+            for (Map.Entry<Integer, NBTTagCompound> entry : cap.filterSlotNBTs.entrySet()) {
+                filterSlotNBTsTag.setTag(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            tag.setTag("filterSlotNBTs", filterSlotNBTsTag);
+            
+            // 保存模组过滤槽的NBT数据
+            NBTTagCompound modFilterSlotNBTsTag = new NBTTagCompound();
+            for (Map.Entry<Integer, NBTTagCompound> entry : cap.modFilterSlotNBTs.entrySet()) {
+                modFilterSlotNBTsTag.setTag(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            tag.setTag("modFilterSlotNBTs", modFilterSlotNBTsTag);
+            
             // 保存属性过滤列表 - 使用serializeNBT保存完整属性信息
             net.minecraft.nbt.NBTTagList attrList = new net.minecraft.nbt.NBTTagList();
             for (Pair<ItemAttribute, Boolean> pair : cap.filterAttributes) {
@@ -776,6 +907,13 @@ public class RsRingCapability implements IRsRingCapability {
             }
             tag.setTag("destroyFilterSlots", destroySlotList);
             
+            // 保存销毁模组过滤槽位
+            net.minecraft.nbt.NBTTagList destroyModSlotList = new net.minecraft.nbt.NBTTagList();
+            for (String modId : cap.destroyModFilterSlots) {
+                destroyModSlotList.appendTag(new net.minecraft.nbt.NBTTagString(modId));
+            }
+            tag.setTag("destroyModFilterSlots", destroyModSlotList);
+            
             // 保存销毁模组过滤列表
             net.minecraft.nbt.NBTTagList destroyModList = new net.minecraft.nbt.NBTTagList();
             for (String modId : cap.destroyFilterMods) {
@@ -797,6 +935,20 @@ public class RsRingCapability implements IRsRingCapability {
             if (cap.destroyAttributeInputSlotNBT != null && !cap.destroyAttributeInputSlotNBT.isEmpty()) {
                 tag.setTag("destroyAttributeInputSlotNBT", cap.destroyAttributeInputSlotNBT);
             }
+            
+            // 保存销毁物品ID过滤槽的NBT数据
+            NBTTagCompound destroyFilterSlotNBTsTag = new NBTTagCompound();
+            for (Map.Entry<Integer, NBTTagCompound> entry : cap.destroyFilterSlotNBTs.entrySet()) {
+                destroyFilterSlotNBTsTag.setTag(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            tag.setTag("destroyFilterSlotNBTs", destroyFilterSlotNBTsTag);
+            
+            // 保存销毁模组过滤槽的NBT数据
+            NBTTagCompound destroyModFilterSlotNBTsTag = new NBTTagCompound();
+            for (Map.Entry<Integer, NBTTagCompound> entry : cap.destroyModFilterSlotNBTs.entrySet()) {
+                destroyModFilterSlotNBTsTag.setTag(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            tag.setTag("destroyModFilterSlotNBTs", destroyModFilterSlotNBTsTag);
             
             // ==================== 保存垃圾箱绑定数据 ====================
             if (cap.trashCanPos != null) {
@@ -843,6 +995,39 @@ public class RsRingCapability implements IRsRingCapability {
                 net.minecraft.nbt.NBTTagList modList = tag.getTagList("filterMods", 8);
                 for (int i = 0; i < modList.tagCount(); i++) {
                     cap.filterMods.add(modList.getStringTagAt(i));
+                }
+            }
+            
+            // 读取模组过滤槽位
+            cap.modFilterSlots.clear();
+            if (tag.hasKey("modFilterSlots")) {
+                net.minecraft.nbt.NBTTagList modSlotList = tag.getTagList("modFilterSlots", 8);
+                for (int i = 0; i < modSlotList.tagCount(); i++) {
+                    cap.modFilterSlots.add(modSlotList.getStringTagAt(i));
+                }
+            }
+            
+            // 读取物品ID过滤槽的NBT数据
+            cap.filterSlotNBTs.clear();
+            if (tag.hasKey("filterSlotNBTs")) {
+                NBTTagCompound filterSlotNBTsTag = tag.getCompoundTag("filterSlotNBTs");
+                for (String key : filterSlotNBTsTag.getKeySet()) {
+                    try {
+                        int slot = Integer.parseInt(key);
+                        cap.filterSlotNBTs.put(slot, filterSlotNBTsTag.getCompoundTag(key));
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            
+            // 读取模组过滤槽的NBT数据
+            cap.modFilterSlotNBTs.clear();
+            if (tag.hasKey("modFilterSlotNBTs")) {
+                NBTTagCompound modFilterSlotNBTsTag = tag.getCompoundTag("modFilterSlotNBTs");
+                for (String key : modFilterSlotNBTsTag.getKeySet()) {
+                    try {
+                        int slot = Integer.parseInt(key);
+                        cap.modFilterSlotNBTs.put(slot, modFilterSlotNBTsTag.getCompoundTag(key));
+                    } catch (NumberFormatException ignored) {}
                 }
             }
             
@@ -901,6 +1086,15 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 }
             }
             
+            // 读取销毁模组过滤槽位
+            cap.destroyModFilterSlots.clear();
+            if (tag.hasKey("destroyModFilterSlots")) {
+                net.minecraft.nbt.NBTTagList modSlotList = tag.getTagList("destroyModFilterSlots", 8);
+                for (int i = 0; i < modSlotList.tagCount(); i++) {
+                    cap.destroyModFilterSlots.add(modSlotList.getStringTagAt(i));
+                }
+            }
+            
             // 读取销毁模组过滤列表
             cap.destroyFilterMods.clear();
             if (tag.hasKey("destroyFilterMods")) {
@@ -929,6 +1123,30 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 cap.destroyAttributeInputSlotNBT = tag.getCompoundTag("destroyAttributeInputSlotNBT");
             } else {
                 cap.destroyAttributeInputSlotNBT = new NBTTagCompound();
+            }
+            
+            // 读取销毁物品ID过滤槽的NBT数据
+            cap.destroyFilterSlotNBTs.clear();
+            if (tag.hasKey("destroyFilterSlotNBTs")) {
+                NBTTagCompound destroyFilterSlotNBTsTag = tag.getCompoundTag("destroyFilterSlotNBTs");
+                for (String key : destroyFilterSlotNBTsTag.getKeySet()) {
+                    try {
+                        int slot = Integer.parseInt(key);
+                        cap.destroyFilterSlotNBTs.put(slot, destroyFilterSlotNBTsTag.getCompoundTag(key));
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            
+            // 读取销毁模组过滤槽的NBT数据
+            cap.destroyModFilterSlotNBTs.clear();
+            if (tag.hasKey("destroyModFilterSlotNBTs")) {
+                NBTTagCompound destroyModFilterSlotNBTsTag = tag.getCompoundTag("destroyModFilterSlotNBTs");
+                for (String key : destroyModFilterSlotNBTsTag.getKeySet()) {
+                    try {
+                        int slot = Integer.parseInt(key);
+                        cap.destroyModFilterSlotNBTs.put(slot, destroyModFilterSlotNBTsTag.getCompoundTag(key));
+                    } catch (NumberFormatException ignored) {}
+                }
             }
             
             // ==================== 读取垃圾箱绑定数据 ====================

@@ -17,6 +17,7 @@ import java.util.List;
  * 背包吸收处理器，当没有绑定箱子时将物品存入Useful-Backpacks背包
  */
 public class BackpackAbsorbHandler {
+    private static final Logger LOGGER = LogManager.getLogger(BackpackAbsorbHandler.class);
 
     /**
      * 尝试将物品吸收到玩家的背包中
@@ -49,6 +50,12 @@ public class BackpackAbsorbHandler {
 
             ItemStack backpack = entry.getStack();
             if (backpack.isEmpty()) {
+                continue;
+            }
+
+            // 检查玩家是否正在查看这个背包的GUI
+            // 如果正在查看，跳过此背包（避免NBT冲突）
+            if (isPlayerViewingBackpack(player, backpack)) {
                 continue;
             }
 
@@ -132,6 +139,10 @@ public class BackpackAbsorbHandler {
         for (BackpackEntry entry : backpacks) {
             ItemStack backpack = entry.getStack();
             if (!backpack.isEmpty() && !BackpackInventoryHandler.isFull(backpack)) {
+                // 检查玩家是否正在查看这个背包的GUI
+                if (isPlayerViewingBackpack(player, backpack)) {
+                    continue;
+                }
                 return true;
             }
         }
@@ -160,6 +171,10 @@ public class BackpackAbsorbHandler {
         for (BackpackEntry entry : backpacks) {
             ItemStack backpack = entry.getStack();
             if (!backpack.isEmpty()) {
+                // 检查玩家是否正在查看这个背包的GUI
+                if (isPlayerViewingBackpack(player, backpack)) {
+                    continue;
+                }
                 totalSpace += BackpackInventoryHandler.getEmptySlotsCount(backpack);
             }
         }
@@ -187,10 +202,60 @@ public class BackpackAbsorbHandler {
         for (BackpackEntry entry : backpacks) {
             ItemStack backpack = entry.getStack();
             if (!backpack.isEmpty() && !BackpackInventoryHandler.isFull(backpack)) {
+                // 检查玩家是否正在查看这个背包的GUI
+                if (isPlayerViewingBackpack(player, backpack)) {
+                    continue;
+                }
                 return entry;
             }
         }
 
         return null;
+    }
+
+    /**
+     * 检查玩家是否正在查看指定背包的GUI
+     * 当Useful-Backpacks的GUI打开时，直接修改NBT会被覆盖
+     *
+     * @param player 玩家
+     * @param backpack 背包物品
+     * @return 是否正在查看该背包的GUI
+     */
+    private static boolean isPlayerViewingBackpack(EntityPlayer player, ItemStack backpack) {
+        if (player == null || backpack.isEmpty()) {
+            return false;
+        }
+
+        // 检查玩家是否打开了Useful-Backpacks的Container
+        if (player.openContainer != null && player.openContainer != player.inventoryContainer) {
+            String containerClassName = player.openContainer.getClass().getName();
+            // Useful-Backpacks的容器类名
+            if (containerClassName.equals("info.u_team.useful_backpacks.container.ContainerBackPack")) {
+                // 检查是否是同一个背包（通过比较ItemStack）
+                try {
+                    // 通过反射获取ContainerBackPack中的背包ItemStack
+                    java.lang.reflect.Field inventoryField = player.openContainer.getClass().getDeclaredField("inventory");
+                    inventoryField.setAccessible(true);
+                    Object inventory = inventoryField.get(player.openContainer);
+
+                    if (inventory != null) {
+                        // 检查inventory是否是InventoryBackPack类型
+                        if (inventory.getClass().getName().equals("info.u_team.useful_backpacks.inventory.InventoryBackPack")) {
+                            java.lang.reflect.Method getStackMethod = inventory.getClass().getMethod("getStack");
+                            ItemStack openBackpackStack = (ItemStack) getStackMethod.invoke(inventory);
+
+                            // 比较是否是同一个背包
+                            return openBackpackStack == backpack;
+                        }
+                    }
+                } catch (Exception e) {
+                    // 反射失败，保守处理：如果打开了任何背包GUI，都认为是正在查看
+                    LOGGER.debug("检查背包GUI状态时出错: {}", e.getMessage());
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

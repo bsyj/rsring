@@ -129,6 +129,12 @@ public class WearableBackpacksCompat {
         Object backpack = getEquippedBackpack(player);
         if (backpack == null) return 0;
 
+        // 检查是否有其他玩家正在使用这个背包
+        if (isBackpackInUse(backpack)) {
+            LOGGER.debug("背包正被其他玩家使用，跳过存入");
+            return 0;
+        }
+
         ItemStackHandler items = getBackpackItems(backpack);
         if (items == null) return 0;
 
@@ -185,6 +191,12 @@ public class WearableBackpacksCompat {
         Object backpack = getEquippedBackpack(player);
         if (backpack == null) return 0;
 
+        // 检查是否有其他玩家正在使用这个背包
+        if (isBackpackInUse(backpack)) {
+            LOGGER.debug("背包正被其他玩家使用，跳过销毁");
+            return 0;
+        }
+
         ItemStackHandler items = getBackpackItems(backpack);
         if (items == null) return 0;
 
@@ -220,6 +232,11 @@ public class WearableBackpacksCompat {
 
         Object backpack = getEquippedBackpack(player);
         if (backpack == null) return false;
+
+        // 检查是否有其他玩家正在使用这个背包
+        if (isBackpackInUse(backpack)) {
+            return false;
+        }
 
         ItemStackHandler items = getBackpackItems(backpack);
         if (items == null) return false;
@@ -281,6 +298,27 @@ public class WearableBackpacksCompat {
     }
 
     // 辅助方法
+
+    /**
+     * 检查背包是否正在被其他玩家使用
+     * 当WearableBackpacks的GUI打开时，直接操作可能导致冲突
+     *
+     * @param backpack 背包对象
+     * @return 是否正在被使用
+     */
+    private static boolean isBackpackInUse(Object backpack) {
+        if (backpack == null) return false;
+
+        try {
+            // 通过反射调用IBackpack.getPlayersUsing()
+            java.lang.reflect.Method getPlayersUsing = backpack.getClass().getMethod("getPlayersUsing");
+            int playersUsing = (int) getPlayersUsing.invoke(backpack);
+            return playersUsing > 0;
+        } catch (Exception e) {
+            LOGGER.debug("检查背包使用状态时出错: {}", e.getMessage());
+            return false;
+        }
+    }
 
     private static boolean canMerge(ItemStack existing, ItemStack toMerge) {
         if (existing.isEmpty() || toMerge.isEmpty()) return false;

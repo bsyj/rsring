@@ -954,6 +954,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
             return handler != null;
         }
 
+        // RS控制器不需要物品栏能力检查（与吸收箱保持一致）
+        if (isRSController(trashWorld, trashPos)) return true;
+
         // 检查垃圾箱是否存在（未被破坏）
         TileEntity te = trashWorld.getTileEntity(trashPos);
         if (te == null) return false;
@@ -977,6 +980,11 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         // 强制加载区块（与吸收箱保持一致）
         trashWorld.getChunk(trashPos);
+
+        // 检查是否是RS控制器
+        if (isRSController(trashWorld, trashPos)) {
+            return insertIntoRSNetworkStatic(trashWorld, trashPos, itemStack);
+        }
 
         IItemHandler handler = null;
         boolean isPlacedBackpack = false;
@@ -1005,13 +1013,88 @@ public class ItemAbsorbRing extends Item implements IBauble {
         } else {
             inserted = itemStack.getCount() - remainder.getCount();
         }
-        
+
         // 如果是放置的背包，标记为脏
         if (inserted > 0 && isPlacedBackpack) {
             com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.markPlacedBackpackDirty(trashWorld, trashPos);
         }
-        
+
         return inserted;
+    }
+
+    /**
+     * 静态版本的RS网络插入方法（供trySendToTrashCan使用）
+     */
+    private static int insertIntoRSNetworkStatic(World world, BlockPos pos, ItemStack stack) {
+        if (world == null || pos == null || stack.isEmpty()) return 0;
+        try {
+            Class<?> apiClass = Class.forName("com.raoulvdberge.refinedstorage.apiimpl.API");
+            Object api = apiClass.getMethod("instance").invoke(null);
+            Object network = getNetworkFromNodeManagerStatic(api, world, pos);
+            if (network == null) {
+                network = getNetworkFromTileStatic(world, pos);
+            }
+            if (network == null) {
+                return 0;
+            }
+
+            // Preferred path for RS 1.6.x: INetwork.insertItem(ItemStack, int/long, Action) -> remainder
+            Class<?> actionClass = Class.forName("com.raoulvdberge.refinedstorage.api.util.Action");
+            Object perform = java.lang.Enum.valueOf((Class<? extends java.lang.Enum>) actionClass, "PERFORM");
+            try {
+                java.lang.reflect.Method insert;
+                Object remainderObj;
+                try {
+                    insert = network.getClass().getMethod("insertItem", ItemStack.class, int.class, actionClass);
+                    remainderObj = insert.invoke(network, stack.copy(), stack.getCount(), perform);
+                } catch (NoSuchMethodException e) {
+                    insert = network.getClass().getMethod("insertItem", ItemStack.class, long.class, actionClass);
+                    remainderObj = insert.invoke(network, stack.copy(), (long) stack.getCount(), perform);
+                }
+                if (remainderObj == null) {
+                    return stack.getCount();
+                }
+                if (remainderObj instanceof ItemStack) {
+                    ItemStack remainder = (ItemStack) remainderObj;
+                    int inserted = Math.max(0, stack.getCount() - remainder.getCount());
+                    return inserted;
+                }
+            } catch (NoSuchMethodException ignored) {
+                return 0;
+            }
+        } catch (Throwable t) {
+            return 0;
+        }
+        return 0;
+    }
+
+    private static Object getNetworkFromNodeManagerStatic(Object api, World world, BlockPos pos) {
+        try {
+            java.lang.reflect.Method getNodeManager = api.getClass().getMethod("getNetworkNodeManager", World.class);
+            Object nodeManager = getNodeManager.invoke(api, world);
+            if (nodeManager == null) return null;
+
+            java.lang.reflect.Method getNode = nodeManager.getClass().getMethod("getNode", BlockPos.class);
+            Object node = getNode.invoke(nodeManager, pos);
+            if (node == null) return null;
+
+            java.lang.reflect.Method getNetwork = node.getClass().getMethod("getNetwork");
+            return getNetwork.invoke(node);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static Object getNetworkFromTileStatic(World world, BlockPos pos) {
+        try {
+            TileEntity te = world.getTileEntity(pos);
+            if (te == null) return null;
+
+            java.lang.reflect.Method getNetwork = te.getClass().getMethod("getNetwork");
+            return getNetwork.invoke(te);
+        } catch (Throwable t) {
+            return null;
+        }
     }
     
     /**

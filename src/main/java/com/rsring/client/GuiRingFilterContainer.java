@@ -437,7 +437,8 @@ private static final int PAD = 8;
         
         drawAttributeButton(removeBtnX - 1, btnDrawY, 0, isMouseOverAttributeButton(mouseX, mouseY, absRemoveBtnX, absBtnDrawY));
         drawAttributeButton(addBtnX - 1, btnDrawY, 1, isMouseOverAttributeButton(mouseX, mouseY, absAddBtnX, absBtnDrawY));
-        boolean matchAll = capability != null && capability.isMatchAllMode();
+        boolean isDestroyModeUI = capability != null && capability.isDestroyModeUI();
+        boolean matchAll = capability != null && (isDestroyModeUI ? capability.isDestroyMatchAllMode() : capability.isMatchAllMode());
         drawAttributeButton(matchBtnX - 1, btnDrawY, matchAll ? 2 : 3, isMouseOverAttributeButton(mouseX, mouseY, absMatchBtnX, absBtnDrawY));
 
         // 绘制物品槽位 - 与按钮统一Y坐标
@@ -448,7 +449,6 @@ private static final int PAD = 8;
         // 绘制槽位中的物品
         // 槽位背景绘制在 (itemSlotX-1, btnDrawY)，尺寸 18x18
         // 物品应该在槽位内部，偏移1像素边框
-        boolean isDestroyModeUI = capability != null && capability.isDestroyModeUI();
         ItemStack inputStack = isDestroyModeUI ? capability.getDestroyAttributeInputStack() : capability.getAttributeInputStack();
         if (!inputStack.isEmpty()) {
             RenderHelper.enableGUIStandardItemLighting();
@@ -1127,10 +1127,14 @@ private static final int PAD = 8;
     /**
      * 绘制销毁模式类型切换按钮
      * 显示当前销毁模式类型：总是销毁/槽位溢出/存储溢出
+     * 使用 buttons.png 贴图：
+     * 总是销毁 - 序号3
+     * 槽位溢出 - 序号15
+     * 存储溢出 - 序号16
      */
     private void drawDestroyModeTypeButton(int x, int y, int mouseX, int mouseY) {
         int hoverState = isMouseOverButton(mouseX - this.guiLeft, mouseY - this.guiTop, x, y) ? 2 : 1;
-        
+
         // 绘制按钮背景
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.enableBlend();
@@ -1143,23 +1147,23 @@ private static final int PAD = 8;
         this.mc.getTextureManager().bindTexture(GUI_CONTROLS);
         int bgU = hoverState == 2 ? 47 : 29;
         this.drawTexturedModalRect(x, y, bgU, 0, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT);
-        
+
         // 根据销毁模式类型绘制不同图标
-        // 使用精妙背包的图标：
-        // 总是销毁 - 图标序号3 (UV: 32,0)
-        // 槽位溢出 - 图标序号4 (UV: 48,0) 
-        // 存储溢出 - 图标序号5 (UV: 64,0)
+        // 使用 buttons.png 贴图：
+        // 总是销毁 - 序号3 (UV: 32,0)
+        // 槽位溢出 - 序号15 (UV: 224,0)
+        // 存储溢出 - 序号16 (UV: 240,0)
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mc.getTextureManager().bindTexture(SOPHISTICATED_CORE_ICONS);
-        
+        this.mc.getTextureManager().bindTexture(BUTTON_TEXTURE);
+
         com.rsring.capability.DestroyModeType modeType = capability.getDestroyModeType();
         int iconIndex;
         switch (modeType) {
             case SLOT_OVERFLOW:
-                iconIndex = 4; // 槽位溢出
+                iconIndex = 15; // 槽位溢出
                 break;
             case STORAGE_OVERFLOW:
-                iconIndex = 5; // 存储溢出
+                iconIndex = 16; // 存储溢出
                 break;
             case ALWAYS:
             default:
@@ -1750,8 +1754,9 @@ private static final int PAD = 8;
                 };
                 int titleColorIndex = (int)(hue * colors.length) % colors.length;
                 int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
-                
-                boolean matchAll = capability.isMatchAllMode();
+
+                boolean isDestroyModeUIForMatch = capability.isDestroyModeUI();
+                boolean matchAll = isDestroyModeUIForMatch ? capability.isDestroyMatchAllMode() : capability.isMatchAllMode();
                 tooltip.add(colors[titleColorIndex] + (matchAll ? "匹配全部 (AND)" : "匹配任意 (OR)"));
                 tooltip.add(TextFormatting.GRAY + (matchAll ? "物品必须满足所有属性" : "物品满足任一属性即可"));
                 tooltip.add("");

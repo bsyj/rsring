@@ -28,6 +28,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -37,9 +39,51 @@ import net.minecraftforge.fml.common.Optional;
 import baubles.api.IBauble;
 import baubles.api.BaubleType;
 import org.lwjgl.input.Keyboard;
+import com.rsring.compat.CompatManager;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
 public class ItemAbsorbRing extends Item implements IBauble {
+    private static final Logger LOGGER = LogManager.getLogger(ItemAbsorbRing.class);
+    
+    // 垃圾箱警告冷却机制：每个玩家60秒只提示一次
+    private static final Map<UUID, Long> TRASH_CAN_WARNING_COOLDOWN = new HashMap<>();
+    private static final long WARNING_COOLDOWN_MS = 60000; // 60秒
+    
+    // 吸收箱警告冷却机制：每个玩家60秒只提示一次
+    private static final Map<UUID, Long> TERMINAL_WARNING_COOLDOWN = new HashMap<>();
+    private static final long TERMINAL_WARNING_COOLDOWN_MS = 60000; // 60秒
+    
+    /**
+     * 发送垃圾箱警告（带冷却）
+     */
+    private static void sendTrashCanWarning(EntityPlayer player, String message) {
+        long now = System.currentTimeMillis();
+        UUID playerId = player.getUniqueID();
+        long lastWarning = TRASH_CAN_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
+        
+        if (now - lastWarning > WARNING_COOLDOWN_MS) {
+            player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
+            TRASH_CAN_WARNING_COOLDOWN.put(playerId, now);
+        }
+    }
+    
+    /**
+     * 发送吸收箱警告（带冷却）
+     */
+    private static void sendTerminalWarning(EntityPlayer player, String message) {
+        long now = System.currentTimeMillis();
+        UUID playerId = player.getUniqueID();
+        long lastWarning = TERMINAL_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
+        
+        if (now - lastWarning > TERMINAL_WARNING_COOLDOWN_MS) {
+            player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
+            TERMINAL_WARNING_COOLDOWN.put(playerId, now);
+        }
+    }
 
     public ItemAbsorbRing() {
         super();
@@ -48,12 +92,29 @@ public class ItemAbsorbRing extends Item implements IBauble {
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabs.MISC);
     }
+    
+    @Override
+    public String getItemStackDisplayName(ItemStack stack) {
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        if (cap != null && cap.isEasterEgg()) {
+            // 彩蛋戒指始终显示彩蛋名称，忽略重命名
+            return TextFormatting.GOLD + "至尊狂傲暴龙灭杀战神";
+        }
+        return super.getItemStackDisplayName(stack);
+    }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
         if (cap == null) return;
+        
+        // 彩蛋戒指特殊标识
+        if (cap.isEasterEgg()) {
+            tooltip.add(TextFormatting.LIGHT_PURPLE + "[ 彩蛋觉醒 ]");
+            tooltip.add(TextFormatting.YELLOW + "  +5 幸运值 (装备时)");
+            tooltip.add("");
+        }
 
         IEnergyStorage energy = cap.getEnergyStorage();
         tooltip.add(TextFormatting.GRAY + "能量: " + TextFormatting.YELLOW + formatFe(energy.getEnergyStored())
@@ -62,72 +123,64 @@ public class ItemAbsorbRing extends Item implements IBauble {
             : TextFormatting.RED + "已禁用"));
         tooltip.add(TextFormatting.GRAY + "密封: " + (cap.isSealed() ? TextFormatting.LIGHT_PURPLE + I18n.format("tooltip.rsring.sealed.yes")
             : TextFormatting.DARK_GRAY + I18n.format("tooltip.rsring.sealed.no")));
+        // 绑定状态显示
         if (cap.isBound()) {
             BlockPos pos = cap.getTerminalPos();
             String dim = getDimensionName(cap.getTerminalDimension());
             tooltip.add(TextFormatting.GRAY + "已绑定: " + TextFormatting.AQUA + pos.getX() + "," + pos.getY()
                 + "," + pos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.AQUA + dim + TextFormatting.GRAY + ")");
-            
-            // 显示垃圾箱绑定状态（在已绑定和过滤模式之间）
-            if (cap.isTrashCanBound()) {
-                BlockPos trashPos = cap.getTrashCanPos();
-                String trashDim = getDimensionName(cap.getTrashCanDimension());
-                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.RED + trashPos.getX() + "," + trashPos.getY()
-                    + "," + trashPos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.RED + trashDim + TextFormatting.GRAY + ")");
-            } else {
-                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.DARK_GRAY + "未绑定");
-            }
-            
-            // 显示过滤模式类型和黑白名单状态
-            FilterMode filterMode = cap.getFilterMode();
-            String modeType;
-            switch (filterMode) {
-                case MOD:
-                    modeType = "模组";
-                    break;
-                case ATTRIBUTE:
-                    modeType = "属性";
-                    break;
-                case ITEM:
-                default:
-                    modeType = "ID";
-                    break;
-            }
-            String listMode = cap.isWhitelistMode() ? "白名单" : "黑名单";
-            tooltip.add(TextFormatting.GRAY + "过滤模式: " + TextFormatting.AQUA + modeType + "-" + listMode);
-            
-            // 显示销毁模式状态
-            FilterMode destroyFilterMode = cap.getDestroyFilterMode();
-            String destroyModeType;
-            switch (destroyFilterMode) {
-                case MOD:
-                    destroyModeType = "模组";
-                    break;
-                case ATTRIBUTE:
-                    destroyModeType = "属性";
-                    break;
-                case ITEM:
-                default:
-                    destroyModeType = "ID";
-                    break;
-            }
-            String destroyListMode = cap.isDestroyWhitelistMode() ? "白名单" : "黑名单";
-            String destroyStatus = cap.isDestroyEnabled() ? "开" : "关";
-            TextFormatting statusColor = cap.isDestroyEnabled() ? TextFormatting.GREEN : TextFormatting.RED;
-            tooltip.add(TextFormatting.GRAY + "销毁模式: " + TextFormatting.RED + destroyModeType + "-" + destroyListMode 
-                + TextFormatting.GRAY + " (" + statusColor + destroyStatus + TextFormatting.GRAY + ")");
         } else {
-            tooltip.add(TextFormatting.GRAY + "未绑定");
-            // 未绑定主容器时，垃圾箱显示在未绑定下方
-            if (cap.isTrashCanBound()) {
-                BlockPos trashPos = cap.getTrashCanPos();
-                String trashDim = getDimensionName(cap.getTrashCanDimension());
-                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.RED + trashPos.getX() + "," + trashPos.getY()
-                    + "," + trashPos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.RED + trashDim + TextFormatting.GRAY + ")");
-            } else {
-                tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.DARK_GRAY + "未绑定");
-            }
+            tooltip.add(TextFormatting.GRAY + "吸收箱: " + TextFormatting.DARK_GRAY + "未绑定");
         }
+        
+        // 垃圾箱绑定状态
+        if (cap.isTrashCanBound()) {
+            BlockPos trashPos = cap.getTrashCanPos();
+            String trashDim = getDimensionName(cap.getTrashCanDimension());
+            tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.RED + trashPos.getX() + "," + trashPos.getY()
+                + "," + trashPos.getZ() + TextFormatting.GRAY + " (" + TextFormatting.RED + trashDim + TextFormatting.GRAY + ")");
+        } else {
+            tooltip.add(TextFormatting.GRAY + "垃圾箱: " + TextFormatting.DARK_GRAY + "未绑定");
+        }
+        
+        // 过滤模式（始终显示，与绑定状态无关）
+        FilterMode filterMode = cap.getFilterMode();
+        String modeType;
+        switch (filterMode) {
+            case MOD:
+                modeType = "模组";
+                break;
+            case ATTRIBUTE:
+                modeType = "属性";
+                break;
+            case ITEM:
+            default:
+                modeType = "ID";
+                break;
+        }
+        String listMode = cap.isWhitelistMode() ? "白名单" : "黑名单";
+        tooltip.add(TextFormatting.GRAY + "过滤模式: " + TextFormatting.AQUA + modeType + "-" + listMode);
+        
+        // 销毁模式（始终显示，与绑定状态无关）
+        FilterMode destroyFilterMode = cap.getDestroyFilterMode();
+        String destroyModeType;
+        switch (destroyFilterMode) {
+            case MOD:
+                destroyModeType = "模组";
+                break;
+            case ATTRIBUTE:
+                destroyModeType = "属性";
+                break;
+            case ITEM:
+            default:
+                destroyModeType = "ID";
+                break;
+        }
+        String destroyListMode = cap.isDestroyWhitelistMode() ? "白名单" : "黑名单";
+        String destroyStatus = cap.isDestroyEnabled() ? "开" : "关";
+        TextFormatting statusColor = cap.isDestroyEnabled() ? TextFormatting.GREEN : TextFormatting.RED;
+        tooltip.add(TextFormatting.GRAY + "销毁模式: " + TextFormatting.RED + destroyModeType + "-" + destroyListMode 
+            + TextFormatting.GRAY + " (" + statusColor + destroyStatus + TextFormatting.GRAY + ")");
 
         boolean showDetail = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         if (!showDetail) {
@@ -137,31 +190,35 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "功能特点:");
-        tooltip.add(TextFormatting.GRAY + "  - 吸收附近的掉落物进入绑定的目标");
-        tooltip.add(TextFormatting.GRAY + "  - 支持白名单/黑名单过滤");
-        tooltip.add(TextFormatting.GRAY + "  - 每次吸收消耗能量");
-        tooltip.add(TextFormatting.GRAY + "  - 密封模式：防止外部能量系统充能");
+        tooltip.add(TextFormatting.GOLD + "[ 功能特点 ]");
+        tooltip.add(TextFormatting.GRAY + "  - 自动吸收附近掉落物");
+        tooltip.add(TextFormatting.GRAY + "  - 三种过滤模式: ID/模组/属性");
+        tooltip.add(TextFormatting.GRAY + "  - 独立垃圾箱与销毁系统");
+        tooltip.add(TextFormatting.GRAY + "  - 支持模组背包(饰品槽)");
 
         tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "使用方法:");
-        tooltip.add(TextFormatting.GRAY + "  1. 右键空气点击打开过滤设置");
-        tooltip.add(TextFormatting.GRAY + "  2. 潜行右键rs控制器/箱子绑定");
-        tooltip.add(TextFormatting.GRAY + "  3. 潜行左键容器绑定垃圾箱");
-        tooltip.add(TextFormatting.GRAY + "  4. 按K键切换吸收开关");
-        tooltip.add(TextFormatting.GRAY + "  5. 可在背包/饰品槽中使用");
-        tooltip.add(TextFormatting.GRAY + "  6. 工作台放戒指切换密封模式");
+        tooltip.add(TextFormatting.GOLD + "[ 快捷操作 ]");
+        tooltip.add(TextFormatting.AQUA + "  右键空气" + TextFormatting.DARK_GRAY + " - 打开过滤设置");
+        tooltip.add(TextFormatting.AQUA + "  潜行+右键" + TextFormatting.DARK_GRAY + " - 绑定吸收箱");
+        tooltip.add(TextFormatting.AQUA + "  潜行+左键" + TextFormatting.DARK_GRAY + " - 绑定垃圾箱");
+        tooltip.add(TextFormatting.AQUA + "  K键" + TextFormatting.DARK_GRAY + " - 切换开关");
+        tooltip.add(TextFormatting.AQUA + "  工作台" + TextFormatting.DARK_GRAY + " - 切换密封模式");
 
         // 显示绑定目标类型
         if (cap.isBound() && worldIn != null) {
             BlockPos pos = cap.getTerminalPos();
             int dim = cap.getTerminalDimension();
             if (worldIn.provider.getDimension() == dim) {
+                String targetType;
                 if (isRSController(worldIn, pos)) {
-                    tooltip.add(TextFormatting.GREEN + "目标: RS控制器");
+                    targetType = "RS控制器";
+                } else if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(worldIn, pos)) {
+                    targetType = "背包";
                 } else {
-                    tooltip.add(TextFormatting.GREEN + "目标: 容器");
+                    targetType = "容器";
                 }
+                tooltip.add("");
+                tooltip.add(TextFormatting.GREEN + "[OK] 目标类型: " + targetType);
             }
         }
     }
@@ -191,13 +248,14 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return String.valueOf(fe);
     }
 
-    private static int getEnergyCostPerItem() {
+    public static int getEnergyCostPerItem() {
         int base = com.rsring.config.RsRingConfig.absorbRing.energyCostPerItem;
         double mult = com.rsring.config.RsRingConfig.absorbRing.energyCostMultiplier;
-        if (base < 0) base = 0;
-        if (mult < 0) mult = 0.0;
+        // 确保最小成本为1，防止免费吸收/销毁
+        if (base < 1) base = 1;
+        if (mult < 0.1) mult = 0.1;
         double cost = base * mult;
-        if (cost <= 0) return 0;
+        if (cost < 1) return 1; // 最小成本为1
         return (int) Math.ceil(cost);
     }
 
@@ -214,6 +272,129 @@ public class ItemAbsorbRing extends Item implements IBauble {
     @Optional.Method(modid = "baubles")
     public BaubleType getBaubleType(ItemStack itemstack) {
         return BaubleType.RING;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public void onEquipped(ItemStack itemstack, EntityLivingBase player) {
+        if (player.world.isRemote || !(player instanceof EntityPlayer)) return;
+
+        EntityPlayer entityPlayer = (EntityPlayer) player;
+        IRsRingCapability capability = itemstack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+
+        // 装备彩蛋戒指时添加幸运属性
+        if (capability != null && capability.isEasterEgg()) {
+            int slot = findBaubleSlot(entityPlayer, itemstack);
+            applyLuckAttribute(entityPlayer, slot);
+        }
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public void onUnequipped(ItemStack itemstack, EntityLivingBase player) {
+        if (player.world.isRemote || !(player instanceof EntityPlayer)) return;
+        
+        EntityPlayer entityPlayer = (EntityPlayer) player;
+        IRsRingCapability capability = itemstack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        
+        // 卸下彩蛋戒指时移除幸运属性
+        if (capability != null && capability.isEasterEgg()) {
+            removeLuckAttribute(entityPlayer);
+        }
+    }
+    
+    // 彩蛋戒指幸运属性基础UUID（用于生成槽位相关UUID）
+    private static final java.util.UUID LUCK_ATTRIBUTE_BASE_UUID = java.util.UUID.fromString("e3b4a5c7-8d9e-4f0a-1b2c-3d4e5f6a7b8c");
+    private static final String LUCK_ATTRIBUTE_NAME = "rsring.easter_egg.luck";
+    
+    /**
+     * 查找物品在饰品栏中的槽位索引
+     */
+    private int findBaubleSlot(EntityPlayer player, ItemStack targetStack) {
+        if (!com.rsring.util.BaublesHelper.isBaublesLoaded()) return -1;
+        
+        Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+        if (handler == null) return -1;
+        
+        int size = com.rsring.util.BaublesHelper.getSlots(handler);
+        for (int i = 0; i < size; i++) {
+            ItemStack stack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+            if (stack == targetStack) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * 生成槽位相关的UUID
+     */
+    private java.util.UUID getSlotUUID(int slot) {
+        // 基于基础UUID和槽位索引生成唯一UUID
+        long most = LUCK_ATTRIBUTE_BASE_UUID.getMostSignificantBits();
+        long least = LUCK_ATTRIBUTE_BASE_UUID.getLeastSignificantBits() + slot;
+        return new java.util.UUID(most, least);
+    }
+    
+    /**
+     * 应用幸运属性修饰符
+     * @param slot 饰品槽位索引，-1表示使用基础UUID
+     */
+    private void applyLuckAttribute(EntityPlayer player, int slot) {
+        net.minecraft.entity.ai.attributes.IAttributeInstance luckAttribute = player.getEntityAttribute(
+            net.minecraft.entity.SharedMonsterAttributes.LUCK);
+        if (luckAttribute == null) return;
+        
+        java.util.UUID uuid = getSlotUUID(slot >= 0 ? slot : 0);
+        
+        // 检查是否已存在修饰符
+        if (luckAttribute.getModifier(uuid) != null) return;
+        
+        // 添加幸运+5修饰符 (0 = ADDITION)
+        net.minecraft.entity.ai.attributes.AttributeModifier modifier = new net.minecraft.entity.ai.attributes.AttributeModifier(
+            uuid, LUCK_ATTRIBUTE_NAME + "_" + slot, 5.0, 0);
+        luckAttribute.applyModifier(modifier);
+    }
+    
+    /**
+     * 移除所有彩蛋戒指的幸运属性修饰符
+     */
+    private void removeLuckAttribute(EntityPlayer player) {
+        net.minecraft.entity.ai.attributes.IAttributeInstance luckAttribute = player.getEntityAttribute(
+            net.minecraft.entity.SharedMonsterAttributes.LUCK);
+        if (luckAttribute == null) return;
+        
+        // 移除所有可能的槽位修饰符（最多50个槽位）
+        for (int i = 0; i < 50; i++) {
+            java.util.UUID uuid = getSlotUUID(i);
+            net.minecraft.entity.ai.attributes.AttributeModifier modifier = luckAttribute.getModifier(uuid);
+            if (modifier != null) {
+                luckAttribute.removeModifier(modifier);
+            }
+        }
+    }
+    
+    /**
+     * 重新应用所有彩蛋戒指的幸运属性（用于玩家登录时）
+     */
+    public static void reapplyAllEasterEggLuck(EntityPlayer player) {
+        if (player.world.isRemote) return;
+        if (!com.rsring.util.BaublesHelper.isBaublesLoaded()) return;
+        
+        Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+        if (handler == null) return;
+        
+        int size = com.rsring.util.BaublesHelper.getSlots(handler);
+        for (int i = 0; i < size; i++) {
+            ItemStack stack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+            if (stack.isEmpty() || !(stack.getItem() instanceof ItemAbsorbRing)) continue;
+            
+            IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+            if (cap != null && cap.isEasterEgg()) {
+                ItemAbsorbRing ring = (ItemAbsorbRing) stack.getItem();
+                ring.applyLuckAttribute(player, i);
+            }
+        }
     }
 
     @Override
@@ -360,7 +541,14 @@ public class ItemAbsorbRing extends Item implements IBauble {
             com.rsring.capability.RsRingCapability.syncCapabilityToStack(itemstack, capability);
         }
 
-        if (capability == null || !capability.isEnabled() || !capability.isBound()) return;
+        // 背包模式：未绑定吸收箱时也可以吸收到背包
+        if (capability == null || !capability.isEnabled()) return;
+
+        // 检查是否在GUI内工作
+        if (!capability.shouldWorkInGUI() && entityPlayer.openContainer != entityPlayer.inventoryContainer) {
+            return;
+        }
+
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
         if (costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) return;
@@ -418,19 +606,21 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
 
     private void absorbItemsToChest(EntityPlayer player, IRsRingCapability capability) {
-        if (capability == null || !capability.isBound()) return;
-        if (capability.isWhitelistMode() && !hasAnyFilter(capability)) return;
+        if (capability == null) return;
 
-        net.minecraft.world.World targetWorld = capability.getTerminalWorld();
-        BlockPos targetPos = capability.getTerminalPos();
-        if (targetWorld == null) {
-            int dim = capability.getTerminalDimension();
-            targetWorld = DimensionManager.getWorld(dim);
+        // 检查是否启用了背包优先模式
+        boolean preferUsefulBackpacks = com.rsring.config.RsRingConfig.usefulBackpacksCompat.preferBackpacks;
+        boolean preferWearableBackpacks = com.rsring.config.RsRingConfig.wearableBackpacksCompat.preferBackpacks;
+        boolean preferBackpacks = preferUsefulBackpacks || preferWearableBackpacks;
+        boolean isBound = capability.isBound();
+
+        // 如果没有绑定目标且没有启用任何背包兼容，直接返回
+        if (!isBound && !CompatManager.isAnyBackpackModAvailable()) {
+            return;
         }
-        if (targetWorld == null || targetPos == null) return;
 
-        targetWorld.getChunk(targetPos);
-        if (!targetWorld.isBlockLoaded(targetPos)) return;
+        // 如果绑定了目标且没有启用优先背包模式，检查过滤条件
+        if (isBound && !preferBackpacks && capability.isWhitelistMode() && !hasAnyFilter(capability)) return;
 
         double range = Math.max(1.0D, com.rsring.config.RsRingConfig.absorbRing.absorptionRange);
         List<net.minecraft.entity.item.EntityItem> items = player.world.getEntitiesWithinAABB(
@@ -441,113 +631,394 @@ public class ItemAbsorbRing extends Item implements IBauble {
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
 
+        // 检查玩家是否有背包模组的背包
+        boolean hasBackpack = CompatManager.isAnyBackpackModAvailable() && CompatManager.hasAnyBackpack(player);
+
         for (net.minecraft.entity.item.EntityItem item : items) {
-            if (item.isDead) continue;
-            ItemStack itemStack = item.getItem();
-            if (itemStack.isEmpty()) continue;
-            if (costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) continue;
+            // 并发安全：对物品实体加锁处理
+            synchronized (item) {
+                // 二次检查：可能在等待锁期间被其他线程处理
+                if (item.isDead) continue;
+                ItemStack itemStack = item.getItem();
+                if (itemStack.isEmpty()) continue;
+                
+                // 再次检查，防止获取物品后状态变化
+                if (item.isDead) continue;
+                
+                if (costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) continue;
 
-            // 先检查销毁模式
-            if (capability.isDestroyEnabled() && shouldDestroyItem(capability, itemStack)) {
-                // 优先尝试送入垃圾箱
-                int sentToTrash = trySendToTrashCan(capability, itemStack);
-                if (sentToTrash > 0) {
-                    // 成功送入垃圾箱（全部或部分）
-                    if (costPerItem > 0) {
-                        energyStorage.extractEnergy(costPerItem, false);
-                    }
-                    int remaining = itemStack.getCount() - sentToTrash;
-                    if (remaining <= 0) {
-                        item.setDead();
+                // 检查销毁模式
+                if (capability.isDestroyEnabled() && shouldDestroyItem(capability, itemStack)) {
+                    // 有背包的情况：STORAGE_OVERFLOW模式需要先吸收再销毁剩余
+                    if (hasBackpack && capability.getDestroyModeType() == com.rsring.capability.DestroyModeType.STORAGE_OVERFLOW) {
+                        // 先尝试吸收到背包，剩余物品销毁
+                        // 注意：只存入背包，不存入绑定吸收箱
+                        handleItemAbsorptionForDestroyFlow(player, capability, item, itemStack, energyStorage, costPerItem);
                     } else {
-                        itemStack.setCount(remaining);
-                        item.setItem(itemStack);
+                        // 无背包 或 ALWAYS/SLOT_OVERFLOW模式：直接销毁
+                        handleDestroyForGroundItem(player, capability, item, itemStack, energyStorage, costPerItem);
                     }
-                } else {
-                    // 无法送入垃圾箱，直接销毁
-                    if (costPerItem > 0) {
-                        energyStorage.extractEnergy(costPerItem, false);
-                    }
-                    item.setDead();
-                }
-                continue;
-            }
-
-            // 再检查吸收过滤
-            if (shouldFilterItem(capability, itemStack)) continue;
-
-            int originalCount = itemStack.getCount();
-            int maxAffordable = costPerItem > 0 ? Math.max(1, energyStorage.getEnergyStored() / costPerItem) : Integer.MAX_VALUE;
-            int attemptCount = Math.min(originalCount, maxAffordable);
-            ItemStack attemptStack = itemStack.copy();
-            attemptStack.setCount(attemptCount);
-
-            int inserted = 0;
-            boolean isRSController = isRSController(targetWorld, targetPos);
-
-            if (isRSController) {
-                inserted = insertIntoRSNetwork(targetWorld, targetPos, attemptStack);
-            } else {
-                // 对于非RS控制器（普通箱子等），使用insertIntoChest方法
-                inserted = insertIntoChest(targetWorld, targetPos, attemptStack);
-            }
-
-            if (inserted > 0) {
-                if (costPerItem > 0) {
-                    int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
-                    energyStorage.extractEnergy(energyToUse, false);
+                    continue;
                 }
 
-                int remaining = originalCount - inserted;
-                if (remaining <= 0) {
-                    item.setDead();
-                } else {
-                    itemStack.setCount(remaining);
-                    item.setItem(itemStack);
-                }
-            }
+                // 检查吸收过滤（所有模式都要遵循，包括背包模式）
+                if (shouldFilterItem(capability, itemStack)) continue;
 
+                // 处理物品吸收
+                handleItemAbsorption(player, capability, item, itemStack, energyStorage, costPerItem, isBound, preferBackpacks);
+            }
         }
+    }
+
+    /**
+     * 处理地上物品的销毁流程
+     * 
+     * 地面物品没有容量限制问题，匹配销毁过滤器的地上物品直接销毁：
+     * 1. 优先送入垃圾箱
+     * 2. 垃圾箱无法接收则真正销毁
+     * 
+     * 注意：销毁类型判断(ALWAYS/SLOT_OVERFLOW/STORAGE_OVERFLOW)只适用于
+     * 定时清理背包内物品，不适用于地面物品！
+     * 
+     * @param player 玩家（未使用，保留用于未来扩展）
+     * @param capability 戒指能力
+     * @param item 地上物品实体
+     * @param itemStack 物品堆
+     * @param energyStorage 能量存储
+     * @param costPerItem 每个物品的能量消耗
+     */
+    private void handleDestroyForGroundItem(EntityPlayer player, IRsRingCapability capability,
+                                            net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
+                                            IEnergyStorage energyStorage, int costPerItem) {
+        int originalCount = itemStack.getCount();
+        
+        // 检查垃圾箱是否可访问（绑定且未被破坏）
+        if (capability.isTrashCanBound() && !isTrashCanAccessible(capability)) {
+            // 垃圾箱被破坏，保留物品并提示玩家
+            sendTrashCanWarning(player, "垃圾箱已失效，请重新绑定！物品保留在地上。");
+            return; // 不销毁，保留在地上
+        }
+        
+        // 地面物品直接销毁，不进行销毁类型判断
+        // 优先尝试送入垃圾箱
+        int sentToTrash = trySendToTrashCan(capability, itemStack);
+        
+        if (sentToTrash >= originalCount) {
+            // 全部送入垃圾箱
+            if (costPerItem > 0) {
+                energyStorage.extractEnergy(costPerItem * originalCount, false);
+            }
+            item.setDead();
+            return;
+        }
+        
+        if (sentToTrash > 0) {
+            // 部分送入垃圾箱，剩余部分销毁
+            // 扣除全部物品的能量（送入垃圾箱的 + 销毁的）
+            if (costPerItem > 0) {
+                energyStorage.extractEnergy(costPerItem * originalCount, false);
+            }
+            item.setDead();
+            return;
+        }
+        
+        // 未绑定垃圾箱或垃圾箱满了，真正销毁
+        if (costPerItem > 0) {
+            energyStorage.extractEnergy(costPerItem * originalCount, false);
+        }
+        item.setDead();
+    }
+
+
+    /**
+     * 处理物品吸收（正常吸收流程）
+     */
+    private void handleItemAbsorption(EntityPlayer player, IRsRingCapability capability,
+                                      net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
+                                      IEnergyStorage energyStorage, int costPerItem,
+                                      boolean isBound, boolean preferBackpacks) {
+        int originalCount = itemStack.getCount();
+        
+        int maxAffordable = costPerItem > 0 ? Math.max(1, energyStorage.getEnergyStored() / costPerItem) : Integer.MAX_VALUE;
+        int attemptCount = Math.min(originalCount, maxAffordable);
+        ItemStack attemptStack = itemStack.copy();
+        attemptStack.setCount(attemptCount);
+
+        int inserted = 0;
+
+        if (preferBackpacks) {
+            // 优先使用背包
+            inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, true);
+
+            // 如果背包存不下且有绑定目标，尝试存入绑定目标
+            if (inserted < attemptStack.getCount() && isBound) {
+                // 真正需要存入吸收箱时才检查可访问性
+                if (!isTerminalAccessible(capability)) {
+                    // 吸收箱被破坏，提示玩家，物品保留在地上
+                    sendTerminalWarning(player, "吸收箱已失效，请重新绑定！物品保留在地上。");
+                    // 不存入吸收箱，让物品保留在地上
+                } else {
+                    int remainingToInsert = attemptStack.getCount() - inserted;
+                    ItemStack remainingStack = attemptStack.copy();
+                    remainingStack.setCount(remainingToInsert);
+                    inserted += insertToBoundTarget(capability, remainingStack);
+                }
+            }
+        } else if (isBound) {
+            // 优先使用绑定目标
+            // 先检查吸收箱是否可访问
+            if (!isTerminalAccessible(capability)) {
+                // 吸收箱被破坏，检查是否有背包
+                boolean hasBackpack = CompatManager.isAnyBackpackModAvailable() && CompatManager.hasAnyBackpack(player);
+                if (hasBackpack) {
+                    sendTerminalWarning(player, "吸收箱已失效，请重新绑定！尝试存入背包...");
+                } else {
+                    sendTerminalWarning(player, "吸收箱已失效，请重新绑定！物品保留在地上。");
+                }
+                // 降级为存入背包（如果没有背包会返回0）
+                inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, false);
+            } else {
+                inserted = insertToBoundTarget(capability, attemptStack);
+
+                // 如果绑定目标存不下，尝试存入背包
+                if (inserted < attemptStack.getCount()) {
+                    int remainingToInsert = attemptStack.getCount() - inserted;
+                    ItemStack remainingStack = attemptStack.copy();
+                    remainingStack.setCount(remainingToInsert);
+                    inserted += CompatManager.absorbToAnyBackpack(player, remainingStack, capability, false);
+                }
+            }
+        } else {
+            // 没有绑定目标，只使用背包
+            inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, false);
+        }
+
+        if (inserted > 0) {
+            if (costPerItem > 0) {
+                int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
+                energyStorage.extractEnergy(energyToUse, false);
+            }
+        }
+
+        // 处理剩余物品：保留在地上
+        int remaining = originalCount - inserted;
+        if (remaining <= 0) {
+            item.setDead();
+        } else {
+            itemStack.setCount(remaining);
+            item.setItem(itemStack);
+        }
+    }
+
+    /**
+     * 处理物品吸收（STORAGE_OVERFLOW销毁流程专用）
+     * 只尝试存入背包，不尝试存入绑定吸收箱
+     * 剩余物品直接销毁
+     */
+    private void handleItemAbsorptionForDestroyFlow(EntityPlayer player, IRsRingCapability capability,
+                                                     net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
+                                                     IEnergyStorage energyStorage, int costPerItem) {
+        int originalCount = itemStack.getCount();
+        int maxAffordable = costPerItem > 0 ? Math.max(1, energyStorage.getEnergyStored() / costPerItem) : Integer.MAX_VALUE;
+        int attemptCount = Math.min(originalCount, maxAffordable);
+        ItemStack attemptStack = itemStack.copy();
+        attemptStack.setCount(attemptCount);
+
+        // 只尝试存入背包
+        int inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, false);
+
+        if (inserted > 0) {
+            if (costPerItem > 0) {
+                int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
+                energyStorage.extractEnergy(energyToUse, false);
+            }
+        }
+
+        // 处理剩余物品：直接销毁
+        int remaining = originalCount - inserted;
+        if (remaining <= 0) {
+            item.setDead();
+        } else {
+            // 销毁剩余物品
+            ItemStack remainingStack = itemStack.copy();
+            remainingStack.setCount(remaining);
+            handleDestroyForGroundItem(player, capability, item, remainingStack, energyStorage, costPerItem);
+        }
+    }
+
+    /**
+     * 插入到绑定的目标
+     */
+    private int insertToBoundTarget(IRsRingCapability capability, ItemStack stack) {
+        net.minecraft.world.World targetWorld = capability.getTerminalWorld();
+        BlockPos targetPos = capability.getTerminalPos();
+        if (targetWorld == null) {
+            int dim = capability.getTerminalDimension();
+            targetWorld = net.minecraftforge.common.DimensionManager.getWorld(dim);
+        }
+        if (targetWorld == null || targetPos == null) return 0;
+
+        targetWorld.getChunk(targetPos);
+        if (!targetWorld.isBlockLoaded(targetPos)) return 0;
+
+        // 检查是否是WearableBackpacks放置的背包
+        if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(targetWorld, targetPos)) {
+        
+            return insertIntoWearableBackpack(targetWorld, targetPos, stack);
+        }
+
+        boolean isRSController = isRSController(targetWorld, targetPos);
+
+        if (isRSController) {
+            return insertIntoRSNetwork(targetWorld, targetPos, stack);
+        } else {
+            return insertIntoChest(targetWorld, targetPos, stack);
+        }
+    }
+
+    /**
+     * 插入物品到WearableBackpacks放置的背包
+     */
+    private int insertIntoWearableBackpack(World world, BlockPos pos, ItemStack stack) {
+        if (world == null || pos == null || stack.isEmpty()) return 0;
+
+        net.minecraftforge.items.IItemHandler handler = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.getPlacedBackpackItems(world, pos);
+        if (handler == null || handler.getSlots() == 0) return 0;
+
+        int before = stack.getCount();
+        ItemStack remainder = net.minecraftforge.items.ItemHandlerHelper.insertItemStacked(handler, stack.copy(), false);
+        int inserted = before - remainder.getCount();
+        if (inserted > 0) {
+            stack.setCount(remainder.getCount());
+            // 标记TileEntity为脏以触发保存
+            com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.markPlacedBackpackDirty(world, pos);
+        }
+        return inserted;
+    }
+    
+    /**
+     * 检查吸收箱是否可访问（绑定且未被破坏）
+     * @return true-可访问，false-吸收箱被破坏或不存在
+     */
+    public static boolean isTerminalAccessible(IRsRingCapability capability) {
+        if (!capability.isBound()) return false;
+        
+        World targetWorld = capability.getTerminalWorld();
+        BlockPos targetPos = capability.getTerminalPos();
+        
+        if (targetWorld == null) {
+            int dim = capability.getTerminalDimension();
+            targetWorld = DimensionManager.getWorld(dim);
+        }
+        
+        if (targetWorld == null || targetPos == null) return false;
+        
+        // 强制加载区块
+        targetWorld.getChunk(targetPos);
+        
+        // 检查吸收箱是否存在（未被破坏）
+        TileEntity te = targetWorld.getTileEntity(targetPos);
+        if (te == null) return false;
+        
+        // RS控制器不需要物品栏能力检查
+        if (isRSController(targetWorld, targetPos)) return true;
+        
+        // WearableBackpacks放置的背包：即使没有Capability也可访问（通过反射操作）
+        if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(targetWorld, targetPos)) {
+            return true;
+        }
+        
+        // 检查是否有物品栏能力
+        IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        return handler != null;
+    }
+    
+    /**
+     * 检查垃圾箱是否可访问（绑定且未被破坏）
+     * @return true-可访问，false-垃圾箱被破坏或不存在
+     */
+    public static boolean isTrashCanAccessible(IRsRingCapability capability) {
+        if (!capability.isTrashCanBound()) return false;
+
+        World trashWorld = capability.getTrashCanWorld();
+        BlockPos trashPos = capability.getTrashCanPos();
+
+        if (trashWorld == null || trashPos == null) return false;
+
+        // 强制加载区块（与吸收箱保持一致）
+        trashWorld.getChunk(trashPos);
+
+        // 检查是否是WearableBackpacks放置的背包
+        if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(trashWorld, trashPos)) {
+            net.minecraftforge.items.IItemHandler handler = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.getPlacedBackpackItems(trashWorld, trashPos);
+            return handler != null;
+        }
+
+        // 检查垃圾箱是否存在（未被破坏）
+        TileEntity te = trashWorld.getTileEntity(trashPos);
+        if (te == null) return false;
+
+        // 检查是否有物品栏能力
+        IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        return handler != null;
     }
     
     /**
      * 尝试将物品送入垃圾箱
-     * @return 成功送入的物品数量（0表示未绑定或无法放入）
+     * @return 成功送入的物品数量（0表示未绑定、无法放入或垃圾箱已满）
      */
-    private int trySendToTrashCan(IRsRingCapability capability, ItemStack itemStack) {
+    public static int trySendToTrashCan(IRsRingCapability capability, ItemStack itemStack) {
         if (!capability.isTrashCanBound()) return 0;
-        
+
         World trashWorld = capability.getTrashCanWorld();
         BlockPos trashPos = capability.getTrashCanPos();
-        
+
         if (trashWorld == null || trashPos == null) return 0;
-        
-        // 检查目标位置是否有效
-        if (!trashWorld.isBlockLoaded(trashPos)) return 0;
-        
-        TileEntity te = trashWorld.getTileEntity(trashPos);
-        if (te == null) return 0;
-        
-        // 获取物品栏能力
-        IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+
+        // 强制加载区块（与吸收箱保持一致）
+        trashWorld.getChunk(trashPos);
+
+        IItemHandler handler = null;
+        boolean isPlacedBackpack = false;
+
+        // 检查是否是WearableBackpacks放置的背包
+        if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(trashWorld, trashPos)) {
+            handler = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.getPlacedBackpackItems(trashWorld, trashPos);
+            isPlacedBackpack = true;
+        } else {
+            // 普通容器
+            TileEntity te = trashWorld.getTileEntity(trashPos);
+            if (te != null) {
+                handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+            }
+        }
+
         if (handler == null) return 0;
-        
+
         // 尝试放入物品
         ItemStack remainder = ItemHandlerHelper.insertItem(handler, itemStack.copy(), false);
-        
+
         // 返回成功放入的数量
+        int inserted;
         if (remainder.isEmpty()) {
-            return itemStack.getCount();
+            inserted = itemStack.getCount();
         } else {
-            return itemStack.getCount() - remainder.getCount();
+            inserted = itemStack.getCount() - remainder.getCount();
         }
+        
+        // 如果是放置的背包，标记为脏
+        if (inserted > 0 && isPlacedBackpack) {
+            com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.markPlacedBackpackDirty(trashWorld, trashPos);
+        }
+        
+        return inserted;
     }
     
     /**
      * 检查物品是否应该被销毁
      * 销毁模式使用独立的过滤系统，与吸收模式完全独立
      */
-    private boolean shouldDestroyItem(IRsRingCapability capability, ItemStack itemStack) {
+    public static boolean shouldDestroyItem(IRsRingCapability capability, ItemStack itemStack) {
         FilterMode destroyFilterMode = capability.getDestroyFilterMode();
         boolean isDestroyWhitelist = capability.isDestroyWhitelistMode();
         
@@ -571,7 +1042,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
     /**
      * 检查销毁模式是否有任何过滤条件
      */
-    private boolean hasAnyDestroyFilter(IRsRingCapability capability) {
+    public static boolean hasAnyDestroyFilter(IRsRingCapability capability) {
         FilterMode filterMode = capability.getDestroyFilterMode();
         
         switch (filterMode) {
@@ -609,8 +1080,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
     /**
      * 销毁模式 - 物品ID过滤
      */
-    private boolean shouldDestroyByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
-        String itemName = itemStack.getItem().getRegistryName().toString();
+    public static boolean shouldDestroyByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+        ResourceLocation registryName = itemStack.getItem().getRegistryName();
+        if (registryName == null) return false;
+        String itemName = registryName.toString();
         boolean matchNbt = capability.shouldDestroyMatchNbt();
         boolean matchDurability = capability.shouldDestroyMatchDurability();
         
@@ -631,7 +1104,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
     /**
      * 销毁模式 - 物品匹配检查
      */
-    private boolean matchesDestroyItemFilter(IRsRingCapability capability, int slotIndex, String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
+    public static boolean matchesDestroyItemFilter(IRsRingCapability capability, int slotIndex, String filterName, ItemStack itemStack, String itemName, boolean matchNbt, boolean matchDurability) {
         if (!filterName.equals(itemName)) {
             return false;
         }
@@ -673,7 +1146,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
      * 模组过滤槽位存储完整物品ID（modId:itemName格式），过滤时提取模组ID
      * 支持NBT和耐久匹配选项
      */
-    private boolean shouldDestroyByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+    public static boolean shouldDestroyByMod(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
         String itemModId = itemStack.getItem().getRegistryName().getNamespace();
         boolean matchNbt = capability.shouldDestroyMatchNbt();
         boolean matchDurability = capability.shouldDestroyMatchDurability();
@@ -721,7 +1194,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
      * 销毁模式 - 模组过滤的NBT和耐久匹配
      * 使用精确耐久值匹配（与精妙背包一致）
      */
-    private boolean matchesDestroyModFilterItem(IRsRingCapability capability, int slotIndex, String filterItemId, ItemStack itemStack, boolean matchNbt, boolean matchDurability) {
+    public static boolean matchesDestroyModFilterItem(IRsRingCapability capability, int slotIndex, String filterItemId, ItemStack itemStack, boolean matchNbt, boolean matchDurability) {
         if (!matchNbt && !matchDurability) {
             return true;
         }
@@ -762,7 +1235,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
     /**
      * 销毁模式 - 属性过滤
      */
-    private boolean shouldDestroyByAttribute(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
+    public static boolean shouldDestroyByAttribute(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelist) {
         java.util.List<com.rsring.util.Pair<ItemAttribute, Boolean>> attributeTests = capability.getDestroyFilterAttributes();
         boolean matchAllMode = capability.isDestroyMatchAllMode();
         
@@ -856,7 +1329,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
      * 支持NBT和耐久匹配选项
      */
     private boolean shouldFilterByItem(IRsRingCapability capability, ItemStack itemStack, boolean isWhitelistMode) {
-        String itemName = itemStack.getItem().getRegistryName().toString();
+        ResourceLocation registryName = itemStack.getItem().getRegistryName();
+        if (registryName == null) return false;
+        String itemName = registryName.toString();
         boolean matchNbt = capability.shouldMatchNbt();
         boolean matchDurability = capability.shouldMatchDurability();
         
@@ -1108,7 +1583,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
     }
     
     private boolean matchesItemWithNBT(String filterName, ItemStack itemStack) {
-        String itemName = itemStack.getItem().getRegistryName().toString();
+        ResourceLocation registryName = itemStack.getItem().getRegistryName();
+        if (registryName == null) return false;
+        String itemName = registryName.toString();
         
         // 简单匹配：只比较物品ID
         if (filterName.equals(itemName)) {
@@ -1175,7 +1652,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return inserted;
     }
 
-    private boolean isRSController(World world, BlockPos pos) {
+    private static boolean isRSController(World world, BlockPos pos) {
         if (world == null || pos == null) return false;
         net.minecraft.util.ResourceLocation regName = world.getBlockState(pos).getBlock().getRegistryName();
         if (regName == null) return false;

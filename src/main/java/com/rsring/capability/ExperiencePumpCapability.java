@@ -1,5 +1,6 @@
 package com.rsring.capability;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -34,6 +35,7 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
     private static final String MODE_NBT_KEY = "mode";
     private static final String RETAIN_LEVEL_NBT_KEY = "retainLevel";
     private static final String MENDING_NBT_KEY = "mending";
+    private static final String EASTER_EGG_NBT_KEY = "easterEgg";
 
     private static int getConfiguredDefaultMode() {
         int mode = com.rsring.config.ExperienceTankConfig.tank.defaultPumpMode;
@@ -73,6 +75,7 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
     private int mode = getConfiguredDefaultMode();
     private int retainLevel = getConfiguredDefaultRetainLevel();
     private boolean useForMending = getConfiguredDefaultMending();
+    private boolean easterEgg = false;
 
     @Override
     public int getXpStored() { return xpStored; }
@@ -175,8 +178,15 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
         c.mode = this.mode;
         c.retainLevel = this.retainLevel;
         c.useForMending = this.useForMending;
+        c.easterEgg = this.easterEgg;
         return c;
     }
+
+    @Override
+    public boolean isEasterEgg() { return easterEgg; }
+
+    @Override
+    public void setEasterEgg(boolean easterEgg) { this.easterEgg = easterEgg; }
 
     public static class Storage implements Capability.IStorage<IExperiencePumpCapability> {
         @Override
@@ -192,6 +202,7 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             tag.setInteger(MODE_NBT_KEY, instance.getMode());
             tag.setInteger(RETAIN_LEVEL_NBT_KEY, instance.getRetainLevel());
             tag.setBoolean(MENDING_NBT_KEY, instance.isUseForMending());
+            tag.setBoolean(EASTER_EGG_NBT_KEY, instance.isEasterEgg());
             return tag;
         }
 
@@ -209,6 +220,7 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             instance.setMode(tag.hasKey(MODE_NBT_KEY) ? tag.getInteger(MODE_NBT_KEY) : getConfiguredDefaultMode());
             instance.setRetainLevel(tag.hasKey(RETAIN_LEVEL_NBT_KEY) ? tag.getInteger(RETAIN_LEVEL_NBT_KEY) : getConfiguredDefaultRetainLevel());
             instance.setUseForMending(tag.hasKey(MENDING_NBT_KEY) ? tag.getBoolean(MENDING_NBT_KEY) : getConfiguredDefaultMending());
+            instance.setEasterEgg(tag.hasKey(EASTER_EGG_NBT_KEY) ? tag.getBoolean(EASTER_EGG_NBT_KEY) : false);
         }
     }
 
@@ -239,6 +251,20 @@ public class ExperiencePumpCapability implements IExperiencePumpCapability {
             if (nbt != null && !nbt.getKeySet().isEmpty())
                 EXPERIENCE_PUMP_CAPABILITY.getStorage().readNBT(EXPERIENCE_PUMP_CAPABILITY, capability, null, nbt);
         }
+    }
+
+    /**
+     * 将能力数据同步到物品堆栈的NBT
+     */
+    public static void syncCapabilityToStack(ItemStack stack, IExperiencePumpCapability cap) {
+        if (stack.isEmpty() || cap == null) return;
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        NBTTagCompound capTag = (NBTTagCompound) EXPERIENCE_PUMP_CAPABILITY.getStorage().writeNBT(EXPERIENCE_PUMP_CAPABILITY, cap, null);
+        tag.setTag("experience_pump_capability", capTag);
     }
 }
 

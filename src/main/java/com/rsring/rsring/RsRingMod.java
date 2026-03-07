@@ -23,6 +23,8 @@ import com.rsring.capability.ExperiencePumpCapability;
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
 import com.rsring.event.CommonEventHandler;
+import com.rsring.event.AnvilEasterEggHandler;
+import com.rsring.event.AnvilTankEasterEggHandler;
 import com.rsring.event.CraftingExperiencePumpController;
 import com.rsring.item.ItemAbsorbRing;
 import com.rsring.item.ItemExperiencePump;
@@ -125,6 +127,8 @@ public class RsRingMod
         network.registerMessage(com.rsring.network.PacketSyncAdvancedFilter.Handler.class, com.rsring.network.PacketSyncAdvancedFilter.class, 8, Side.SERVER);
         // Register packet for syncing destroy toggle from client -> server
         network.registerMessage(com.rsring.network.PacketSyncDestroyToggle.Handler.class, com.rsring.network.PacketSyncDestroyToggle.class, 9, Side.SERVER);
+        // Register packet for syncing destroy mode type from client -> server
+        network.registerMessage(com.rsring.network.PacketSyncDestroyModeType.Handler.class, com.rsring.network.PacketSyncDestroyModeType.class, 12, Side.SERVER);
         // Register packet for syncing mod filter slots from client -> server
         network.registerMessage(com.rsring.network.PacketSyncModFilter.Handler.class, com.rsring.network.PacketSyncModFilter.class, 10, Side.SERVER);
         // Register packet for syncing filter slot NBT from client -> server
@@ -135,6 +139,8 @@ public class RsRingMod
     public void init(FMLInitializationEvent event) {
         // 注册事件处理器
         MinecraftForge.EVENT_BUS.register(new CommonEventHandler());
+        MinecraftForge.EVENT_BUS.register(new AnvilEasterEggHandler());
+        MinecraftForge.EVENT_BUS.register(new AnvilTankEasterEggHandler());
 
         // 注册 GUI 处理器
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new com.rsring.client.GuiHandler());
@@ -147,6 +153,9 @@ public class RsRingMod
         InventoryIntegrationLayer.initialize();
         ExperiencePumpController.initialize();
         ExperienceTankManager.initialize();
+
+        // 初始化所有兼容模块
+        com.rsring.compat.CompatManager.initialize();
 
         // 注册经验泵控制器的合成配方
         new CraftingExperiencePumpController().registerRecipes();

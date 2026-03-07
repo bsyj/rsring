@@ -107,4 +107,9 @@ public interface IExperiencePumpCapability {
      * @return 当前实例的副本
      */
     IExperiencePumpCapability copy();
+
+    // ==================== 彩蛋模式 ====================
+    // 彩蛋储罐：通过铁砧合成获得，装备时增加幸运值
+    boolean isEasterEgg();
+    void setEasterEgg(boolean easterEgg);
 }

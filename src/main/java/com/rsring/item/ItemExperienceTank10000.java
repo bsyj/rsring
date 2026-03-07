@@ -1,7 +1,9 @@
 package com.rsring.item;
 
 import com.rsring.capability.ExperiencePumpCapability;
+import com.rsring.capability.IExperiencePumpCapability;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -15,9 +17,11 @@ import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import baubles.api.IBauble;
+import baubles.api.BaubleType;
 import org.lwjgl.input.Keyboard;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 10000级经验储罐 - 具有超大容量的经验存储设备
@@ -28,13 +32,36 @@ public class ItemExperienceTank10000 extends ItemExperiencePump implements IBaub
     // 10000级所需经验：448,377,220 XP
     private static final int DEFAULT_CAPACITY = 448377220;
 
+    // 彩蛋储罐幸运属性基础UUID（用于生成槽位相关UUID）
+    private static final UUID LUCK_ATTRIBUTE_BASE_UUID = UUID.fromString("f3b4a5c7-9d0e-5f1b-2c3d-4e5f6a7b8c9d");
+    private static final String LUCK_ATTRIBUTE_NAME = "rsring.easter_egg_tank.luck";
+
     public ItemExperienceTank10000() {
         super("experience_tank_10000", "rsring.experience_tank_10000");
     }
 
     @Override
+    public String getItemStackDisplayName(ItemStack stack) {
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        if (cap != null && cap.isEasterEgg()) {
+            // 彩蛋储罐始终显示彩蛋名称，忽略重命名
+            return TextFormatting.BLUE + "苍穹狂傲魔龙弑神战帝";
+        }
+        return super.getItemStackDisplayName(stack);
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+
+        // 彩蛋储罐特殊标识
+        if (cap != null && cap.isEasterEgg()) {
+            tooltip.add(TextFormatting.LIGHT_PURPLE + "[ 彩蛋觉醒 ]");
+            tooltip.add(TextFormatting.YELLOW + "  +5 幸运值 (装备时)");
+            tooltip.add("");
+        }
+
         // 优先从 Capability 读取数据，确保获取最新的经验值
         int xp = getXpFromCapabilityOrNBT(stack);
         int max = DEFAULT_CAPACITY;
@@ -106,6 +133,131 @@ public class ItemExperienceTank10000 extends ItemExperiencePump implements IBaub
 
         provider.initFromNBT(data);
         return provider;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public BaubleType getBaubleType(ItemStack itemstack) {
+        return BaubleType.TRINKET;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public void onEquipped(ItemStack itemstack, EntityLivingBase player) {
+        if (player.world.isRemote || !(player instanceof EntityPlayer)) return;
+
+        EntityPlayer entityPlayer = (EntityPlayer) player;
+        IExperiencePumpCapability capability = itemstack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+
+        // 装备彩蛋储罐时添加幸运属性
+        if (capability != null && capability.isEasterEgg()) {
+            int slot = findBaubleSlot(entityPlayer, itemstack);
+            applyLuckAttribute(entityPlayer, slot);
+        }
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public void onUnequipped(ItemStack itemstack, EntityLivingBase player) {
+        if (player.world.isRemote || !(player instanceof EntityPlayer)) return;
+
+        EntityPlayer entityPlayer = (EntityPlayer) player;
+        IExperiencePumpCapability capability = itemstack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+
+        // 卸下彩蛋储罐时移除幸运属性
+        if (capability != null && capability.isEasterEgg()) {
+            removeLuckAttribute(entityPlayer);
+        }
+    }
+
+    /**
+     * 查找物品在饰品栏中的槽位索引
+     */
+    private int findBaubleSlot(EntityPlayer player, ItemStack targetStack) {
+        if (!com.rsring.util.BaublesHelper.isBaublesLoaded()) return -1;
+
+        Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+        if (handler == null) return -1;
+
+        int size = com.rsring.util.BaublesHelper.getSlots(handler);
+        for (int i = 0; i < size; i++) {
+            ItemStack stack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+            if (stack == targetStack) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 生成槽位相关的UUID
+     */
+    private UUID getSlotUUID(int slot) {
+        // 基于基础UUID和槽位索引生成唯一UUID
+        long most = LUCK_ATTRIBUTE_BASE_UUID.getMostSignificantBits();
+        long least = LUCK_ATTRIBUTE_BASE_UUID.getLeastSignificantBits() + slot;
+        return new UUID(most, least);
+    }
+
+    /**
+     * 应用幸运属性修饰符
+     * @param slot 饰品槽位索引，-1表示使用基础UUID
+     */
+    private void applyLuckAttribute(EntityPlayer player, int slot) {
+        net.minecraft.entity.ai.attributes.IAttributeInstance luckAttribute = player.getEntityAttribute(
+            net.minecraft.entity.SharedMonsterAttributes.LUCK);
+        if (luckAttribute == null) return;
+
+        UUID uuid = getSlotUUID(slot >= 0 ? slot : 0);
+
+        // 检查是否已存在修饰符
+        if (luckAttribute.getModifier(uuid) != null) return;
+
+        // 添加幸运+5修饰符 (0 = ADDITION)
+        net.minecraft.entity.ai.attributes.AttributeModifier modifier = new net.minecraft.entity.ai.attributes.AttributeModifier(
+            uuid, LUCK_ATTRIBUTE_NAME + "_" + slot, 5.0, 0);
+        luckAttribute.applyModifier(modifier);
+    }
+
+    /**
+     * 移除所有彩蛋储罐的幸运属性修饰符
+     */
+    private void removeLuckAttribute(EntityPlayer player) {
+        net.minecraft.entity.ai.attributes.IAttributeInstance luckAttribute = player.getEntityAttribute(
+            net.minecraft.entity.SharedMonsterAttributes.LUCK);
+        if (luckAttribute == null) return;
+
+        // 移除所有可能的槽位修饰符（最多50个槽位）
+        for (int i = 0; i < 50; i++) {
+            UUID uuid = getSlotUUID(i);
+            net.minecraft.entity.ai.attributes.AttributeModifier modifier = luckAttribute.getModifier(uuid);
+            if (modifier != null) {
+                luckAttribute.removeModifier(modifier);
+            }
+        }
+    }
+
+    /**
+     * 重新应用所有彩蛋储罐的幸运属性（用于玩家登录时）
+     */
+    public static void reapplyAllEasterEggLuck(EntityPlayer player) {
+        if (player.world.isRemote) return;
+        if (!com.rsring.util.BaublesHelper.isBaublesLoaded()) return;
+
+        Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+        if (handler == null) return;
+
+        int size = com.rsring.util.BaublesHelper.getSlots(handler);
+        for (int i = 0; i < size; i++) {
+            ItemStack stack = com.rsring.util.BaublesHelper.getStackInSlot(handler, i);
+            if (stack.isEmpty() || !(stack.getItem() instanceof ItemExperienceTank10000)) continue;
+
+            IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            if (cap != null && cap.isEasterEgg()) {
+                ItemExperienceTank10000 tank = (ItemExperienceTank10000) stack.getItem();
+                tank.applyLuckAttribute(player, i);
+            }
+        }
     }
 
 }

@@ -45,8 +45,19 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
-        ModelLoader.setCustomModelResourceLocation(
-            RsRingMod.absorbRing, 0, new ModelResourceLocation(RsRingMod.absorbRing.getRegistryName(), "inventory"));
+        // 注册吸收戒指的动态模型（根据彩蛋状态切换贴图）
+        ModelLoader.registerItemVariants(RsRingMod.absorbRing,
+            new ResourceLocation("rsring", "item_absorb_ring"),
+            new ResourceLocation("rsring", "item_absorb_ring_easter_egg"));
+        
+        ModelLoader.setCustomMeshDefinition(RsRingMod.absorbRing, stack -> {
+            com.rsring.capability.IRsRingCapability cap = stack.getCapability(
+                com.rsring.capability.RsRingCapability.RS_RING_CAPABILITY, null);
+            if (cap != null && cap.isEasterEgg()) {
+                return new ModelResourceLocation(new ResourceLocation("rsring", "item_absorb_ring_easter_egg"), "inventory");
+            }
+            return new ModelResourceLocation(RsRingMod.absorbRing.getRegistryName(), "inventory");
+        });
 
         ModelLoader.setCustomMeshDefinition(RsRingMod.experiencePump, stack -> {
             int fillLevel = ItemExperiencePump.getXpFillLevel(stack);
@@ -80,7 +91,19 @@ public class ClientProxy extends CommonProxy {
             RsRingMod.experienceTank1000, 0, new ModelResourceLocation(RsRingMod.experienceTank1000.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(
             RsRingMod.experienceTank2000, 0, new ModelResourceLocation(RsRingMod.experienceTank2000.getRegistryName(), "inventory"));
-        ModelLoader.setCustomModelResourceLocation(
-            RsRingMod.experienceTank10000, 0, new ModelResourceLocation(RsRingMod.experienceTank10000.getRegistryName(), "inventory"));
+
+        // 注册万级储罐的动态模型（根据彩蛋状态切换贴图）
+        ModelLoader.registerItemVariants(RsRingMod.experienceTank10000,
+            new ResourceLocation("rsring", "experience_tank_10000"),
+            new ResourceLocation("rsring", "experience_tank_10000_easter_egg"));
+
+        ModelLoader.setCustomMeshDefinition(RsRingMod.experienceTank10000, stack -> {
+            com.rsring.capability.IExperiencePumpCapability cap = stack.getCapability(
+                com.rsring.capability.ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            if (cap != null && cap.isEasterEgg()) {
+                return new ModelResourceLocation(new ResourceLocation("rsring", "experience_tank_10000_easter_egg"), "inventory");
+            }
+            return new ModelResourceLocation(RsRingMod.experienceTank10000.getRegistryName(), "inventory");
+        });
     }
 }

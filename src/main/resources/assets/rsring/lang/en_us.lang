@@ -1,15 +1,18 @@
 #PARSE_ESCAPES
+#items
 item.rsring.item_absorb_ring.name=Item Absorb Ring
 item.rsring.experience_pump.name=Experience Pump
-item.rsring.experience_tank.name=Experience Tank
+item.rsring.experience_pump_controller.name=Experience Pump Controller
 item.rsring.experience_tank_100.name=Experience Tank - 100 Levels
 item.rsring.experience_tank_500.name=Experience Tank - 500 Levels
 item.rsring.experience_tank_1000.name=Experience Tank - 1000 Levels
 item.rsring.experience_tank_2000.name=Experience Tank - 2000 Levels
 item.rsring.experience_tank_10000.name=Experience Tank - 10000 Levels
-item.rsring.experience_pump_controller.name=Experience Pump Controller
-key.rsring.toggle.desc=Toggle Ring
-key.categories.rsring=Rings
+#keys
+key.rsring.toggle.desc=Toggle All Rings Absorption
+key.categories.rsring=RS Rings Mod
+
+#messages
 message.rsring.ring_not_found=Ring not found
 
 #tooltips
@@ -38,6 +41,12 @@ config.rsring.ring.destroyUseBlacklistModeByDefault=Destroy Mode Use Blacklist B
 config.rsring.ring.destroyWhitelistOnly=Destroy Mode Whitelist Only
 config.rsring.ring.strictMode=Strict Mode
 config.rsring.ring.strictMode.comment=Ring only works when equipped in bauble slot\nDefault: off
+config.rsring.ring.enableLowEnergyWarning=Enable Low Energy Warning
+config.rsring.ring.enableLowEnergyWarning.comment=Send warning message when ring energy is below threshold
+config.rsring.ring.lowEnergyWarningThreshold=Low Energy Warning Threshold
+config.rsring.ring.lowEnergyWarningThreshold.comment=Trigger warning when energy is below this percentage\nRange: 1-50, Default: 5
+config.rsring.ring.lowEnergyWarningCooldown=Low Energy Warning Cooldown
+config.rsring.ring.lowEnergyWarningCooldown.comment=Minimum seconds between warnings\nRange: 10-300, Default: 180 (3 minutes)
 
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings
@@ -67,12 +76,48 @@ config.rsring.tank.strictMode.comment=Tank only works when equipped in bauble sl
 config.rsring.controller=Pump Controller Settings
 config.rsring.controller.maxManagedTanks=Maximum Managed Tanks
 
+# Mod Compatibility Configuration
+config.rsring.compat=Mod Compatibility Settings
+
+# Useful-Backpacks Compatibility Configuration
+config.rsring.compat.usefulbackpacks=Useful-Backpacks Compatibility Settings
+config.rsring.compat.usefulbackpacks.enabled=Enable Useful-Backpacks Compatibility
+config.rsring.compat.usefulbackpacks.enabled.comment=Enable compatibility with Useful-Backpacks mod
+config.rsring.compat.usefulbackpacks.cascadeToNextBackpack=Cascade To Next Backpack
+config.rsring.compat.usefulbackpacks.cascadeToNextBackpack.comment=When one backpack is full, try to store items in other backpacks
+config.rsring.compat.usefulbackpacks.destroyFromBackpacks=Destroy From Backpacks
+config.rsring.compat.usefulbackpacks.destroyFromBackpacks.comment=Whether destroy mode removes items from Useful-Backpacks backpacks
+config.rsring.compat.usefulbackpacks.preferBackpacks=Prefer Backpacks
+config.rsring.compat.usefulbackpacks.preferBackpacks.comment=Prefer storing items in backpacks over bound containers
+
+# WearableBackpacks Compatibility Configuration
+config.rsring.compat.wearablebackpacks=WearableBackpacks Compatibility Settings
+config.rsring.compat.wearablebackpacks.enabled=Enable WearableBackpacks Compatibility
+config.rsring.compat.wearablebackpacks.enabled.comment=Enable compatibility with WearableBackpacks mod
+config.rsring.compat.wearablebackpacks.destroyFromBackpacks=Destroy From Backpacks
+config.rsring.compat.wearablebackpacks.destroyFromBackpacks.comment=Whether destroy mode removes items from WearableBackpacks backpacks
+config.rsring.compat.wearablebackpacks.preferBackpacks=Prefer Backpacks
+config.rsring.compat.wearablebackpacks.preferBackpacks.comment=Prefer storing items in WearableBackpacks backpacks over bound containers
+
+# Destroy Mode Types
+config.rsring.destroyMode.type=Destroy Mode Type
+config.rsring.destroyMode.type.always=Always Destroy
+config.rsring.destroyMode.type.slot_overflow=Slot Overflow Destroy
+config.rsring.destroyMode.type.storage_overflow=Storage Overflow Destroy
+config.rsring.destroyMode.type.comment=Trigger conditions for destroy mode:\n  Always Destroy - Destroy items matching filter immediately\n  Slot Overflow Destroy - Destroy new items when a full stack exists in backpack\n  Storage Overflow Destroy - Destroy new items when backpack is full
+
+# Work in GUI (like Sophisticated Backpacks)
+config.rsring.destroyMode.workInGUI=Work in GUI
+config.rsring.destroyMode.workInGUI.comment=Whether to destroy items when player is in GUI
+
 # ==================== Item Attributes ====================
 # Standard Traits
 item_attributes.placeable=Placeable
 item_attributes.placeable.inverted=Not Placeable
 item_attributes.consumable=Consumable
 item_attributes.consumable.inverted=Not Consumable
+item_attributes.drinkable=Drinkable
+item_attributes.drinkable.inverted=Not Drinkable
 item_attributes.enchanted=Enchanted
 item_attributes.enchanted.inverted=Not Enchanted
 item_attributes.max_enchanted=Max Enchanted
@@ -83,12 +128,98 @@ item_attributes.damaged=Damaged
 item_attributes.damaged.inverted=Not Damaged
 item_attributes.badly_damaged=Badly Damaged
 item_attributes.badly_damaged.inverted=Not Badly Damaged
+item_attributes.slightly_damaged=Slightly Damaged
+item_attributes.slightly_damaged.inverted=Not Slightly Damaged
+item_attributes.undamaged=Undamaged
+item_attributes.undamaged.inverted=Damaged
 item_attributes.not_stackable=Not Stackable
 item_attributes.not_stackable.inverted=Stackable
+item_attributes.stackable=Stackable
+item_attributes.stackable.inverted=Not Stackable
+item_attributes.high_stackable=High Stackable
+item_attributes.high_stackable.inverted=Low Stackable
+item_attributes.max_stackable=Max Stackable
+item_attributes.max_stackable.inverted=Not Max Stackable
 item_attributes.equipable=Equipable
 item_attributes.equipable.inverted=Not Equipable
+item_attributes.main_hand_equipable=Main Hand Equipable
+item_attributes.main_hand_equipable.inverted=Not Main Hand Equipable
+item_attributes.off_hand_equipable=Off Hand Equipable
+item_attributes.off_hand_equipable.inverted=Not Off Hand Equipable
 item_attributes.furnace_fuel=Furnace Fuel
 item_attributes.furnace_fuel.inverted=Not Furnace Fuel
+item_attributes.high_grade_fuel=High Grade Fuel
+item_attributes.high_grade_fuel.inverted=Not High Grade Fuel
+item_attributes.low_grade_fuel=Low Grade Fuel
+item_attributes.low_grade_fuel.inverted=Not Low Grade Fuel
+item_attributes.potion_item=Potion Item
+item_attributes.potion_item.inverted=Not Potion Item
+item_attributes.has_potion_effect=Has Potion Effect
+item_attributes.has_potion_effect.inverted=No Potion Effect
+item_attributes.splash_potion=Splash Potion
+item_attributes.splash_potion.inverted=Not Splash Potion
+item_attributes.lingering_potion=Lingering Potion
+item_attributes.lingering_potion.inverted=Not Lingering Potion
+item_attributes.drinkable_potion=Drinkable Potion
+item_attributes.drinkable_potion.inverted=Not Drinkable Potion
+item_attributes.rare_item=Rare Item
+item_attributes.rare_item.inverted=Not Rare Item
+item_attributes.epic_item=Epic Item
+item_attributes.epic_item.inverted=Not Epic Item
+item_attributes.common_item=Common Item
+item_attributes.common_item.inverted=Not Common Item
+item_attributes.uncommon_item=Uncommon Item
+item_attributes.uncommon_item.inverted=Not Uncommon Item
+item_attributes.has_repair_cost=Has Repair Cost
+item_attributes.has_repair_cost.inverted=No Repair Cost
+item_attributes.high_repair_cost=High Repair Cost
+item_attributes.high_repair_cost.inverted=Not High Repair Cost
+item_attributes.unbreakable=Unbreakable
+item_attributes.unbreakable.inverted=Breakable
+item_attributes.repairable=Repairable
+item_attributes.repairable.inverted=Not Repairable
+item_attributes.diamond_item=Diamond Item
+item_attributes.diamond_item.inverted=Not Diamond Item
+item_attributes.iron_item=Iron Item
+item_attributes.iron_item.inverted=Not Iron Item
+item_attributes.golden_item=Golden Item
+item_attributes.golden_item.inverted=Not Golden Item
+item_attributes.stone_tool=Stone Tool
+item_attributes.stone_tool.inverted=Not Stone Tool
+item_attributes.wooden_tool=Wooden Tool
+item_attributes.wooden_tool.inverted=Not Wooden Tool
+item_attributes.leather_armor=Leather Armor
+item_attributes.leather_armor.inverted=Not Leather Armor
+item_attributes.chainmail_armor=Chainmail Armor
+item_attributes.chainmail_armor.inverted=Not Chainmail Armor
+item_attributes.has_cooldown=Has Cooldown
+item_attributes.has_cooldown.inverted=No Cooldown
+item_attributes.glint_effect=Glint Effect
+item_attributes.glint_effect.inverted=No Glint Effect
+item_attributes.dyeable=Dyeable
+item_attributes.dyeable.inverted=Not Dyeable
+item_attributes.dyed=Dyed
+item_attributes.dyed.inverted=Not Dyed
+item_attributes.has_block_entity_tag=Has Block Entity Tag
+item_attributes.has_block_entity_tag.inverted=No Block Entity Tag
+item_attributes.creative_only=Creative Only
+item_attributes.creative_only.inverted=Not Creative Only
+item_attributes.can_repair=Can Repair
+item_attributes.can_repair.inverted=Cannot Repair
+item_attributes.banner=Banner
+item_attributes.banner.inverted=Not Banner
+item_attributes.shield=Shield
+item_attributes.shield.inverted=Not Shield
+item_attributes.patterned_shield=Patterned Shield
+item_attributes.patterned_shield.inverted=Not Patterned Shield
+item_attributes.firework_rocket=Firework Rocket
+item_attributes.firework_rocket.inverted=Not Firework Rocket
+item_attributes.firework_star=Firework Star
+item_attributes.firework_star.inverted=Not Firework Star
+item_attributes.beacon_payment=Beacon Payment
+item_attributes.beacon_payment.inverted=Not Beacon Payment
+item_attributes.redstone_related=Redstone Related
+item_attributes.redstone_related.inverted=Not Redstone Related
 
 # Tag Attribute
 item_attributes.in_tag=In Tag %s
@@ -106,6 +237,28 @@ item_attributes.enchantment.inverted=No Enchantment %s
 item_attributes.nbt_tag=NBT: %s
 item_attributes.nbt_tag.inverted=No NBT: %s
 
+# Color Attribute
+item_attributes.color=Color: %s
+item_attributes.color.inverted=Not Color: %s
+
+# Name Attribute
+item_attributes.has_name=Name: %s
+item_attributes.has_name.inverted=Not Name: %s
+
+# Book Author Attribute
+item_attributes.book_author=Author: %s
+item_attributes.book_author.inverted=Not Author: %s
+
+# Book Copy Attributes
+item_attributes.book_copy_original=Original Book
+item_attributes.book_copy_original.inverted=Not Original Book
+item_attributes.book_copy_first=Copy
+item_attributes.book_copy_first.inverted=Not Copy
+item_attributes.book_copy_second=Copy of Copy
+item_attributes.book_copy_second.inverted=Not Copy of Copy
+item_attributes.book_copy_tattered=Tattered Book
+item_attributes.book_copy_tattered.inverted=Not Tattered Book
+
 # GUI Button Tooltips
 gui.rsring.match_nbt=NBT Matching
 gui.rsring.match_nbt.enabled=Enabled
@@ -115,3 +268,298 @@ gui.rsring.match_durability.enabled=Enabled
 gui.rsring.match_durability.disabled=Disabled
 gui.rsring.add_inverted=Right-click to add inverted attribute
 gui.rsring.add_normal=Left-click to add attribute
+
+# Behavior Tag Attributes
+item_attributes.behavior_tag=Behavior: %s
+item_attributes.behavior_tag.inverted=Not Behavior: %s
+
+# Behavior Tag Names
+behavior_tag.piglin_loved=Piglin Loved
+behavior_tag.trimmable_armor=Trimmable Armor
+behavior_tag.fox_food=Fox Food
+behavior_tag.piglin_food=Piglin Food
+behavior_tag.piglin_repellents=Piglin Repellents
+behavior_tag.bee_food=Bee Food
+behavior_tag.flowers=Flowers
+behavior_tag.small_flowers=Small Flowers
+behavior_tag.tall_flowers=Tall Flowers
+behavior_tag.beehives=Beehives
+behavior_tag.dragon_food=Dragon Food
+behavior_tag.cat_food=Cat Food
+behavior_tag.wolf_food=Wolf Food
+behavior_tag.horse_food=Horse Food
+behavior_tag.camel_food=Camel Food
+behavior_tag.llama_food=Llama Food
+behavior_tag.parrot_food=Parrot Food
+behavior_tag.parrot_poisonous_food=Parrot Poisonous Food
+behavior_tag.rabbit_food=Rabbit Food
+behavior_tag.chicken_food=Chicken Food
+behavior_tag.pig_food=Pig Food
+behavior_tag.sheep_food=Sheep Food
+behavior_tag.cow_food=Cow Food
+behavior_tag.turtle_food=Turtle Food
+behavior_tag.panda_food=Panda Food
+behavior_tag.fish_food=Fish Food
+behavior_tag.ocelot_food=Ocelot Food
+behavior_tag.mooshroom_food=Mooshroom Food
+behavior_tag.villager_food=Villager Food
+behavior_tag.zombie_villager_food=Zombie Villager Cure
+behavior_tag.rail_blocks=Rail Blocks
+behavior_tag.boats=Boats
+behavior_tag.chest_boats=Chest Boats
+behavior_tag.music_discs=Music Discs
+behavior_tag.candles=Candles
+behavior_tag.beds=Beds
+behavior_tag.coal_ores=Coal Ores
+behavior_tag.iron_ores=Iron Ores
+behavior_tag.gold_ores=Gold Ores
+behavior_tag.diamond_ores=Diamond Ores
+behavior_tag.redstone_ores=Redstone Ores
+behavior_tag.lapis_ores=Lapis Ores
+behavior_tag.emerald_ores=Emerald Ores
+behavior_tag.quartz_ores=Quartz Ores
+behavior_tag.logs=Logs
+behavior_tag.planks=Planks
+behavior_tag.saplings=Saplings
+behavior_tag.leaves=Leaves
+behavior_tag.sand=Sand
+behavior_tag.sandstone=Sandstone
+behavior_tag.wool=Wool
+behavior_tag.carpets=Carpets
+behavior_tag.glass=Glass
+behavior_tag.glass_panes=Glass Panes
+behavior_tag.terracotta=Terracotta
+behavior_tag.concrete=Concrete
+behavior_tag.concrete_powder=Concrete Powder
+behavior_tag.buttons=Buttons
+behavior_tag.pressure_plates=Pressure Plates
+behavior_tag.doors=Doors
+behavior_tag.trapdoors=Trapdoors
+behavior_tag.fences=Fences
+behavior_tag.fence_gates=Fence Gates
+behavior_tag.slabs=Slabs
+behavior_tag.stairs=Stairs
+behavior_tag.walls=Walls
+
+# Armor Subcategories
+behavior_tag.helmets=Helmets
+behavior_tag.chestplates=Chestplates
+behavior_tag.leggings=Leggings
+behavior_tag.boots=Boots
+behavior_tag.leather_armors=Leather Armors
+behavior_tag.iron_armors=Iron Armors
+behavior_tag.golden_armors=Golden Armors
+behavior_tag.diamond_armors=Diamond Armors
+behavior_tag.chainmail_armors=Chainmail Armors
+
+# Weapon Subcategories
+behavior_tag.swords=Swords
+behavior_tag.bows=Bows
+behavior_tag.weapons=Weapons
+behavior_tag.wooden_swords=Wooden Swords
+behavior_tag.stone_swords=Stone Swords
+behavior_tag.iron_swords=Iron Swords
+behavior_tag.golden_swords=Golden Swords
+behavior_tag.diamond_swords=Diamond Swords
+behavior_tag.arrows=Arrows
+behavior_tag.shields=Shields
+
+# Tool Subcategories
+behavior_tag.pickaxes=Pickaxes
+behavior_tag.wooden_pickaxes=Wooden Pickaxes
+behavior_tag.stone_pickaxes=Stone Pickaxes
+behavior_tag.iron_pickaxes=Iron Pickaxes
+behavior_tag.golden_pickaxes=Golden Pickaxes
+behavior_tag.diamond_pickaxes=Diamond Pickaxes
+behavior_tag.axes=Axes
+behavior_tag.wooden_axes=Wooden Axes
+behavior_tag.stone_axes=Stone Axes
+behavior_tag.iron_axes=Iron Axes
+behavior_tag.golden_axes=Golden Axes
+behavior_tag.diamond_axes=Diamond Axes
+behavior_tag.shovels=Shovels
+behavior_tag.wooden_shovels=Wooden Shovels
+behavior_tag.stone_shovels=Stone Shovels
+behavior_tag.iron_shovels=Iron Shovels
+behavior_tag.golden_shovels=Golden Shovels
+behavior_tag.diamond_shovels=Diamond Shovels
+behavior_tag.hoes=Hoes
+behavior_tag.wooden_hoes=Wooden Hoes
+behavior_tag.stone_hoes=Stone Hoes
+behavior_tag.iron_hoes=Iron Hoes
+behavior_tag.golden_hoes=Golden Hoes
+behavior_tag.diamond_hoes=Diamond Hoes
+
+# Special Tools
+behavior_tag.shears=Shears
+behavior_tag.fishing_rods=Fishing Rods
+behavior_tag.flint_and_steel=Flint and Steel
+behavior_tag.compasses=Compasses
+behavior_tag.clocks=Clocks
+behavior_tag.lead=Lead
+behavior_tag.name_tags=Name Tags
+behavior_tag.saddles=Saddles
+
+# Food Subcategories
+behavior_tag.meats=Meats
+behavior_tag.raw_meats=Raw Meats
+behavior_tag.cooked_meats=Cooked Meats
+behavior_tag.fishes=Fishes
+behavior_tag.raw_fishes=Raw Fishes
+behavior_tag.cooked_fishes=Cooked Fishes
+behavior_tag.fruits=Fruits
+behavior_tag.vegetables=Vegetables
+behavior_tag.seeds=Seeds
+behavior_tag.golden_foods=Golden Foods
+behavior_tag.soups=Soups
+behavior_tag.sweets=Sweets
+
+# Potion Related
+behavior_tag.potions=Potions
+behavior_tag.splash_potions=Splash Potions
+behavior_tag.lingering_potions=Lingering Potions
+behavior_tag.tipped_arrows=Tipped Arrows
+
+# Ore Related
+behavior_tag.gems=Gems
+behavior_tag.ingots=Ingots
+behavior_tag.nuggets=Nuggets
+behavior_tag.dusts=Dusts
+behavior_tag.ores=Ores
+
+# Special Items
+behavior_tag.ender_pearls=Ender Pearls
+behavior_tag.ender_eyes=Ender Eyes
+behavior_tag.blaze_rods=Blaze Rods
+behavior_tag.ghast_tears=Ghast Tears
+behavior_tag.slimeballs=Slimeballs
+behavior_tag.magma_creams=Magma Creams
+behavior_tag.nether_stars=Nether Stars
+behavior_tag.dragon_breath=Dragon Breath
+behavior_tag.chorus_fruits=Chorus Fruits
+behavior_tag.popped_chorus_fruits=Popped Chorus Fruits
+behavior_tag.experience_bottles=Experience Bottles
+
+# Dyes
+behavior_tag.dyes=Dyes
+behavior_tag.black_dyes=Black Dyes
+behavior_tag.red_dyes=Red Dyes
+behavior_tag.green_dyes=Green Dyes
+behavior_tag.brown_dyes=Brown Dyes
+behavior_tag.blue_dyes=Blue Dyes
+behavior_tag.purple_dyes=Purple Dyes
+behavior_tag.cyan_dyes=Cyan Dyes
+behavior_tag.light_gray_dyes=Light Gray Dyes
+behavior_tag.gray_dyes=Gray Dyes
+behavior_tag.pink_dyes=Pink Dyes
+behavior_tag.lime_dyes=Lime Dyes
+behavior_tag.yellow_dyes=Yellow Dyes
+behavior_tag.light_blue_dyes=Light Blue Dyes
+behavior_tag.magenta_dyes=Magenta Dyes
+behavior_tag.orange_dyes=Orange Dyes
+behavior_tag.white_dyes=White Dyes
+
+# Buckets
+behavior_tag.buckets=Buckets
+behavior_tag.water_buckets=Water Buckets
+behavior_tag.lava_buckets=Lava Buckets
+behavior_tag.milk_buckets=Milk Buckets
+behavior_tag.empty_buckets=Empty Buckets
+
+# Books
+behavior_tag.books=Books
+behavior_tag.enchanted_books=Enchanted Books
+behavior_tag.written_books=Written Books
+behavior_tag.writable_books=Writable Books
+behavior_tag.paper=Paper
+
+# Enchanted Book Subcategories
+behavior_tag.enchanted_books.any=Enchanted Books (Any)
+behavior_tag.enchanted_books.multiple=Multiple Enchantment Books
+behavior_tag.enchanted_books.single=Single Enchantment Books
+behavior_tag.enchanted_books.max_level=Max Level Enchantment Books
+
+# Enchanted Books - Weapon Enchantments
+behavior_tag.enchanted_books.weapon=Weapon Enchantment Books
+behavior_tag.enchanted_books.sharpness=Sharpness Enchantment Books
+behavior_tag.enchanted_books.smite=Smite Enchantment Books
+behavior_tag.enchanted_books.bane_of_arthropods=Bane of Arthropods Enchantment Books
+behavior_tag.enchanted_books.fire_aspect=Fire Aspect Enchantment Books
+behavior_tag.enchanted_books.looting=Looting Enchantment Books
+behavior_tag.enchanted_books.knockback=Knockback Enchantment Books
+behavior_tag.enchanted_books.sweeping=Sweeping Edge Enchantment Books
+behavior_tag.enchanted_books.power=Power Enchantment Books
+behavior_tag.enchanted_books.punch=Punch Enchantment Books
+behavior_tag.enchanted_books.flame=Flame Enchantment Books
+behavior_tag.enchanted_books.infinity=Infinity Enchantment Books
+
+# Enchanted Books - Tool Enchantments
+behavior_tag.enchanted_books.tool=Tool Enchantment Books
+behavior_tag.enchanted_books.efficiency=Efficiency Enchantment Books
+behavior_tag.enchanted_books.silk_touch=Silk Touch Enchantment Books
+behavior_tag.enchanted_books.fortune=Fortune Enchantment Books
+
+# Enchanted Books - Armor Enchantments
+behavior_tag.enchanted_books.armor=Armor Enchantment Books
+behavior_tag.enchanted_books.protection=Protection Enchantment Books
+behavior_tag.enchanted_books.fire_protection=Fire Protection Enchantment Books
+behavior_tag.enchanted_books.blast_protection=Blast Protection Enchantment Books
+behavior_tag.enchanted_books.projectile_protection=Projectile Protection Enchantment Books
+behavior_tag.enchanted_books.feather_falling=Feather Falling Enchantment Books
+behavior_tag.enchanted_books.thorns=Thorns Enchantment Books
+behavior_tag.enchanted_books.respiration=Respiration Enchantment Books
+behavior_tag.enchanted_books.depth_strider=Depth Strider Enchantment Books
+behavior_tag.enchanted_books.aqua_affinity=Aqua Affinity Enchantment Books
+behavior_tag.enchanted_books.frost_walker=Frost Walker Enchantment Books
+behavior_tag.enchanted_books.soul_speed=Soul Speed Enchantment Books
+
+# Enchanted Books - Other Enchantments
+behavior_tag.enchanted_books.other=Other Enchantment Books
+behavior_tag.enchanted_books.unbreaking=Unbreaking Enchantment Books
+behavior_tag.enchanted_books.mending=Mending Enchantment Books
+behavior_tag.enchanted_books.luck_of_the_sea=Luck of the Sea Enchantment Books
+behavior_tag.enchanted_books.lure=Lure Enchantment Books
+behavior_tag.enchanted_books.channeling=Channeling Enchantment Books
+behavior_tag.enchanted_books.loyalty=Loyalty Enchantment Books
+behavior_tag.enchanted_books.riptide=Riptide Enchantment Books
+behavior_tag.enchanted_books.impaling=Impaling Enchantment Books
+behavior_tag.enchanted_books.quick_charge=Quick Charge Enchantment Books
+behavior_tag.enchanted_books.piercing=Piercing Enchantment Books
+behavior_tag.enchanted_books.multishot=Multishot Enchantment Books
+behavior_tag.enchanted_books.sweeping_edge=Sweeping Edge Enchantment Books
+
+# GUI Filter Mode Names
+gui.rsring.filter_mode.item=Item Filter
+gui.rsring.filter_mode.mod=Mod Filter
+gui.rsring.filter_mode.attribute=Attribute Filter
+
+# GUI Mode Names
+gui.rsring.mode.absorb=Absorb Mode
+gui.rsring.mode.destroy=Destroy Mode
+
+# GUI Button Names
+gui.rsring.button.whitelist=Whitelist
+gui.rsring.button.blacklist=Blacklist
+gui.rsring.button.match_all=Match All
+gui.rsring.button.match_any=Match Any
+gui.rsring.button.add=Add
+gui.rsring.button.remove=Remove
+gui.rsring.button.clear=Clear
+
+# GUI Tooltip Messages
+gui.rsring.tooltip.bound_to=Bound to: %s
+gui.rsring.tooltip.not_bound=Not Bound
+gui.rsring.tooltip.energy=Energy: %s / %s RF
+gui.rsring.tooltip.trash_can_bound=Trash Can Bound: %s
+gui.rsring.tooltip.trash_can_not_bound=Trash Can: Not Bound
+
+# Messages
+message.rsring.terminal_bound=Terminal bound at %s
+message.rsring.terminal_unbound=Terminal unbound
+message.rsring.trash_can_bound=Trash can bound at %s
+message.rsring.trash_can_unbound=Trash can unbound
+message.rsring.no_terminal_bound=No terminal bound
+message.rsring.no_trash_can_bound=No trash can bound
+message.rsring.low_energy_warning=§c[Warning] Ring energy low: %s%%
+message.rsring.destroy_mode_enabled=§cDestroy mode enabled - Be careful!
+message.rsring.destroy_mode_disabled=Destroy mode disabled

@@ -33,7 +33,9 @@ public class GuiHandler implements IGuiHandler {
             ItemStack ringStack = findRingStack(player);
             if (!ringStack.isEmpty()) {
                 ContainerRingFilter container = new ContainerRingFilter(player.inventory, ringStack);
-                return new GuiRingFilterContainer(container, ringStack, "物品吸收戒指 - 黑白名单");
+                // 使用戒指的显示名称（包含自定义名）
+                String ringName = ringStack.getDisplayName();
+                return new GuiRingFilterContainer(container, ringStack, ringName + "-黑白名单");
             }
         }
         return null;

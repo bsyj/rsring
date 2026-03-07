@@ -4,6 +4,7 @@ import com.rsring.capability.ExperiencePumpCapability;
 import com.rsring.capability.IExperiencePumpCapability;
 import com.rsring.capability.IRsRingCapability;
 import com.rsring.capability.RsRingCapability;
+import com.rsring.destroy.DestroyManager;
 import com.rsring.item.ItemAbsorbRing;
 import com.rsring.item.ItemExperiencePump;
 import com.rsring.item.ItemExperiencePumpController;
@@ -31,12 +32,14 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +123,53 @@ public class CommonEventHandler {
             if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) return stack;
         }
         return ItemStack.EMPTY;
+    }
+
+    /**
+     * 查找玩家所有指定类型的戒指（支持多戒指功能）
+     * @param player 玩家
+     * @param ringClass 戒指类型
+     * @return 所有找到的戒指列表
+     */
+    public static List<ItemStack> findAllRings(EntityPlayer player, Class<? extends Item> ringClass) {
+        List<ItemStack> rings = new ArrayList<>();
+
+        // 主手
+        ItemStack mainHand = player.getHeldItemMainhand();
+        if (!mainHand.isEmpty() && ringClass.isInstance(mainHand.getItem())) {
+            rings.add(mainHand);
+        }
+        // 副手
+        ItemStack offHand = player.getHeldItemOffhand();
+        if (!offHand.isEmpty() && ringClass.isInstance(offHand.getItem())) {
+            rings.add(offHand);
+        }
+        // 饰品栏
+        if (BaublesHelper.isBaublesLoaded()) {
+            Object handler = BaublesHelper.getBaublesHandler(player);
+            int size = BaublesHelper.getSlots(handler);
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = BaublesHelper.getStackInSlot(handler, i);
+                if (!stack.isEmpty() && ringClass.isInstance(stack.getItem())) {
+                    rings.add(stack);
+                }
+            }
+        }
+        // 快捷栏和背包（槽位 0-35）
+        // 注意：主手物品也在快捷栏中，需要跳过已添加的
+        for (int i = 0; i < 36; i++) {
+            ItemStack stack = player.inventory.getStackInSlot(i);
+            // 跳过空物品和非戒指
+            if (stack.isEmpty() || !ringClass.isInstance(stack.getItem())) {
+                continue;
+            }
+            // 跳过已添加的（避免主手/副手重复）
+            if (stack == mainHand || stack == offHand) {
+                continue;
+            }
+            rings.add(stack);
+        }
+        return rings;
     }
 
     private ItemStack findExperiencePump(EntityPlayer player) {
@@ -262,19 +312,31 @@ public class CommonEventHandler {
         EntityPlayer player = event.player;
         if (player == null || player.world.isRemote) return;
 
-        // 戒指功能 - 支持严格模式
-        ItemStack absorbRingStack = findRing(player, ItemAbsorbRing.class);
-        if (!absorbRingStack.isEmpty()) {
+        // 戒指功能 - 支持多戒指和严格模式
+        List<ItemStack> absorbRings = findAllRings(player, ItemAbsorbRing.class);
+        boolean anyRingActive = false;
+        
+        for (ItemStack absorbRingStack : absorbRings) {
+            if (absorbRingStack.isEmpty()) continue;
+            
             // 检查严格模式：开启时只有饰品栏中的戒指才能工作
             boolean strictMode = com.rsring.config.RsRingConfig.absorbRing.strictMode;
             boolean inBaubles = isInBaublesSlot(player, absorbRingStack);
             
             if (!strictMode || inBaubles) {
                 ((ItemAbsorbRing) absorbRingStack.getItem()).onWornTick(absorbRingStack, player);
+                anyRingActive = true;
             }
             
-            // 低电量提醒检测（降低检测频率）
-            checkLowEnergyWarning(player, absorbRingStack);
+            // 低电量提醒检测（降低检测频率）- 只检查第一个激活的戒指
+            if (anyRingActive) {
+                checkLowEnergyWarning(player, absorbRingStack);
+            }
+        }
+        
+        // 只要有激活的戒指，就执行定时清理
+        if (anyRingActive) {
+            DestroyManager.onTickCleanup(player);
         }
 
         // Controller-driven behavior (sync all tanks and pump via central controller)
@@ -408,12 +470,21 @@ public class CommonEventHandler {
         int oldDim = wasBound ? capability.getTerminalDimension() : 0;
         int currentDim = world.provider.getDimension();
 
+        // 检测目标类型名称
+        String targetType;
+        if (isRSController) {
+            targetType = "RS控制器";
+        } else if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(world, pos)) {
+            targetType = "WearableBackpacks背包";
+        } else {
+            targetType = "容器";
+        }
+
         // 检查是否点击已绑定的位置
         if (wasBound && oldPos != null && oldPos.equals(pos) && oldDim == currentDim) {
             // 取消绑定
             capability.unbindTerminal();
             RsRingCapability.syncCapabilityToStack(ringStack, capability);
-            String targetType = isRSController ? "RS控制器" : "容器";
             player.sendMessage(new TextComponentString(
                 TextFormatting.YELLOW + "成功解除绑定 " + targetType + ": " +
                 pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
@@ -425,7 +496,6 @@ public class CommonEventHandler {
         capability.bindTerminal(world, pos);
         RsRingCapability.syncCapabilityToStack(ringStack, capability);
 
-        String targetType = isRSController ? "RS控制器" : "容器";
         player.sendMessage(new TextComponentString(
             TextFormatting.GREEN + "成功绑定到 " + targetType + ": " +
             pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
@@ -472,6 +542,16 @@ public class CommonEventHandler {
         int oldDim = wasBound ? capability.getTrashCanDimension() : 0;
         int currentDim = world.provider.getDimension();
 
+        // 检测目标类型名称
+        String targetType;
+        if (isRSController) {
+            targetType = "RS控制器";
+        } else if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(world, pos)) {
+            targetType = "WearableBackpacks背包";
+        } else {
+            targetType = "容器";
+        }
+
         // 检查是否点击已绑定的位置
         if (wasBound && oldPos != null && oldPos.equals(pos) && oldDim == currentDim) {
             // 解除绑定
@@ -479,7 +559,6 @@ public class CommonEventHandler {
             RsRingCapability.syncCapabilityToStack(ringStack, capability);
             // 记录冷却时间
             lastLeftClickBindTime.put(playerId, System.currentTimeMillis());
-            String targetType = isRSController ? "RS控制器" : "容器";
             player.sendMessage(new TextComponentString(
                 TextFormatting.YELLOW + "成功解除垃圾箱绑定 " + targetType + ": " +
                 pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
@@ -493,7 +572,6 @@ public class CommonEventHandler {
         // 记录冷却时间
         lastLeftClickBindTime.put(playerId, System.currentTimeMillis());
 
-        String targetType = isRSController ? "RS控制器" : "容器";
         player.sendMessage(new TextComponentString(
             TextFormatting.GREEN + "成功绑定垃圾箱到 " + targetType + ": " +
             pos.getX() + "," + pos.getY() + "," + pos.getZ() + " (" + currentDim + ")"));
@@ -552,6 +630,11 @@ public class CommonEventHandler {
 
         if (te instanceof net.minecraft.tileentity.TileEntityChest) return true;
         if (te instanceof net.minecraft.tileentity.TileEntityEnderChest) return true;
+
+        // 检查是否是WearableBackpacks放置的背包
+        if (com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isPlacedBackpack(world, pos)) {
+            return true;
+        }
 
         net.minecraft.util.ResourceLocation regName = state.getBlock().getRegistryName();
         if (regName != null) {
@@ -637,5 +720,66 @@ public class CommonEventHandler {
             percentage, currentEnergy, maxEnergy
         );
         player.sendMessage(new TextComponentString(message));
+    }
+    
+    // 拾取拦截事件已禁用
+    // 原因：销毁模式只针对背包模组的背包内容，不涉及玩家物品栏
+    // 不再拦截玩家拾取物品
+    
+    /**
+     * 玩家登录事件 - 重新应用彩蛋饰品的幸运属性
+     * 原因：玩家登录时饰品已经装备，但onEquipped不会被调用
+     */
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        EntityPlayer player = event.player;
+        if (player == null || player.world.isRemote) return;
+        
+        // 延迟一tick执行，确保玩家数据完全加载
+        net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance()
+            .addScheduledTask(() -> {
+                if (player.isEntityAlive()) {
+                    ItemAbsorbRing.reapplyAllEasterEggLuck(player);
+                    com.rsring.item.ItemExperienceTank10000.reapplyAllEasterEggLuck(player);
+                }
+            });
+    }
+    
+    /**
+     * 玩家维度变化事件 - 重新应用彩蛋饰品的幸运属性
+     * 原因：维度变化时属性可能会丢失
+     */
+    @SubscribeEvent
+    public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        EntityPlayer player = event.player;
+        if (player == null || player.world.isRemote) return;
+        
+        // 延迟一tick执行
+        net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance()
+            .addScheduledTask(() -> {
+                if (player.isEntityAlive()) {
+                    ItemAbsorbRing.reapplyAllEasterEggLuck(player);
+                    com.rsring.item.ItemExperienceTank10000.reapplyAllEasterEggLuck(player);
+                }
+            });
+    }
+    
+    /**
+     * 玩家重生事件 - 重新应用彩蛋饰品的幸运属性
+     * 原因：玩家死亡重生后属性会丢失
+     */
+    @SubscribeEvent
+    public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        EntityPlayer player = event.player;
+        if (player == null || player.world.isRemote) return;
+        
+        // 延迟一tick执行
+        net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance()
+            .addScheduledTask(() -> {
+                if (player.isEntityAlive()) {
+                    ItemAbsorbRing.reapplyAllEasterEggLuck(player);
+                    com.rsring.item.ItemExperienceTank10000.reapplyAllEasterEggLuck(player);
+                }
+            });
     }
 }

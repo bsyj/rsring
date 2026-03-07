@@ -29,38 +29,64 @@ public class CommonProxy {
         }
 
         player.getServerWorld().addScheduledTask(() -> {
-            ItemLocationTracker tracker = ItemLocationTracker.findItem(player, ItemAbsorbRing.class);
-            if (tracker == null) {
+            // 获取所有戒指
+            java.util.List<ItemStack> allRings = com.rsring.event.CommonEventHandler.findAllRings(player, com.rsring.item.ItemAbsorbRing.class);
+            if (allRings.isEmpty()) {
                 player.sendMessage(new TextComponentString(
                     TextFormatting.RED + "未找到物品吸收戒指！"));
                 return;
             }
 
-            ItemStack ringStack = tracker.getItem();
-            IRsRingCapability capability = ringStack.getCapability(
-                RsRingCapability.RS_RING_CAPABILITY, null);
+            // 同时切换所有戒指的状态（每个戒指各自取反），并记录状态变化
+            java.util.List<String> statusMessages = new java.util.ArrayList<>();
+            
+            for (int i = 0; i < allRings.size(); i++) {
+                ItemStack ringStack = allRings.get(i);
+                IRsRingCapability capability = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+                if (capability != null) {
+                    boolean newState = !capability.isEnabled();
+                    capability.setEnabled(newState);
+                    RsRingCapability.syncCapabilityToStack(ringStack, capability);
+                    
+                    // 获取戒指名称和位置
+                    String ringName = ringStack.getDisplayName();
+                    String location = getRingLocationName(player, ringStack);
+                    String status = newState ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭";
+                    
+                    statusMessages.add(ringName + " " + status + TextFormatting.GRAY + " (" + location + ")");
+                }
+            }
 
-            if (capability != null) {
-                capability.setEnabled(!capability.isEnabled());
-                RsRingCapability.syncCapabilityToStack(ringStack, capability);
-                tracker.syncBack(player);
-
-                String status = capability.isEnabled() ? "启用" : "禁用";
-                String location = getLocationDisplayName(tracker.getLocationType());
-                player.sendMessage(new TextComponentString(
-                    TextFormatting.GREEN + "物品吸收戒指已" + status +
-                    TextFormatting.GRAY + " (位置: " + location + ")"));
+            // 发送每个戒指的状态消息
+            for (String msg : statusMessages) {
+                player.sendMessage(new TextComponentString(msg));
             }
         });
     }
 
-    private String getLocationDisplayName(ItemLocationTracker.LocationType locationType) {
-        switch (locationType) {
-            case MAIN_HAND: return "主手";
-            case OFF_HAND: return "副手";
-            case BAUBLES: return "饰品栏";
-            case PLAYER_INVENTORY: return "背包";
-            default: return "未知";
+    /**
+     * 获取戒指所在位置的名称
+     */
+    private String getRingLocationName(EntityPlayerMP player, ItemStack ringStack) {
+        // 主手
+        if (ringStack == player.getHeldItemMainhand()) {
+            return "主手";
         }
+        // 副手
+        if (ringStack == player.getHeldItemOffhand()) {
+            return "副手";
+        }
+        // 饰品栏
+        if (com.rsring.util.BaublesHelper.isBaublesLoaded()) {
+            Object handler = com.rsring.util.BaublesHelper.getBaublesHandler(player);
+            int size = com.rsring.util.BaublesHelper.getSlots(handler);
+            for (int i = 0; i < size; i++) {
+                if (com.rsring.util.BaublesHelper.getStackInSlot(handler, i) == ringStack) {
+                    return "饰品栏";
+                }
+            }
+        }
+        // 背包
+        return "背包";
     }
 }

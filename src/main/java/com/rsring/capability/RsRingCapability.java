@@ -53,6 +53,7 @@ public class RsRingCapability implements IRsRingCapability {
     // ==================== 销毁模式字段 ====================
     private transient boolean destroyModeUI = false; // 销毁模式UI状态（不持久化）
     private boolean destroyEnabled = false; // 销毁功能开关
+    private DestroyModeType destroyModeType = DestroyModeType.ALWAYS; // 销毁模式类型（默认总是销毁）
     private FilterMode destroyFilterMode = FilterMode.ITEM; // 销毁过滤模式
     private boolean destroyWhitelistMode = true; // 销毁黑白名单模式（默认为白名单）
     private List<String> destroyFilterSlots = new ArrayList<>(); // 销毁物品过滤槽
@@ -63,6 +64,7 @@ public class RsRingCapability implements IRsRingCapability {
     private boolean destroyMatchAllMode = false; // 销毁AND/OR模式
     private boolean destroyMatchNbt = false; // 销毁NBT匹配
     private boolean destroyMatchDurability = false; // 销毁耐久匹配
+    private boolean shouldWorkInGUI = true; // GUI内工作（默认启用）
     
     // 销毁模式NBT存储
     private Map<Integer, NBTTagCompound> destroyFilterSlotNBTs = new HashMap<>(); // 销毁物品ID过滤槽NBT
@@ -71,6 +73,9 @@ public class RsRingCapability implements IRsRingCapability {
     // ==================== 垃圾箱绑定字段 ====================
     private BlockPos trashCanPos; // 垃圾箱位置
     private int trashCanDimension; // 垃圾箱所在维度
+    
+    // ==================== 彩蛋模式字段 ====================
+    private boolean easterEgg = false; // 彩蛋戒指标记
 
     // Constructor
     public RsRingCapability() {
@@ -570,6 +575,16 @@ public class RsRingCapability implements IRsRingCapability {
     }
     
     @Override
+    public DestroyModeType getDestroyModeType() {
+        return this.destroyModeType;
+    }
+    
+    @Override
+    public void setDestroyModeType(DestroyModeType type) {
+        this.destroyModeType = type;
+    }
+    
+    @Override
     public FilterMode getDestroyFilterMode() {
         return this.destroyFilterMode;
     }
@@ -782,6 +797,16 @@ public class RsRingCapability implements IRsRingCapability {
         this.destroyMatchDurability = matchDurability;
     }
     
+    @Override
+    public boolean shouldWorkInGUI() {
+        return this.shouldWorkInGUI;
+    }
+    
+    @Override
+    public void setShouldWorkInGUI(boolean shouldWork) {
+        this.shouldWorkInGUI = shouldWork;
+    }
+    
     // ==================== 垃圾箱绑定方法实现 ====================
     @Override
     public void bindTrashCan(World world, BlockPos pos) {
@@ -813,6 +838,17 @@ public class RsRingCapability implements IRsRingCapability {
     @Override
     public boolean isTrashCanBound() {
         return this.trashCanPos != null;
+    }
+    
+    // ==================== 彩蛋模式实现 ====================
+    @Override
+    public boolean isEasterEgg() {
+        return this.easterEgg;
+    }
+    
+    @Override
+    public void setEasterEgg(boolean easterEgg) {
+        this.easterEgg = easterEgg;
     }
 
     public static class RsRingStorage implements Capability.IStorage<IRsRingCapability> {
@@ -894,11 +930,13 @@ public class RsRingCapability implements IRsRingCapability {
             
             // ==================== 保存销毁模式数据 ====================
             tag.setBoolean("destroyEnabled", cap.destroyEnabled);
+            tag.setString("destroyModeType", cap.destroyModeType.getName());
             tag.setString("destroyFilterMode", cap.destroyFilterMode.getName());
             tag.setBoolean("destroyWhitelistMode", cap.destroyWhitelistMode);
             tag.setBoolean("destroyMatchAllMode", cap.destroyMatchAllMode);
             tag.setBoolean("destroyMatchNbt", cap.destroyMatchNbt);
             tag.setBoolean("destroyMatchDurability", cap.destroyMatchDurability);
+            tag.setBoolean("shouldWorkInGUI", cap.shouldWorkInGUI);
             
             // 保存销毁物品过滤槽
             net.minecraft.nbt.NBTTagList destroySlotList = new net.minecraft.nbt.NBTTagList();
@@ -957,6 +995,9 @@ public class RsRingCapability implements IRsRingCapability {
                 tag.setInteger("trashCanZ", cap.trashCanPos.getZ());
                 tag.setInteger("trashCanDimension", cap.trashCanDimension);
             }
+            
+            // ==================== 保存彩蛋模式 ====================
+            tag.setBoolean("easterEgg", cap.easterEgg);
 
             return tag;
         }
@@ -1069,6 +1110,9 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
             
             // ==================== 读取销毁模式数据 ====================
             cap.destroyEnabled = tag.getBoolean("destroyEnabled");
+            if (tag.hasKey("destroyModeType")) {
+                cap.destroyModeType = DestroyModeType.fromName(tag.getString("destroyModeType"));
+            }
             if (tag.hasKey("destroyFilterMode")) {
                 cap.destroyFilterMode = FilterMode.fromName(tag.getString("destroyFilterMode"));
             }
@@ -1076,6 +1120,9 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
             cap.destroyMatchAllMode = tag.getBoolean("destroyMatchAllMode");
             cap.destroyMatchNbt = tag.getBoolean("destroyMatchNbt");
             cap.destroyMatchDurability = tag.getBoolean("destroyMatchDurability");
+            if (tag.hasKey("shouldWorkInGUI")) {
+                cap.shouldWorkInGUI = tag.getBoolean("shouldWorkInGUI");
+            }
             
             // 读取销毁物品过滤槽
             cap.destroyFilterSlots.clear();
@@ -1157,6 +1204,9 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 cap.trashCanPos = new BlockPos(x, y, z);
                 cap.trashCanDimension = tag.getInteger("trashCanDimension");
             }
+            
+            // ==================== 读取彩蛋模式 ====================
+            cap.easterEgg = tag.getBoolean("easterEgg");
         }
     }
 

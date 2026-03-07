@@ -100,6 +100,10 @@ public interface IRsRingCapability {
     boolean isDestroyEnabled();
     void setDestroyEnabled(boolean enabled);
     
+    // 销毁模式类型（参考精妙背包的VoidType）
+    DestroyModeType getDestroyModeType();
+    void setDestroyModeType(DestroyModeType type);
+    
     // 销毁过滤模式（独立于吸收过滤模式）
     FilterMode getDestroyFilterMode();
     void setDestroyFilterMode(FilterMode mode);
@@ -153,6 +157,10 @@ public interface IRsRingCapability {
     boolean shouldDestroyMatchDurability();
     void setDestroyMatchDurability(boolean matchDurability);
     
+    // GUI内工作（参考精妙背包的shouldWorkInGUI）
+    boolean shouldWorkInGUI();
+    void setShouldWorkInGUI(boolean shouldWork);
+    
     // ==================== 垃圾箱绑定方法 ====================
     // 垃圾箱绑定位置（用于存放销毁的物品）
     void bindTrashCan(World world, BlockPos pos);
@@ -161,4 +169,9 @@ public interface IRsRingCapability {
     int getTrashCanDimension();
     World getTrashCanWorld();
     boolean isTrashCanBound();
+    
+    // ==================== 彩蛋模式 ====================
+    // 彩蛋戒指：通过铁砧合成获得，装备时增加幸运值
+    boolean isEasterEgg();
+    void setEasterEgg(boolean easterEgg);
 }

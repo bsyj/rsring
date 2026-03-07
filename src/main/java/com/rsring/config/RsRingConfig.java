@@ -56,6 +56,36 @@ public class RsRingConfig implements IHasConfig {
     public static DestroyModeConfig destroyMode = new DestroyModeConfig();
 
     /**
+     * Useful-Backpacks兼容配置
+     */
+    public static class UsefulBackpacksCompatConfig {
+        // 是否启用Useful-Backpacks兼容
+        public boolean enabled = true;
+        // 背包满时是否继续查找其他背包
+        public boolean cascadeToNextBackpack = true;
+        // 销毁模式是否从背包中删除物品
+        public boolean destroyFromBackpacks = true;
+        // 是否优先使用背包而非绑定箱子
+        public boolean preferBackpacks = false;
+    }
+
+    public static UsefulBackpacksCompatConfig usefulBackpacksCompat = new UsefulBackpacksCompatConfig();
+
+    /**
+     * WearableBackpacks兼容配置
+     */
+    public static class WearableBackpacksCompatConfig {
+        // 是否启用WearableBackpacks兼容
+        public boolean enabled = true;
+        // 销毁模式是否从背包中删除物品
+        public boolean destroyFromBackpacks = true;
+        // 是否优先使用背包而非绑定箱子
+        public boolean preferBackpacks = false;
+    }
+
+    public static WearableBackpacksCompatConfig wearableBackpacksCompat = new WearableBackpacksCompatConfig();
+
+    /**
      * 同步配置方法，用于从配置文件中读取并设置吸收戒指的各项参数
      * @param config 配置对象，用于获取和设置配置值
      */
@@ -202,6 +232,60 @@ public class RsRingConfig implements IHasConfig {
             true,
             "config.rsring.ring.destroyWhitelistOnly",
             "config.rsring.ring.destroyWhitelistOnly");
+
+        // ==================== 模组兼容配置父类别 ====================
+        config.addCustomCategoryComment(RsRingMod.MODID + ".compat", "config.rsring.compat");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".compat", "config.rsring.compat");
+
+        // ==================== Useful-Backpacks兼容配置 ====================
+        config.addCustomCategoryComment(RsRingMod.MODID + ".compat.usefulbackpacks", "config.rsring.compat.usefulbackpacks");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".compat.usefulbackpacks", "config.rsring.compat.usefulbackpacks");
+
+        usefulBackpacksCompat.enabled = config.getBoolean("usefulBackpacksEnabled",
+            RsRingMod.MODID + ".compat.usefulbackpacks",
+            true,
+            "config.rsring.compat.usefulbackpacks.enabled",
+            "config.rsring.compat.usefulbackpacks.enabled");
+
+        usefulBackpacksCompat.cascadeToNextBackpack = config.getBoolean("cascadeToNextBackpack",
+            RsRingMod.MODID + ".compat.usefulbackpacks",
+            true,
+            "config.rsring.compat.usefulbackpacks.cascadeToNextBackpack",
+            "config.rsring.compat.usefulbackpacks.cascadeToNextBackpack");
+
+        usefulBackpacksCompat.destroyFromBackpacks = config.getBoolean("destroyFromBackpacks",
+            RsRingMod.MODID + ".compat.usefulbackpacks",
+            true,
+            "config.rsring.compat.usefulbackpacks.destroyFromBackpacks",
+            "config.rsring.compat.usefulbackpacks.destroyFromBackpacks");
+
+        usefulBackpacksCompat.preferBackpacks = config.getBoolean("preferBackpacks",
+            RsRingMod.MODID + ".compat.usefulbackpacks",
+            false,
+            "config.rsring.compat.usefulbackpacks.preferBackpacks",
+            "config.rsring.compat.usefulbackpacks.preferBackpacks");
+
+        // ==================== WearableBackpacks兼容配置 ====================
+        config.addCustomCategoryComment(RsRingMod.MODID + ".compat.wearablebackpacks", "config.rsring.compat.wearablebackpacks");
+        config.setCategoryLanguageKey(RsRingMod.MODID + ".compat.wearablebackpacks", "config.rsring.compat.wearablebackpacks");
+
+        wearableBackpacksCompat.enabled = config.getBoolean("wearableBackpacksEnabled",
+            RsRingMod.MODID + ".compat.wearablebackpacks",
+            true,
+            "config.rsring.compat.wearablebackpacks.enabled",
+            "config.rsring.compat.wearablebackpacks.enabled");
+
+        wearableBackpacksCompat.destroyFromBackpacks = config.getBoolean("destroyFromBackpacks",
+            RsRingMod.MODID + ".compat.wearablebackpacks",
+            true,
+            "config.rsring.compat.wearablebackpacks.destroyFromBackpacks",
+            "config.rsring.compat.wearablebackpacks.destroyFromBackpacks");
+
+        wearableBackpacksCompat.preferBackpacks = config.getBoolean("preferBackpacks",
+            RsRingMod.MODID + ".compat.wearablebackpacks",
+            false,
+            "config.rsring.compat.wearablebackpacks.preferBackpacks",
+            "config.rsring.compat.wearablebackpacks.preferBackpacks");
     }
 
     public static boolean validateConfig() {
@@ -215,8 +299,8 @@ public class RsRingConfig implements IHasConfig {
             changed = true;
         }
 
-        if (absorbRing.energyCostPerItem < 0) {
-            absorbRing.energyCostPerItem = 0;
+        if (absorbRing.energyCostPerItem < 1) {
+            absorbRing.energyCostPerItem = 1; // 最小为1，防止免费吸收/销毁
             changed = true;
         } else if (absorbRing.energyCostPerItem > 1000) {
             absorbRing.energyCostPerItem = 1000;
@@ -247,8 +331,8 @@ public class RsRingConfig implements IHasConfig {
             changed = true;
         }
 
-        if (absorbRing.energyCostMultiplier < 0) {
-            absorbRing.energyCostMultiplier = 0.0;
+        if (absorbRing.energyCostMultiplier < 0.1) {
+            absorbRing.energyCostMultiplier = 0.1; // 最小0.1，防止免费吸收/销毁
             changed = true;
         }
 

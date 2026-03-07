@@ -37,13 +37,18 @@ public class ConfigRegistry {
             changed = true;
         }
 
-        // 移除不需要的配置类别 (general 和 network)
+        // 移除不需要的配置类别 (general、network 和 destroy)
+        // destroy 配置已集成到吸收戒指设置中，不再作为独立类别
         if (config.hasCategory("rsring.general")) {
             config.removeCategory(config.getCategory("rsring.general"));
             changed = true;
         }
         if (config.hasCategory("rsring.network")) {
             config.removeCategory(config.getCategory("rsring.network"));
+            changed = true;
+        }
+        if (config.hasCategory("rsring.destroy")) {
+            config.removeCategory(config.getCategory("rsring.destroy"));
             changed = true;
         }
 

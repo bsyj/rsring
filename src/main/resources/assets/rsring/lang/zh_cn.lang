@@ -9,8 +9,8 @@ item.rsring.experience_tank_1000.name=经验储罐 - 1000 级
 item.rsring.experience_tank_2000.name=经验储罐 - 2000 级
 item.rsring.experience_tank_10000.name=经验储罐 - 10000 级
 #keys
-key.rsring.toggle.desc=切换戒指功能
-key.categories.rsring=戒指
+key.rsring.toggle.desc=切换所有戒指吸收状态
+key.categories.rsring=RS戒指模组
 
 #messages
 message.rsring.ring_not_found=未找到戒指
@@ -78,6 +78,43 @@ config.rsring.controller.maxManagedTanks=最大管理储罐数量
 
 # 修正缺失的配置项
 item.rsring.experience_tank.name=经验储罐
+
+# 兼容模组配置
+config.rsring.compat=模组兼容设置
+
+# Useful-Backpacks兼容配置
+config.rsring.compat.usefulbackpacks=Useful-Backpacks兼容设置
+config.rsring.compat.usefulbackpacks.enabled=启用Useful-Backpacks兼容
+config.rsring.compat.usefulbackpacks.enabled.comment=启用与Useful-Backpacks模组的兼容功能
+config.rsring.compat.usefulbackpacks.cascadeToNextBackpack=级联到下一个背包
+config.rsring.compat.usefulbackpacks.cascadeToNextBackpack.comment=当一个背包满了时，是否继续尝试存入其他背包
+config.rsring.compat.usefulbackpacks.destroyFromBackpacks=从背包销毁物品
+config.rsring.compat.usefulbackpacks.destroyFromBackpacks.comment=销毁模式是否从Useful-Backpacks背包中删除物品
+config.rsring.compat.usefulbackpacks.preferBackpacks=优先使用背包
+config.rsring.compat.usefulbackpacks.preferBackpacks.comment=优先将物品存入背包而非绑定的箱子
+
+# WearableBackpacks兼容配置
+config.rsring.compat.wearablebackpacks=WearableBackpacks兼容设置
+config.rsring.compat.wearablebackpacks.enabled=启用WearableBackpacks兼容
+config.rsring.compat.wearablebackpacks.enabled.comment=启用与WearableBackpacks模组的兼容功能
+config.rsring.compat.wearablebackpacks.destroyFromBackpacks=从背包销毁物品
+config.rsring.compat.wearablebackpacks.destroyFromBackpacks.comment=销毁模式是否从WearableBackpacks背包中删除物品
+config.rsring.compat.wearablebackpacks.preferBackpacks=优先使用背包
+config.rsring.compat.wearablebackpacks.preferBackpacks.comment=优先将物品存入WearableBackpacks背包而非绑定的箱子
+
+# 销毁模式类型
+config.rsring.destroyMode.type=销毁模式类型
+config.rsring.destroyMode.type.always=总是销毁
+config.rsring.destroyMode.type.slot_overflow=槽位溢出销毁
+config.rsring.destroyMode.type.storage_overflow=存储溢出销毁
+config.rsring.destroyMode.type.comment=销毁模式的触发条件：
+  总是销毁 - 符合过滤条件的物品直接销毁
+  槽位溢出销毁 - 当背包中已有满堆该物品时销毁新物品
+  存储溢出销毁 - 当背包满了之后销毁新物品
+
+# GUI内工作（参考精妙背包）
+config.rsring.destroyMode.workInGUI=GUI内工作
+config.rsring.destroyMode.workInGUI.comment=在玩家操作界面时是否执行销毁
 
 # ==================== 物品属性翻译 ====================
 # 标准特性

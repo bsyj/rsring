@@ -448,7 +448,8 @@ private static final int PAD = 8;
         // 绘制槽位中的物品
         // 槽位背景绘制在 (itemSlotX-1, btnDrawY)，尺寸 18x18
         // 物品应该在槽位内部，偏移1像素边框
-        ItemStack inputStack = capability.getAttributeInputStack();
+        boolean isDestroyModeUI = capability != null && capability.isDestroyModeUI();
+        ItemStack inputStack = isDestroyModeUI ? capability.getDestroyAttributeInputStack() : capability.getAttributeInputStack();
         if (!inputStack.isEmpty()) {
             RenderHelper.enableGUIStandardItemLighting();
             // ForegroundLayer中的renderItemAndEffectIntoGUI使用相对坐标
@@ -912,40 +913,56 @@ private static final int PAD = 8;
                 isDestroyModeUI ? new net.minecraft.item.ItemStack(net.minecraft.init.Items.WATER_BUCKET) 
                                : new net.minecraft.item.ItemStack(net.minecraft.init.Items.LAVA_BUCKET));
             
-// 销毁模式UI下显示开关按钮（销毁按钮右侧，向右偏移1像素避免流星边框覆盖销毁按钮）
+// 销毁模式UI下显示开关按钮和模式切换按钮
             if (isDestroyModeUI) {
-                int toggleBtnX = destroyBtnX + SQ + 1; // 向右偏移1像素
+                int toggleBtnX = destroyBtnX + SQ + 1; // 销毁按钮右侧
                 int toggleBtnY = destroyBtnY;
-                // 使用icons_sophisticatedcore.png贴图绘制开关按钮
-                // 开用序号1，关用序号2（假设图标大小为16x16，贴图宽度为256）
+                // 绘制销毁开关按钮
                 drawSophisticatedToggleButton(toggleBtnX, toggleBtnY, mouseX, mouseY, isDestroyEnabled);
-                // 绘制流星边框（在按钮之后绘制，避免被覆盖）
+                // 绘制流星边框
                 GlStateManager.disableTexture2D();
                 drawDestroyToggleMeteorBorder(toggleBtnX, toggleBtnY, isDestroyEnabled);
                 GlStateManager.enableTexture2D();
+                
+                // 销毁模式类型切换按钮（开关按钮右侧）
+                // 只有玩家有背包时才显示三种销毁类型切换按钮
+                boolean showDestroyModeType = com.rsring.compat.CompatManager.hasAnyBackpack(this.mc.player);
+                if (showDestroyModeType) {
+                    int modeTypeBtnX = toggleBtnX + SQ + 1;
+                    int modeTypeBtnY = toggleBtnY;
+                    drawDestroyModeTypeButton(modeTypeBtnX, modeTypeBtnY, mouseX, mouseY);
+                }
             }
         }
-        
+
         // 属性过滤模式：销毁按钮在黑白名单下方
         if (currentMode == FilterMode.ATTRIBUTE) {
             int destroyBtnX = leftBtnX;
             int destroyBtnY = whitelistBtnY + SQ; // 黑白名单下方
             // 绘制销毁模式按钮 - 使用岩浆桶图标（销毁模式UI下显示为水桶表示退出）
             drawItemIconButton(destroyBtnX, destroyBtnY, mouseX, mouseY,
-                isDestroyModeUI ? new net.minecraft.item.ItemStack(net.minecraft.init.Items.WATER_BUCKET) 
+                isDestroyModeUI ? new net.minecraft.item.ItemStack(net.minecraft.init.Items.WATER_BUCKET)
                                : new net.minecraft.item.ItemStack(net.minecraft.init.Items.LAVA_BUCKET));
-            
-            // 销毁模式UI下显示开关按钮（销毁按钮下方，向下偏移1像素避免流星边框覆盖销毁按钮）
+
+            // 销毁模式UI下显示开关按钮和模式切换按钮
             if (isDestroyModeUI) {
                 int toggleBtnX = destroyBtnX;
-                int toggleBtnY = destroyBtnY + SQ + 1; // 向下偏移1像素
-                // 使用icons_sophisticatedcore.png贴图绘制开关按钮
-                // 开用序号1，关用序号2（假设图标大小为16x16，贴图宽度为256）
+                int toggleBtnY = destroyBtnY + SQ + 1; // 销毁按钮下方
+                // 绘制销毁开关按钮
                 drawSophisticatedToggleButton(toggleBtnX, toggleBtnY, mouseX, mouseY, isDestroyEnabled);
-                // 绘制流星边框（在按钮之后绘制，避免被覆盖）
+                // 绘制流星边框
                 GlStateManager.disableTexture2D();
                 drawDestroyToggleMeteorBorder(toggleBtnX, toggleBtnY, isDestroyEnabled);
                 GlStateManager.enableTexture2D();
+
+                // 销毁模式类型切换按钮（开关按钮右侧）
+                // 只有玩家有背包时，才显示三种销毁类型切换按钮
+                boolean showDestroyModeType = com.rsring.compat.CompatManager.hasAnyBackpack(this.mc.player);
+                if (showDestroyModeType) {
+                    int modeTypeBtnX = toggleBtnX + SQ + 1; // 开关按钮右边
+                    int modeTypeBtnY = toggleBtnY;
+                    drawDestroyModeTypeButton(modeTypeBtnX, modeTypeBtnY, mouseX, mouseY);
+                }
             }
         }
 
@@ -1103,6 +1120,53 @@ private static final int PAD = 8;
         this.mc.getTextureManager().bindTexture(SOPHISTICATED_CORE_ICONS);
         int iconIndex = isOn ? 1 : 2; // 开用序号1，关用序号2
         int iconU = ((iconIndex - 1) % 16) * 16; // 每行16个图标
+        int iconV = ((iconIndex - 1) / 16) * 16;
+        this.drawTexturedModalRect(x + 1, y + 1, iconU, iconV, 16, 16);
+    }
+
+    /**
+     * 绘制销毁模式类型切换按钮
+     * 显示当前销毁模式类型：总是销毁/槽位溢出/存储溢出
+     */
+    private void drawDestroyModeTypeButton(int x, int y, int mouseX, int mouseY) {
+        int hoverState = isMouseOverButton(mouseX - this.guiLeft, mouseY - this.guiTop, x, y) ? 2 : 1;
+        
+        // 绘制按钮背景
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+            GlStateManager.SourceFactor.SRC_ALPHA,
+            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ZERO);
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        this.mc.getTextureManager().bindTexture(GUI_CONTROLS);
+        int bgU = hoverState == 2 ? 47 : 29;
+        this.drawTexturedModalRect(x, y, bgU, 0, TOGGLE_BTN_WIDTH, TOGGLE_BTN_HEIGHT);
+        
+        // 根据销毁模式类型绘制不同图标
+        // 使用精妙背包的图标：
+        // 总是销毁 - 图标序号3 (UV: 32,0)
+        // 槽位溢出 - 图标序号4 (UV: 48,0) 
+        // 存储溢出 - 图标序号5 (UV: 64,0)
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        this.mc.getTextureManager().bindTexture(SOPHISTICATED_CORE_ICONS);
+        
+        com.rsring.capability.DestroyModeType modeType = capability.getDestroyModeType();
+        int iconIndex;
+        switch (modeType) {
+            case SLOT_OVERFLOW:
+                iconIndex = 4; // 槽位溢出
+                break;
+            case STORAGE_OVERFLOW:
+                iconIndex = 5; // 存储溢出
+                break;
+            case ALWAYS:
+            default:
+                iconIndex = 3; // 总是销毁
+                break;
+        }
+        int iconU = ((iconIndex - 1) % 16) * 16;
         int iconV = ((iconIndex - 1) / 16) * 16;
         this.drawTexturedModalRect(x + 1, y + 1, iconU, iconV, 16, 16);
     }
@@ -1384,8 +1448,9 @@ private static final int PAD = 8;
             
             java.util.List<String> tooltip = new java.util.ArrayList<>();
             if (isDestroyModeUI) {
+                int secondColorIndex = (int)((hue + 0.25) * colors.length) % colors.length;
                 tooltip.add(colors[colorIndex] + "退出销毁模式");
-                tooltip.add(TextFormatting.GRAY + "返回吸收模式配置");
+                tooltip.add(colors[secondColorIndex] + "返回吸收模式配置");
             } else {
                 tooltip.add(TextFormatting.RED + "⚠ 销毁模式");
                 tooltip.add(TextFormatting.YELLOW + "警告：匹配的物品将被永久销毁！");
@@ -1441,6 +1506,73 @@ private static final int PAD = 8;
                 tooltip.add(enabled ? colors[colorIndex] + "当前：开启" : TextFormatting.RED + "当前：关闭");
                 this.drawHoveringText(tooltip, mouseX, mouseY);
                 return;
+            }
+            
+            // 销毁模式类型按钮 tooltip
+            // 只有玩家有背包时，才显示销毁模式类型按钮tooltip
+            boolean showDestroyModeType = com.rsring.compat.CompatManager.hasAnyBackpack(this.mc.player);
+            if (showDestroyModeType) {
+                // 所有过滤模式下，销毁类型按钮都在开关按钮右侧
+                int modeTypeBtnX = toggleBtnX + SQ + 1;
+                int modeTypeBtnY = toggleBtnY;
+                
+                if (isMouseOverButton(relativeX, relativeY, modeTypeBtnX, modeTypeBtnY)) {
+                    if (!customAllowed) {
+                        this.drawHoveringText(java.util.Arrays.asList(TextFormatting.RED + "Locked by config"), mouseX, mouseY);
+                        return;
+                    }
+                    
+                    // 跑马灯颜色
+                    long t = System.currentTimeMillis();
+                    int period = 2000;
+                    float hue = ((t % period) / (float) period) % 1.0f;
+                    net.minecraft.util.text.TextFormatting[] colors = {
+                        net.minecraft.util.text.TextFormatting.RED,
+                        net.minecraft.util.text.TextFormatting.GOLD,
+                        net.minecraft.util.text.TextFormatting.YELLOW,
+                        net.minecraft.util.text.TextFormatting.GREEN,
+                        net.minecraft.util.text.TextFormatting.AQUA,
+                        net.minecraft.util.text.TextFormatting.BLUE,
+                        net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
+                        net.minecraft.util.text.TextFormatting.DARK_PURPLE
+                    };
+                    int titleColorIndex = (int)(hue * colors.length) % colors.length;
+                    int descColorIndex1 = (int)((hue + 0.25) * colors.length) % colors.length;
+                    int descColorIndex2 = (int)((hue + 0.5) * colors.length) % colors.length;
+                    
+                    java.util.List<String> tooltip = new java.util.ArrayList<>();
+                    com.rsring.capability.DestroyModeType modeType = capability.getDestroyModeType();
+                    
+                    // 只显示当前模式
+                    String modeName;
+                    String modeDesc;
+                    switch (modeType) {
+                        case SLOT_OVERFLOW:
+                            modeName = "槽位溢出";
+                            modeDesc = "背包有整组时销毁过量的";
+                            break;
+                        case STORAGE_OVERFLOW:
+                            modeName = "存储溢出";
+                            modeDesc = "背包满时销毁新物品";
+                            break;
+                        case ALWAYS:
+                        default:
+                            modeName = "总是销毁";
+                            modeDesc = "直接销毁符合条件的物品";
+                            break;
+                    }
+                    
+                    int hintColorIndex = (int)((hue + 0.75) * colors.length) % colors.length;
+                    
+                    tooltip.add(colors[titleColorIndex] + "销毁模式类型->进入垃圾箱");
+                    tooltip.add(colors[descColorIndex1] + modeName);
+                    tooltip.add(colors[descColorIndex2] + " " + modeDesc);
+                    tooltip.add("");
+                    tooltip.add(colors[hintColorIndex] + "[点击切换模式]");
+                    
+                    this.drawHoveringText(tooltip, mouseX, mouseY);
+                    return;
+                }
             }
         }
         
@@ -1573,7 +1705,9 @@ private static final int PAD = 8;
                 int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
                 
                 tooltip.add(colors[titleColorIndex] + "添加属性");
-                if (capability.getAttributeInputStack().isEmpty()) {
+                boolean isDestroyModeUIForTooltip = capability != null && capability.isDestroyModeUI();
+                ItemStack inputStackForTooltip = isDestroyModeUIForTooltip ? capability.getDestroyAttributeInputStack() : capability.getAttributeInputStack();
+                if (inputStackForTooltip.isEmpty()) {
                     tooltip.add(TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC + "在槽位放入物品");
                 } else if (availableAttributes.isEmpty()) {
                     tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "没有更多可添加的属性");
@@ -1842,6 +1976,47 @@ RsRingCapability.syncCapabilityToStack(ringStack, capability);
                 this.mc.player.sendMessage(new net.minecraft.util.text.TextComponentString(
                     TextFormatting.GOLD + "销毁功能: " + (newEnabled ? TextFormatting.GREEN + "开启" : TextFormatting.RED + "关闭")));
                 return;
+            }
+            
+            // 处理销毁模式类型切换按钮点击
+            // 只有玩家有背包时，才处理销毁模式类型按钮点击
+            boolean showDestroyModeType = com.rsring.compat.CompatManager.hasAnyBackpack(this.mc.player);
+            if (showDestroyModeType) {
+                // 所有过滤模式下，销毁类型按钮都在开关按钮右侧
+                int modeTypeBtnX = toggleBtnX + SQ + 1;
+                int modeTypeBtnY = toggleBtnY;
+                
+                if (isMouseOverButton(relativeX, relativeY, modeTypeBtnX, modeTypeBtnY)) {
+                    if (!isCustomFiltersAllowed()) return;
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastButtonClickTime < CLICK_COOLDOWN) return;
+                    lastButtonClickTime = currentTime;
+                    
+                    com.rsring.capability.DestroyModeType currentType = capability.getDestroyModeType();
+                    com.rsring.capability.DestroyModeType newType = currentType.next();
+                    capability.setDestroyModeType(newType);
+                    RsRingCapability.syncCapabilityToStack(ringStack, capability);
+                    // 发送数据包到服务器同步销毁模式类型
+                    com.rsring.rsring.RsRingMod.network.sendToServer(
+                        new com.rsring.network.PacketSyncDestroyModeType(newType));
+                    
+                    String typeName;
+                    switch (newType) {
+                        case SLOT_OVERFLOW:
+                            typeName = "槽位溢出销毁";
+                            break;
+                        case STORAGE_OVERFLOW:
+                            typeName = "存储溢出销毁";
+                            break;
+                        case ALWAYS:
+                        default:
+                            typeName = "总是销毁";
+                            break;
+                    }
+                    this.mc.player.sendMessage(new net.minecraft.util.text.TextComponentString(
+                        TextFormatting.GOLD + "销毁模式: " + TextFormatting.AQUA + typeName));
+                    return;
+                }
             }
         }
         

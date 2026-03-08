@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Mod Banner](src/main/resources/assets/rsring/textures/items/mod_banner.png)
-
 **版本**: 1.7  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
@@ -77,20 +75,26 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - 支持属性过滤（如销毁所有泥土类物品）
 - 每秒自动检查一次
 
+**垃圾箱绑定系统（1.7新增）：**
+- 手持戒指对着容器潜行左键绑定/解绑垃圾箱
+- 吸收箱显示绿色系跑马灯边框，垃圾箱显示红色系跑马灯边框
+- 吸收箱和垃圾箱使用独立的绑定系统，互不干扰
+- 销毁的物品优先送入垃圾箱，垃圾箱满或不存在时直接销毁
+
 **使用方式：**
 - 在戒指GUI中开启销毁模式
 - 配置销毁黑白名单（独立于吸收黑白名单）
 - 选择销毁类型
 - 可选择是否仅在饰品栏佩戴时生效（严格模式）
 
-### 属性过滤系统
+### 属性过滤系统（1.7重构升级）
 
 **支持的属性类型：**
 - **标准特性** - 食物、工具、武器、装备、方块等基础分类
-- **行为标签** - 类似1.20.x的minecraft:piglin_loved等标签
+- **行为标签** - 50+种行为标签（猪灵喜爱、动物食物、方块分类等）
 - **模组来源** - 按模组ID过滤
 - **创造模式标签页** - 按创造栏分类
-- **矿物词典** - 按OreDict标签过滤
+- **矿物词典** - 按OreDict标签过滤（矿石、存储方块、材料等）
 - **NBT数据** - 匹配特定NBT标签
 - **附魔** - 按附魔类型和等级
 - **颜色** - 按物品颜色
@@ -101,11 +105,24 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - **流体内容** - 按容器内流体
 - **潜影盒填充等级** - 按填充程度
 - **冒险模组分类** - RLCraft等冒险模组专用标签
+- **盔甲细分** - 头盔、胸甲、护腿、靴子独立标签
+- **盔甲材质** - 皮革、铁、金、钻石、锁链盔甲独立标签
+- **武器细分** - 剑、弓、盾牌独立标签
+- **剑材质** - 木、石、铁、金、钻石剑独立标签
+
+**高级功能（1.7新增）：**
+- **正/反向属性** - 支持添加反向属性（如"不属于标签X"）
+- **AND/OR匹配** - 支持匹配全部属性或匹配任意属性
+- **NBT/耐久匹配** - 物品过滤和模组过滤模式支持NBT和耐久匹配
+- **纯黑背景** - 属性列表使用纯黑背景，更美观
+- **流星跑马灯边框** - 双流星沿边框循环移动，彩虹色渐变
 
 **使用方法：**
 - 在戒指GUI中切换至"属性"过滤模式
 - 从物品属性列表中选择要过滤的属性
 - 支持组合多个属性条件
+- 可切换正向/反向属性
+- 可选择AND/OR匹配模式
 
 ### 经验储罐系统
 
@@ -223,10 +240,13 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 #### 1. 合成戒指
 在游戏中通过JEI或查看配方获取合成方法。
 
-#### 2. 绑定箱子/RS控制器
+#### 2. 绑定箱子/RS控制器/垃圾箱
 - 手持戒指
-- 蹲下（Shift）+ 右键点击箱子或RS控制器
-- 聊天框显示绑定成功消息和RS网络状态（如适用）
+- **绑定吸收箱**：蹲下（Shift）+ 右键点击箱子或RS控制器
+- **绑定垃圾箱**：蹲下（Shift）+ 左键点击箱子（1.7新增）
+- **解绑**：对着已绑定的容器蹲下（Shift）+ 右键/左键（1.7新增）
+- 聊天框显示绑定/解绑成功消息和RS网络状态（如适用）
+- 吸收箱显示绿色系跑马灯边框，垃圾箱显示红色系跑马灯边框
 
 #### 3. 配置过滤器
 - 右键戒指打开GUI
@@ -241,9 +261,14 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 
 #### 5. 充能
 - 使用任何FE充能器为戒指充电
-- 最大容量：100,000 FE（默认，可配置）
-- 也可通过手摇充电：潜行+右键空气
-- **移动发电**：走路、疾跑、飞行、游泳等动作可自动为戒指充能
+- 最大容量：100,000 FE（默认，可配置范围1,000-10,000,000）
+- 也可通过手摇充电：潜行+右键空气（默认1000 FE/次）
+- **移动发电**：走路、疾跑、飞行、游泳等动作可自动为戒指充能（1.7新增）
+  - 走路：1 FE/次
+  - 疾跑/飞行/游泳：2 FE/次
+  - 跳跃：3 FE/次
+  - 攀爬：2 FE/次
+  - 坠落/骑乘：1 FE/次
 
 ### 经验储罐系统
 
@@ -280,7 +305,8 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 | K | 切换物品吸收戒指开关 |
 | E | 退出GUI |
 | 右键 | 打开物品GUI（手持物品时） |
-| Shift + 右键 | 绑定箱子/RS控制器（手持戒指时） |
+| Shift + 右键 | 绑定吸收箱/RS控制器，或解绑已绑定的容器（手持戒指时） |
+| Shift + 左键 | 绑定垃圾箱，或解绑已绑定的垃圾箱（手持戒指时，1.7新增） |
 
 ---
 
@@ -429,6 +455,35 @@ energyPerRide=1        # 骑乘
 energyPerClimb=2       # 攀爬
 ```
 
+### 模组兼容配置
+
+#### Useful-Backpacks兼容
+```properties
+# 是否启用Useful-Backpacks兼容
+usefulBackpacksEnabled=true
+
+# 背包满时是否继续查找其他背包
+cascadeToNextBackpack=true
+
+# 销毁模式是否从背包中删除物品
+destroyFromBackpacks=true
+
+# 是否优先使用背包而非绑定箱子
+preferBackpacks=false
+```
+
+#### WearableBackpacks兼容
+```properties
+# 是否启用WearableBackpacks兼容
+wearableBackpacksEnabled=true
+
+# 销毁模式是否从背包中删除物品
+destroyFromBackpacks=true
+
+# 是否优先使用背包而非绑定箱子
+preferBackpacks=false
+```
+
 ### 其他配置
 
 ```properties
@@ -465,7 +520,7 @@ blockExternalCharging=true
 
 ### 设计模式
 
-- **单例模式** - ExperiencePumpController, RingDetectionSystem
+- **单例模式** - ExperiencePumpController, RingDetectionSystem, MovementEnergyGenerator
 - **建造者模式** - RingDetectionResult.Builder
 - **策略模式** - 经验泵的三种工作模式
 - **观察者模式** - Forge事件总线
@@ -477,11 +532,12 @@ blockExternalCharging=true
 |--------|----------|
 | 数据持久化 | NBT + Forge Capability |
 | 网络通信 | SimpleNetworkWrapper |
-| GUI渲染 | Minecraft GUI系统 |
+| GUI渲染 | Minecraft GUI系统 + 自定义渲染 |
 | 配置管理 | Forge Configuration API |
 | 集成方式 | 反射 + @Optional接口 |
-| 物品过滤 | 黑名单/白名单 + 9槽GUI |
+| 物品过滤 | 黑名单/白名单 + 9槽GUI + 属性过滤 |
 | 经验计算 | Minecraft官方公式 |
+| 边框渲染 | 跑马灯效果（绿色/红色/彩虹色） |
 
 ### 项目结构
 
@@ -647,6 +703,18 @@ build/libs/rsring-1.7.jar
 ### Q: RS网络满时物品会怎样？
 **A**: RS网络满时物品会保留在原地，不会被吸收，避免物品丢失。
 
+### Q: 如何绑定垃圾箱？
+**A**: 手持戒指对着箱子潜行+左键即可绑定垃圾箱（1.7新增功能）。垃圾箱会显示红色系跑马灯边框。
+
+### Q: 如何解绑已绑定的容器？
+**A**: 手持戒指对着已绑定的容器潜行+右键（吸收箱/RS控制器）或潜行+左键（垃圾箱）即可解绑（1.7新增功能）。
+
+### Q: 属性过滤如何使用？
+**A**: 在戒指GUI中切换到"属性"过滤模式，从属性列表中选择要过滤的属性。支持正/反向属性、AND/OR匹配模式（1.7新增）。
+
+### Q: 移动发电如何工作？
+**A**: 戒指会根据玩家的移动方式自动充能，走路1 FE、疾跑/飞行/游泳2 FE、跳跃3 FE等。可在配置文件中调整或关闭。
+
 ---
 
 ## 📜 许可证
@@ -748,13 +816,19 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 
 **Main Features:**
 - Automatically absorb dropped items within 8 blocks
-- Black/white list filtering system (9 filter slots)
+- Black/white list filtering system (9 filter slots with default lists)
 - Supports binding to RS controllers and regular chests
 - Cross-dimensional item transport
-- FE energy powered (max 100K FE default, configurable)
+- FE energy powered (max 100K FE default, configurable range 1,000-10,000,000)
 - Quick toggle with K key
 - Works in inventory, hand, or Baubles slots
 - Movement energy generation - walking, flying, swimming etc. can charge the ring
+
+**Trash Can Binding System (1.7 New):**
+- Sneak + Left-click on container to bind/unbind trash can
+- Absorption chest shows green marquee border, trash can shows red marquee border
+- Independent binding system for absorption chest and trash can
+- Destroyed items prioritize trash can, destroy directly if full or not bound
 
 **Technical Specs:**
 - Absorption range: 8 blocks (configurable)
@@ -880,10 +954,13 @@ The ring can be automatically charged through player movement without external c
 #### 1. Craft the Ring
 Check JEI or recipes in-game for crafting method.
 
-#### 2. Bind Chest/RS Controller
+#### 2. Bind Chest/RS Controller/Trash Can
 - Hold the ring
-- Sneak (Shift) + Right-click on chest or RS controller
-- Chat shows bind success message and RS network status (if applicable)
+- **Bind Absorption Chest**: Sneak (Shift) + Right-click on chest or RS controller
+- **Bind Trash Can**: Sneak (Shift) + Left-click on chest (1.7 New)
+- **Unbind**: Sneak (Shift) + Right-click/Left-click on bound container (1.7 New)
+- Chat shows bind/unbind success message and RS network status (if applicable)
+- Absorption chest shows green marquee border, trash can shows red marquee border
 
 #### 3. Configure Filters
 - Right-click the ring to open GUI
@@ -898,8 +975,14 @@ Check JEI or recipes in-game for crafting method.
 
 #### 5. Charging
 - Use any FE charger to charge the ring
-- Max capacity: 10M FE
-- Manual charging: Sneak + Right-click air
+- Max capacity: 100,000 FE (default, configurable range 1,000-10,000,000)
+- Manual charging: Sneak + Right-click air (default 1000 FE/time)
+- **Movement Energy Generation**: Walking, sprinting, flying, swimming etc. can automatically charge the ring (1.7 New)
+  - Walking: 1 FE/time
+  - Sprinting/Flying/Swimming: 2 FE/time
+  - Jumping: 3 FE/time
+  - Climbing: 2 FE/time
+  - Falling/Riding: 1 FE/time
 
 ### Experience Tank System
 
@@ -936,7 +1019,8 @@ Check JEI or recipes in-game for crafting method.
 | K | Toggle Item Absorb Ring |
 | E | Exit GUI |
 | Right-click | Open item GUI (when holding item) |
-| Shift + Right-click | Bind chest/RS controller (when holding ring) |
+| Shift + Right-click | Bind absorption chest/RS controller, or unbind bound container (when holding ring) |
+| Shift + Left-click | Bind trash can, or unbind bound trash can (when holding ring, 1.7 New) |
 
 ---
 
@@ -1052,7 +1136,7 @@ maxManagedTanks=32
 
 ### Design Patterns
 
-- **Singleton Pattern** - ExperiencePumpController, RingDetectionSystem
+- **Singleton Pattern** - ExperiencePumpController, RingDetectionSystem, MovementEnergyGenerator
 - **Builder Pattern** - RingDetectionResult.Builder
 - **Strategy Pattern** - Three working modes of experience pump
 - **Observer Pattern** - Forge event bus
@@ -1064,11 +1148,12 @@ maxManagedTanks=32
 |------------|----------------|
 | Data Persistence | NBT + Forge Capability |
 | Network Communication | SimpleNetworkWrapper |
-| GUI Rendering | Minecraft GUI System |
+| GUI Rendering | Minecraft GUI System + Custom Rendering |
 | Configuration Management | Forge Configuration API |
 | Integration Method | Reflection + @Optional Interface |
-| Item Filtering | Black/white list + 9-slot GUI |
+| Item Filtering | Black/white list + 9-slot GUI + Attribute Filtering |
 | Experience Calculation | Minecraft Official Formula |
+| Border Rendering | Marquee Effect (Green/Red/Rainbow) |
 
 ---
 
@@ -1132,6 +1217,18 @@ Project follows these development standards:
 
 ### Q: What happens when RS network is full?
 **A**: Items remain in place when RS network is full, won't be absorbed, preventing item loss.
+
+### Q: How to bind trash can?
+**A**: Hold ring and sneak + left-click on chest to bind trash can (1.7 new feature). Trash can will show red marquee border.
+
+### Q: How to unbind bound containers?
+**A**: Hold ring and sneak + right-click (absorption chest/RS controller) or sneak + left-click (trash can) on bound container to unbind (1.7 new feature).
+
+### Q: How to use attribute filtering?
+**A**: Switch to "Attribute" filter mode in ring GUI, select attributes from the list. Supports positive/negative attributes, AND/OR match modes (1.7 new).
+
+### Q: How does movement energy generation work?
+**A**: Ring automatically charges based on player movement: walking 1 FE, sprinting/flying/swimming 2 FE, jumping 3 FE, etc. Can be adjusted or disabled in config.
 
 ---
 

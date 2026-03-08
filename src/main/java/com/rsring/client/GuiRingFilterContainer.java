@@ -1873,7 +1873,7 @@ private static final int PAD = 8;
         }
         
         // 处理黑白名单按钮点击（左边竖排，在过滤模式按钮下方）
-        int whitelistBtnY = filterModeBtnY + FILTER_MODE_BTN_HEIGHT + 4; // 与绘制时一致
+        int whitelistBtnY = filterModeBtnY + SQ; // 与绘制时一致
         if (isMouseOverButton(relativeX, relativeY, leftBtnX, whitelistBtnY)) {
             if (!isCustomFiltersAllowed()) {
                 return;

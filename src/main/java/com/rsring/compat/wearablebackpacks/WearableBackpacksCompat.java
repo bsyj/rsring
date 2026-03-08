@@ -95,6 +95,30 @@ public class WearableBackpacksCompat {
     }
 
     /**
+     * 检查玩家物品栏中是否有可穿戴背包物品（未装备）
+     */
+    public static boolean hasBackpackInInventory(EntityPlayer player) {
+        if (!isAvailable() || player == null) return false;
+
+        try {
+            // 获取背包物品类
+            Class<?> itemBackpackClass = Class.forName("net.mcft.copy.backpacks.item.ItemBackpack");
+
+            // 遍历玩家物品栏检查是否有背包物品（使用instanceof比较）
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                ItemStack stack = player.inventory.getStackInSlot(i);
+                if (!stack.isEmpty() && itemBackpackClass.isInstance(stack.getItem())) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            LOGGER.debug("检查物品栏背包失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * 获取背包的物品栏处理器
      */
     private static ItemStackHandler getBackpackItems(Object backpack) {

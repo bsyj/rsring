@@ -68,6 +68,12 @@ public class InventoryChangeHandler {
         }
     }
 
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        // 玩家退出时清理快照，防止内存泄漏
+        playerSnapshots.remove(event.player.getUniqueID());
+    }
+
     public void refreshPlayerInventory(EntityPlayer player) {
         if (player == null) return;
         checkPlayerInventoryChanges(player);

@@ -60,6 +60,10 @@ public class CommonEventHandler {
     private static final int LOW_ENERGY_CHECK_INTERVAL = 100;
     private int lowEnergyCheckCounter = 0;
 
+    // 缓存清理相关
+    private static long lastCacheCleanupTime = 0;
+    private static final long CACHE_CLEANUP_INTERVAL_MS = 600000; // 10分钟清理一次
+
     public CommonEventHandler() {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             registerKeyBindings();
@@ -655,6 +659,23 @@ public class CommonEventHandler {
     }
     
     /**
+     * 清理过期的缓存数据，防止内存泄漏
+     */
+    private static void cleanupWarningCaches() {
+        long now = System.currentTimeMillis();
+        if (now - lastCacheCleanupTime < CACHE_CLEANUP_INTERVAL_MS) {
+            return;
+        }
+        lastCacheCleanupTime = now;
+
+        int cooldownSeconds = com.rsring.config.RsRingConfig.absorbRing.lowEnergyWarningCooldown;
+        long maxAgeMs = (cooldownSeconds + 60) * 1000L; // 冷却时间 + 60秒缓冲
+
+        lowEnergyWarningCache.entrySet().removeIf(entry ->
+            now - entry.getValue() > maxAgeMs);
+    }
+
+    /**
      * 低电量提醒检测
      * - 仅在戒指启用时检测
      * - 有冷却时间，避免刷屏
@@ -672,6 +693,9 @@ public class CommonEventHandler {
             return;
         }
         lowEnergyCheckCounter = 0;
+        
+        // 定期清理缓存
+        cleanupWarningCaches();
         
         // 获取戒指能力
         IRsRingCapability cap = ringStack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);

@@ -52,33 +52,55 @@ public class ItemAbsorbRing extends Item implements IBauble {
     // 垃圾箱警告冷却机制：每个玩家60秒只提示一次
     private static final Map<UUID, Long> TRASH_CAN_WARNING_COOLDOWN = new HashMap<>();
     private static final long WARNING_COOLDOWN_MS = 60000; // 60秒
-    
+
     // 吸收箱警告冷却机制：每个玩家60秒只提示一次
     private static final Map<UUID, Long> TERMINAL_WARNING_COOLDOWN = new HashMap<>();
     private static final long TERMINAL_WARNING_COOLDOWN_MS = 60000; // 60秒
-    
+
+    // 上次清理时间
+    private static long lastCleanupTime = 0;
+    private static final long CLEANUP_INTERVAL_MS = 300000; // 5分钟清理一次
+
+    /**
+     * 清理过期的冷却数据，防止内存泄漏
+     */
+    private static void cleanupExpiredCooldowns() {
+        long now = System.currentTimeMillis();
+        if (now - lastCleanupTime < CLEANUP_INTERVAL_MS) {
+            return;
+        }
+        lastCleanupTime = now;
+
+        TRASH_CAN_WARNING_COOLDOWN.entrySet().removeIf(entry ->
+            now - entry.getValue() > WARNING_COOLDOWN_MS);
+        TERMINAL_WARNING_COOLDOWN.entrySet().removeIf(entry ->
+            now - entry.getValue() > TERMINAL_WARNING_COOLDOWN_MS);
+    }
+
     /**
      * 发送垃圾箱警告（带冷却）
      */
     private static void sendTrashCanWarning(EntityPlayer player, String message) {
+        cleanupExpiredCooldowns();
         long now = System.currentTimeMillis();
         UUID playerId = player.getUniqueID();
         long lastWarning = TRASH_CAN_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
-        
+
         if (now - lastWarning > WARNING_COOLDOWN_MS) {
             player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
             TRASH_CAN_WARNING_COOLDOWN.put(playerId, now);
         }
     }
-    
+
     /**
      * 发送吸收箱警告（带冷却）
      */
     private static void sendTerminalWarning(EntityPlayer player, String message) {
+        cleanupExpiredCooldowns();
         long now = System.currentTimeMillis();
         UUID playerId = player.getUniqueID();
         long lastWarning = TERMINAL_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
-        
+
         if (now - lastWarning > TERMINAL_WARNING_COOLDOWN_MS) {
             player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
             TERMINAL_WARNING_COOLDOWN.put(playerId, now);
@@ -113,7 +135,6 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (cap.isEasterEgg()) {
             tooltip.add(TextFormatting.LIGHT_PURPLE + "[ 彩蛋觉醒 ]");
             tooltip.add(TextFormatting.YELLOW + "  +5 幸运值 (装备时)");
-            tooltip.add("");
         }
 
         IEnergyStorage energy = cap.getEnergyStorage();
@@ -189,19 +210,86 @@ public class ItemAbsorbRing extends Item implements IBauble {
             return;
         }
 
+        // 背包兼容提示 - 先检测背包状态
+        EntityPlayer clientPlayer = Minecraft.getMinecraft().player;
+        boolean hasUsefulBackpacks = false;
+        boolean hasWearableBackpacks = false;
+        boolean hasWearableInInventory = false;
+        boolean hasAnyBackpack = false;
+        boolean hasAnyWearable = false;
+        boolean showBackpackSection = false;
+
+        if (clientPlayer != null) {
+            hasUsefulBackpacks = com.rsring.compat.usefulbackpacks.UsefulBackpacksCompat.hasBackpack(clientPlayer);
+            hasWearableBackpacks = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.hasEquippedBackpack(clientPlayer);
+            boolean wearableAvailable = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.isAvailable();
+            hasWearableInInventory = wearableAvailable && com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.hasBackpackInInventory(clientPlayer);
+            hasAnyBackpack = hasUsefulBackpacks || hasWearableBackpacks;
+            hasAnyWearable = hasWearableBackpacks || hasWearableInInventory;
+            showBackpackSection = hasAnyBackpack || hasAnyWearable;
+        }
+
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "[ 功能特点 ]");
-        tooltip.add(TextFormatting.GRAY + "  - 自动吸收附近掉落物");
-        tooltip.add(TextFormatting.GRAY + "  - 三种过滤模式: ID/模组/属性");
+        tooltip.add(TextFormatting.GRAY + "  - 消耗能量自动吸收附近掉落物");
+        tooltip.add(TextFormatting.GRAY + "  - 密封模式: 防止外部充电");
+        tooltip.add(TextFormatting.GRAY + "  - 独立吸收箱与过滤系统");
         tooltip.add(TextFormatting.GRAY + "  - 独立垃圾箱与销毁系统");
-        tooltip.add(TextFormatting.GRAY + "  - 支持模组背包(饰品槽)");
+        tooltip.add(TextFormatting.GRAY + "  - 三种过滤/销毁模式: ID/模组/属性");
+
+        // 没有显示[背包存储]区块时才显示这行提示
+        if (!showBackpackSection) {
+            tooltip.add(TextFormatting.GRAY + "  - 支持模组背包 " + TextFormatting.DARK_GRAY + "(持有背包时显示详情)");
+        }
+
+        // 显示[背包存储]区块
+        if (showBackpackSection) {
+            // 构建标题，包含检测到的背包类型及状态
+            StringBuilder titleBuilder = new StringBuilder();
+            titleBuilder.append("[ 背包存储 ");
+            if (hasUsefulBackpacks) {
+                titleBuilder.append("§a实用背包§7");
+            }
+            // 可穿戴背包：已装备显示绿色，在物品栏但未装备显示红色
+            if (hasAnyWearable) {
+                if (hasUsefulBackpacks) titleBuilder.append("+");
+                if (hasWearableBackpacks) {
+                    titleBuilder.append("§a可穿戴背包§7");
+                } else {
+                    titleBuilder.append("§c可穿戴背包§7");
+                }
+            }
+            titleBuilder.append(" ]");
+            tooltip.add("");
+            tooltip.add(TextFormatting.GOLD + titleBuilder.toString());
+
+            // 未装备可穿戴背包但物品栏有时才提示
+            if (hasWearableInInventory && !hasWearableBackpacks) {
+                tooltip.add(TextFormatting.DARK_GRAY + "  可穿戴背包需装备在饰品栏才能吸收物品");
+            }
+
+            // 存储状态（只有实际有背包可用时才显示）
+            if (hasAnyBackpack) {
+                if (cap.isBound()) {
+                    // 根据实际拥有的背包类型显示对应的优先度配置
+                    String priorityText = buildPriorityText(hasUsefulBackpacks, hasWearableBackpacks);
+                    tooltip.add(TextFormatting.GRAY + "  有吸收箱，优先度配置: " + TextFormatting.YELLOW + priorityText);
+                } else {
+                    tooltip.add(TextFormatting.GRAY + "  无吸收箱，存入背包");
+                }
+
+                // 销毁类型说明
+                tooltip.add(TextFormatting.GRAY + "  销毁类型可在过滤界面配置");
+            }
+        }
 
         tooltip.add("");
         tooltip.add(TextFormatting.GOLD + "[ 快捷操作 ]");
         tooltip.add(TextFormatting.AQUA + "  右键空气" + TextFormatting.DARK_GRAY + " - 打开过滤设置");
+        tooltip.add(TextFormatting.AQUA + "  潜行+右键空气" + TextFormatting.DARK_GRAY + " - 手摇发电");
         tooltip.add(TextFormatting.AQUA + "  潜行+右键" + TextFormatting.DARK_GRAY + " - 绑定吸收箱");
         tooltip.add(TextFormatting.AQUA + "  潜行+左键" + TextFormatting.DARK_GRAY + " - 绑定垃圾箱");
-        tooltip.add(TextFormatting.AQUA + "  K键" + TextFormatting.DARK_GRAY + " - 切换开关");
+        tooltip.add(TextFormatting.AQUA + "  K键" + TextFormatting.DARK_GRAY + " - 切换所有戒指开关");
         tooltip.add(TextFormatting.AQUA + "  工作台" + TextFormatting.DARK_GRAY + " - 切换密封模式");
 
         // 显示绑定目标类型
@@ -246,6 +334,40 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (fe >= 1_000_000) return String.format("%.1fM", fe / 1_000_000.0);
         if (fe >= 1_000) return String.format("%.1fK", fe / 1_000.0);
         return String.valueOf(fe);
+    }
+
+    /**
+     * 构建优先度显示文本
+     * 根据玩家实际拥有的背包类型显示对应的优先度配置
+     * 优先度配置的本质是：背包 vs 绑定箱
+     *
+     * @param hasUsefulBackpacks 是否有实用背包
+     * @param hasWearableBackpacks 是否有可穿戴背包
+     * @return 优先度显示文本
+     */
+    private static String buildPriorityText(boolean hasUsefulBackpacks, boolean hasWearableBackpacks) {
+        boolean usefulPrefer = com.rsring.config.RsRingConfig.usefulBackpacksCompat.preferBackpacks;
+        boolean wearablePrefer = com.rsring.config.RsRingConfig.wearableBackpacksCompat.preferBackpacks;
+
+        // 只有实用背包
+        if (hasUsefulBackpacks && !hasWearableBackpacks) {
+            return usefulPrefer ? "背包" : "吸收箱";
+        }
+
+        // 只有可穿戴背包
+        if (!hasUsefulBackpacks && hasWearableBackpacks) {
+            return wearablePrefer ? "背包" : "吸收箱";
+        }
+
+        // 两种背包都有：只要有一个配置了优先背包，就显示"背包"
+        if (hasUsefulBackpacks && hasWearableBackpacks) {
+            // 任一背包配置为优先，则整体优先背包
+            boolean anyPreferBackpacks = usefulPrefer || wearablePrefer;
+            return anyPreferBackpacks ? "背包" : "吸收箱";
+        }
+
+        // 默认情况（不应该发生）
+        return "吸收箱";
     }
 
     public static int getEnergyCostPerItem() {
@@ -943,6 +1065,12 @@ public class ItemAbsorbRing extends Item implements IBauble {
         World trashWorld = capability.getTrashCanWorld();
         BlockPos trashPos = capability.getTrashCanPos();
 
+        // 维度未加载时尝试重新获取世界对象
+        if (trashWorld == null) {
+            int dim = capability.getTrashCanDimension();
+            trashWorld = DimensionManager.getWorld(dim);
+        }
+
         if (trashWorld == null || trashPos == null) return false;
 
         // 强制加载区块（与吸收箱保持一致）
@@ -975,6 +1103,12 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         World trashWorld = capability.getTrashCanWorld();
         BlockPos trashPos = capability.getTrashCanPos();
+
+        // 维度未加载时尝试重新获取世界对象
+        if (trashWorld == null) {
+            int dim = capability.getTrashCanDimension();
+            trashWorld = DimensionManager.getWorld(dim);
+        }
 
         if (trashWorld == null || trashPos == null) return 0;
 

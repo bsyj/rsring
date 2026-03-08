@@ -355,47 +355,90 @@ public class GuiExperiencePumpController extends GuiScreen {
         animatedTankCountColor = colorLine5;
     }
 
+    // 颜色过渡相关常量 - 扩大过渡范围避免临界跳变
+    private static final float COLOR_TRANSITION_START = 0.05f; // 5%开始过渡（原来是10%）
+    private static final float COLOR_TRANSITION_END = 0.35f;   // 35%结束过渡（原来是25%）
+    
+    // 颜色定义
+    private static final int COLOR_LOW_XP = 0xFFFF6600;  // 低经验：橙红色
+    private static final int COLOR_HIGH_XP = 0xFF7EFF05; // 高经验：绿色
+
+    /**
+     * 在两种颜色之间进行线性插值
+     * @param color1 起始颜色
+     * @param color2 目标颜色
+     * @param factor 插值因子 (0.0 - 1.0)
+     * @return 插值后的颜色
+     */
+    private int lerpColor(int color1, int color2, float factor) {
+        int r1 = (color1 >> 16) & 0xFF;
+        int g1 = (color1 >> 8) & 0xFF;
+        int b1 = color1 & 0xFF;
+        
+        int r2 = (color2 >> 16) & 0xFF;
+        int g2 = (color2 >> 8) & 0xFF;
+        int b2 = color2 & 0xFF;
+        
+        int r = (int) (r1 + (r2 - r1) * factor);
+        int g = (int) (g1 + (g2 - g1) * factor);
+        int b = (int) (b1 + (b2 - b1) * factor);
+        
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
     /**
      * 绘制经验存储进度条
      * 当经验值较少时，采用最小可见宽度策略确保用户能看到
+     * 颜色会根据经验比例平滑过渡，避免突兀的颜色跳变
      */
     private void drawXpProgressBar() {
         int barX = guiLeft + 8;
         int barY = guiTop + 68;  // 操作按钮下方，文字上方
         int barWidth = 160;      // 进度条宽度
         int barHeight = 16;      // 进度条高度（加高）
-        int minVisibleWidth = 8; // 最小可见宽度（像素）
+        int minVisibleWidth = 2; // 最小可见宽度（像素）- 仅用于显示"有经验"状态，避免与正常减少冲突
 
         // 绘制进度条背景
         drawRect(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
 
         // 计算进度 - 使用总容量
         float progress = totalCapacity > 0 ? (float) totalStored / totalCapacity : 0;
-        float lowEnergyThreshold = 0.1f; // 10%以下视为低经验
         
-        // 计算填充宽度：当有经验时，确保至少显示最小可见宽度
+        // 计算填充宽度：确保经验条不会跳回且始终可见
+        // 计算实际比例宽度
+        int actualWidth = Math.max(0, (int) (barWidth * progress));
+        // 当有经验但计算宽度小于最小可见宽度时，显示最小可见宽度
         int fillWidth;
-        boolean isLowEnergy = progress > 0 && progress < lowEnergyThreshold;
-        if (totalStored > 0 && isLowEnergy) {
-            // 经验值太少时，使用最小可见宽度
+        if (totalStored > 0 && actualWidth < minVisibleWidth) {
             fillWidth = minVisibleWidth;
         } else {
-            fillWidth = Math.max(1, (int) (barWidth * progress));
+            fillWidth = actualWidth;
         }
 
-        // 绘制进度条填充（带动态效果）
+        // 先绘制边框（灰色边框）- 放在填充之前，避免覆盖填充
+        int borderColor = 0xFF888888;
+        drawRect(barX, barY, barX + 1, barY + barHeight, borderColor); // 左边框
+        drawRect(barX + barWidth - 1, barY, barX + barWidth, barY + barHeight, borderColor); // 右边框
+        drawRect(barX, barY, barX + barWidth, barY + 1, borderColor); // 上边框
+        drawRect(barX, barY + barHeight - 1, barX + barWidth, barY + barHeight, borderColor); // 下边框
+
+        // 绘制进度条填充（带动态效果）- 在边框之后绘制，覆盖边框内部
         if (totalStored > 0) {
             long t = System.currentTimeMillis();
             
-            // 根据是否使用最小宽度调整颜色
-            int baseColor;
-            if (isLowEnergy) {
-                // 低经验时用橙红色提示，更醒目
-                baseColor = 0xFFFF6600;
+            // 根据经验比例计算基础颜色（平滑过渡）
+            float transitionFactor;
+            if (progress <= COLOR_TRANSITION_START) {
+                transitionFactor = 0.0f; // 纯低经验色
+            } else if (progress >= COLOR_TRANSITION_END) {
+                transitionFactor = 1.0f; // 纯高经验色
             } else {
-                // 正常绿色
-                baseColor = 0xFF7EFF05;
+                // 在过渡范围内进行线性插值
+                transitionFactor = (progress - COLOR_TRANSITION_START) / (COLOR_TRANSITION_END - COLOR_TRANSITION_START);
             }
+            
+            // 从橙红色过渡到绿色
+            int baseColor = lerpColor(COLOR_LOW_XP, COLOR_HIGH_XP, transitionFactor);
             
             // 动态效果1：光泽流动（从左到右的光带）
             int shinePos = (int) ((t / 10) % (fillWidth + 40)) - 20;  // 光带位置
@@ -405,7 +448,10 @@ public class GuiExperiencePumpController extends GuiScreen {
             float pulse = (float) Math.sin(t / 300.0) * 0.15f + 0.85f;  // 0.7~1.0
             
             // 逐像素绘制，实现光泽流动效果
-            for (int x = 0; x < fillWidth; x++) {
+            // 从x=1开始绘制，避免覆盖左边框；绘制到barWidth-1，避免覆盖右边框
+            int startX = 1; // 跳过左边框
+            int endX = Math.min(fillWidth, barWidth - 1); // 不超过右边框
+            for (int x = startX; x < endX; x++) {
                 // 计算当前像素的亮度
                 float brightness = pulse;
                 
@@ -423,16 +469,10 @@ public class GuiExperiencePumpController extends GuiScreen {
                 int b = (int) Math.min(255, (baseColor & 0xFF) * brightness);
                 int pixelColor = 0xFF000000 | (r << 16) | (g << 8) | b;
                 
-                drawRect(barX + x, barY, barX + x + 1, barY + barHeight, pixelColor);
+                // 在边框内部绘制，y坐标也避开上下边框
+                drawRect(barX + x, barY + 1, barX + x + 1, barY + barHeight - 1, pixelColor);
             }
         }
-
-        // 绘制边框（灰色边框）
-        int borderColor = 0xFF888888;
-        drawRect(barX, barY, barX + 1, barY + barHeight, borderColor); // 左边框
-        drawRect(barX + barWidth - 1, barY, barX + barWidth, barY + barHeight, borderColor); // 右边框
-        drawRect(barX, barY, barX + barWidth, barY + 1, borderColor); // 上边框
-        drawRect(barX, barY + barHeight - 1, barX + barWidth, barY + barHeight, borderColor); // 下边框
 
         // 跑马灯流星效果 - 双流星沿边框循环移动
         long t = System.currentTimeMillis();

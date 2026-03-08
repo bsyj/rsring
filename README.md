@@ -4,7 +4,7 @@
 
 ![Mod Banner](src/main/resources/assets/rsring/textures/items/mod_banner.png)
 
-**版本**: 1.4.0  
+**版本**: 1.3.3  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
 **作者**: bsyj
@@ -31,10 +31,14 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 ### ✨ 核心特性
 
 - 🔄 **智能物品吸收** - 自动收集周围掉落物，支持跨维度传输
-- 💾 **经验存储管理** - 存储和管理玩家经验，支持容量升级
+- �️ **智能销毁系统** - 自动清理垃圾物品，支持黑白名单过滤
+- 🔍 **属性过滤** - 类似机械动力的属性过滤器，支持多种物品属性匹配
+- � **经验存储管理** - 存储和管理玩家经验，支持容量升级
 - 🎛️ **统一控制器** - 批量管理所有经验储罐，简化操作流程
 - 🌐 **RS网络集成** - 直接与Refined Storage网络对接
 - 🎮 **饰品栏支持** - 完整兼容Baubles饰品系统
+- ⚡ **移动发电** - 走路、飞行、游泳等动作可为戒指充能
+- 🎁 **彩蛋系统** - 特殊彩蛋戒指和储罐，带有额外属性加成
 - ⚙️ **高度可配置** - 丰富的配置选项，自定义功能行为
 - 🔒 **数据安全** - 升级不丢失经验，跨维度物品传送
 
@@ -57,20 +61,64 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - 吸收范围：8格（可配置）
 - 吸收间隔：5 tick（可配置）
 - 能量消耗：1 FE/物品（可配置）
-- 最大能量：10,000,000 FE（可配置）
+- 最大能量：100,000 FE（默认，可配置范围1,000-10,000,000）
 - 过滤槽数量：9个（有默认黑白名单）
+- 支持三种过滤模式：物品ID / 模组 / 属性
+
+### 销毁模式
+
+**主要功能：**
+- 自动清理背包模组背包内的垃圾物品
+- 独立的黑白名单过滤系统
+- 支持三种销毁类型：
+  - **DESTROY**: 直接销毁匹配的物品
+  - **TRASH_CAN**: 优先送入垃圾箱，满了再销毁
+  - **STORAGE_OVERFLOW**: 只在吸收新物品时处理溢出
+- 支持属性过滤（如销毁所有泥土类物品）
+- 每秒自动检查一次
+
+**使用方式：**
+- 在戒指GUI中开启销毁模式
+- 配置销毁黑白名单（独立于吸收黑白名单）
+- 选择销毁类型
+- 可选择是否仅在饰品栏佩戴时生效（严格模式）
+
+### 属性过滤系统
+
+**支持的属性类型：**
+- **标准特性** - 食物、工具、武器、装备、方块等基础分类
+- **行为标签** - 类似1.20.x的minecraft:piglin_loved等标签
+- **模组来源** - 按模组ID过滤
+- **创造模式标签页** - 按创造栏分类
+- **矿物词典** - 按OreDict标签过滤
+- **NBT数据** - 匹配特定NBT标签
+- **附魔** - 按附魔类型和等级
+- **颜色** - 按物品颜色
+- **物品名称** - 按自定义名称
+- **物品类型** - 按物品注册类型
+- **书籍作者** - 按成书作者
+- **书籍复制状态** - 原版/复制/副本
+- **流体内容** - 按容器内流体
+- **潜影盒填充等级** - 按填充程度
+- **冒险模组分类** - RLCraft等冒险模组专用标签
+
+**使用方法：**
+- 在戒指GUI中切换至"属性"过滤模式
+- 从物品属性列表中选择要过滤的属性
+- 支持组合多个属性条件
 
 ### 经验储罐系统
 
 **储罐类型：**
 
-| 储罐名称 | 容量 | 可升级 |
-|---------|------|--------|
-| 经验泵（基础） | 1000 XP × 2^(等级-1) | ✅ |
-| 100级储罐 | 30,970 XP | ❌ |
-| 500级储罐 | 1,045,970 XP | ❌ |
-| 1000级储罐 | 4,339,720 XP | ❌ |
-| 2000级储罐 | 17,677,220 XP | ❌ |
+| 储罐名称 | 容量 | 可升级 | 彩蛋版本 |
+|---------|------|--------|----------|
+| 经验泵（基础） | 1000 XP × 2^(等级-1) | ✅ | ❌ |
+| 100级储罐 | 30,970 XP | ❌ | ✅ (+1幸运) |
+| 500级储罐 | 1,045,970 XP | ❌ | ❌ |
+| 1000级储罐 | 4,339,720 XP | ❌ | ❌ |
+| 2000级储罐 | 17,677,220 XP | ❌ | ❌ |
+| 10000级储罐 | 448,377,220 XP | ❌ | ✅ (+5幸运) |
 
 **核心功能：**
 - 三种工作模式：关闭 / 从玩家抽 / 向玩家注
@@ -80,6 +128,43 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - 溢出保护（满时转化为经验瓶）
 - 动态纹理显示（5种填充等级）
 - 升级时经验完整保留
+
+### 彩蛋系统
+
+**彩蛋戒指**：
+- 特殊名称："至尊狂傲暴龙灭杀战神"
+- 装备时提供 +5 幸运值
+- 显示特殊发光效果
+- 在铁砧上重命名普通戒指有概率获得
+
+**彩蛋储罐**：
+- 100级彩蛋储罐：装备时 +1 幸运值
+- 10000级彩蛋储罐：装备时 +5 幸运值
+- 显示特殊发光效果和标识
+- 通过特殊合成或事件获得
+
+### 移动发电系统
+
+**功能说明：**
+戒指可通过玩家移动自动充能，无需外部充电设备
+
+**发电方式：**
+| 移动类型 | 发电量 | 说明 |
+|---------|--------|------|
+| 走路 | 1 FE | 基础移动 |
+| 疾跑 | 2 FE | 快速移动 |
+| 飞行 | 2 FE | 创造模式或模组飞行 |
+| 游泳 | 2 FE | 水中移动 |
+| 跳跃 | 3 FE | 每次跳跃 |
+| 坠落 | 1 FE | 自由落体 |
+| 骑乘 | 1 FE | 骑马/矿车等 |
+| 攀爬 | 2 FE | 爬梯子/藤蔓 |
+
+**配置选项：**
+- 可启用/禁用移动发电
+- 可调整发电间隔（默认每20 tick）
+- 可设置最小移动距离阈值
+- 各移动类型发电量可独立配置
 
 **经验计算公式（遵循Minecraft官方）：**
 - 0-15级：`level × (12 + level × 2) / 2`
@@ -150,8 +235,9 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 
 #### 5. 充能
 - 使用任何FE充能器为戒指充电
-- 最大容量：10M FE
+- 最大容量：100,000 FE（默认，可配置）
 - 也可通过手摇充电：潜行+右键空气
+- **移动发电**：走路、疾跑、飞行、游泳等动作可自动为戒指充能
 
 ### 经验储罐系统
 
@@ -215,7 +301,7 @@ absorptionRange=8
 energyCostPerItem=1
 
 # 最大能量容量（FE）
-maxEnergyCapacity=10000000
+maxEnergyCapacity=100000
 
 # 允许自定义过滤
 allowCustomFilters=true
@@ -298,6 +384,67 @@ xpMendingEfficiency=1.0
 maxManagedTanks=32
 ```
 
+### 销毁模式配置
+
+```properties
+# 默认销毁黑名单物品
+destroyDefaultBlacklistItems=[]
+
+# 默认销毁白名单物品
+destroyDefaultWhitelistItems=[]
+
+# 默认使用销毁黑名单模式
+destroyUseBlacklistModeByDefault=true
+
+# 强制销毁模式只能使用白名单（安全选项）
+destroyWhitelistOnly=true
+```
+
+### 移动发电配置
+
+```properties
+# 启用移动发电
+enableMovementGeneration=true
+
+# 移动发电间隔（tick）
+movementGenerationInterval=20
+
+# 最小移动距离阈值
+movementMinDistance=0.5
+
+# 各种移动方式的发电量
+energyPerWalk=1        # 走路
+energyPerSprint=2      # 疾跑
+energyPerFly=2         # 飞行
+energyPerSwim=2        # 游泳
+energyPerJump=3        # 跳跃
+energyPerFall=1        # 坠落
+energyPerRide=1        # 骑乘
+energyPerClimb=2       # 攀爬
+```
+
+### 其他配置
+
+```properties
+# 严格模式：只有戴在饰品栏才能使用
+strictMode=false
+
+# 低电量提醒阈值（百分比，0-100）
+lowEnergyWarningThreshold=5
+
+# 低电量提醒冷却时间（秒）
+lowEnergyWarningCooldown=180
+
+# 是否启用低电量提醒
+enableLowEnergyWarning=true
+
+# 创造模式是否不消耗电量
+creativeModeNoEnergyCost=true
+
+# 新合成的戒指默认是否密封
+blockExternalCharging=true
+```
+
 ### 配置界面访问
 
 1. 启动游戏并进入主菜单
@@ -336,36 +483,99 @@ maxManagedTanks=32
 src/main/java/com/rsring/
 ├── capability/           # 能力系统实现
 │   ├── IRsRingCapability
-│   └── IExperiencePumpCapability
+│   ├── RsRingCapability
+│   ├── IExperiencePumpCapability
+│   ├── ExperiencePumpCapability
+│   ├── DestroyModeType
+│   └── DestroyModeCapability
 ├── client/              # GUI和渲染
-│   ├── gui/
-│   └── render/
+│   ├── GuiRsRingConfig
+│   ├── GuiRingFilterContainer
+│   ├── GuiExperiencePumpController
+│   ├── GuiHandler
+│   ├── GuiFactory
+│   ├── ContainerRingFilter
+│   └── RingBoundBoxRenderer
+├── compat/              # 模组兼容性
+│   ├── CompatManager
+│   ├── inventory/
+│   ├── handler/
+│   ├── usefulbackpacks/
+│   └── wearablebackpacks/
 ├── config/              # 配置管理
+│   ├── ConfigRegistry
 │   ├── RsRingConfig
-│   └── ExperienceTankConfig
+│   ├── ExperienceTankConfig
+│   └── IHasConfig
 ├── crafting/            # 合成配方
+│   ├── RingSealRecipe
+│   └── CustomTankRecipes
+├── destroy/             # 销毁模式
+│   └── DestroyManager
 ├── event/               # 事件处理
 │   ├── CommonEventHandler
+│   ├── ClientInputEvents
 │   ├── CraftingUpgradeHandler
-│   └── InventoryChangeHandler
+│   ├── CraftingExperiencePumpController
+│   ├── InventoryChangeHandler
+│   ├── AnvilEasterEggHandler
+│   └── AnvilTankEasterEggHandler
 ├── experience/          # 经验管理核心
 │   ├── ExperiencePumpController
 │   ├── ExperienceTankManager
-│   └── TankScanResult
+│   ├── ExperienceTankData
+│   ├── TankScanResult
+│   ├── RingDetectionResult
+│   ├── InventoryIntegrationLayer
+│   ├── InventoryChangeHandler
+│   └── InventoryChangeEvent
+├── filter/              # 属性过滤系统
+│   ├── FilterMode
+│   ├── ItemAttribute
+│   ├── AttributeRegistry
+│   └── attribute/       # 各种属性实现
+│       ├── StandardTraits
+│       ├── BehaviorTagAttribute
+│       ├── ModAttribute
+│       ├── OreDictAttribute
+│       ├── NbtAttribute
+│       ├── EnchantAttribute
+│       └── ...
 ├── item/                # 物品实现
 │   ├── ItemAbsorbRing
 │   ├── ItemExperiencePump
-│   └── ItemExperienceTank*
+│   ├── ItemExperiencePumpController
+│   ├── ItemExperienceTank100
+│   ├── ItemExperienceTank500
+│   ├── ItemExperienceTank1000
+│   ├── ItemExperienceTank2000
+│   └── ItemExperienceTank10000
 ├── network/             # 网络数据包
+│   ├── PacketToggleRsRing
+│   ├── PacketSyncRingFilter
+│   ├── PacketSyncModFilter
+│   ├── PacketSyncFilterNBT
+│   ├── PacketSyncAdvancedFilter
+│   ├── PacketSyncDestroyToggle
+│   ├── PacketSyncDestroyModeType
+│   ├── PacketPumpAction
+│   ├── PacketPumpData
+│   └── ...
 ├── proxy/               # 客户端/服务端代理
-├── rsring/             # 主模组类
-├── service/             # 环检测服务
+│   ├── CommonProxy
+│   └── ClientProxy
+├── rsring/              # 主模组类
+│   └── RsRingMod
+├── service/             # 服务层
 │   ├── RingDetectionService
-│   └── RingDetectionSystem
-├── baubles/            # Baubles集成
-└── util/               # 工具类
+│   ├── RingDetectionSystem
+│   └── MovementEnergyGenerator
+└── util/                # 工具类
     ├── XpHelper
-    └── BaublesHelper
+    ├── BaublesHelper
+    ├── Pair
+    ├── EnchantmentCompat
+    └── ItemLocationTracker
 ```
 
 ---
@@ -391,7 +601,7 @@ gradlew genIntellijRuns
 gradlew build
 
 # 构建产物位置
-build/libs/rsring-1.4.0.jar
+build/libs/rsring-1.3.3.jar
 ```
 
 ### 代码规范
@@ -499,7 +709,7 @@ build/libs/rsring-1.4.0.jar
 
 <div align="center">
 
-**Version**: 1.4.0  
+**Version**: 1.3.3  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
 **Author**: bsyj

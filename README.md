@@ -4,7 +4,7 @@
 
 ![Mod Banner](src/main/resources/assets/rsring/textures/items/mod_banner.png)
 
-**版本**: 1.3.3  
+**版本**: 1.7  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
 **作者**: bsyj
@@ -114,7 +114,7 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 | 储罐名称 | 容量 | 可升级 | 彩蛋版本 |
 |---------|------|--------|----------|
 | 经验泵（基础） | 1000 XP × 2^(等级-1) | ✅ | ❌ |
-| 100级储罐 | 30,970 XP | ❌ | ✅ (+1幸运) |
+| 100级储罐 | 30,970 XP | ❌ | ❌ |
 | 500级储罐 | 1,045,970 XP | ❌ | ❌ |
 | 1000级储罐 | 4,339,720 XP | ❌ | ❌ |
 | 2000级储罐 | 17,677,220 XP | ❌ | ❌ |
@@ -135,13 +135,19 @@ RS Rings and Tanks 是一个功能强大的 Minecraft 1.12.2 模组，提供智�
 - 特殊名称："至尊狂傲暴龙灭杀战神"
 - 装备时提供 +5 幸运值
 - 显示特殊发光效果
-- 在铁砧上重命名普通戒指有概率获得
+- 合成方式：吸收戒指 + 樱花模组维度物品（sakura:sakuradimension）在铁砧上合成
+- 消耗：10级经验 + 1个樱花维度物品
 
 **彩蛋储罐**：
-- 100级彩蛋储罐：装备时 +1 幸运值
-- 10000级彩蛋储罐：装备时 +5 幸运值
+- 10000级彩蛋储罐特殊名称："苍穹狂傲魔龙弑神战帝"
+- 装备时提供 +5 幸运值
 - 显示特殊发光效果和标识
-- 通过特殊合成或事件获得
+- 合成方式：10000级经验储罐 + 樱花模组维度物品在铁砧上合成
+- 消耗：10级经验 + 1个樱花维度物品
+
+**注意事项**：
+- 彩蛋物品觉醒时会清除自定义名称
+- 需要安装樱花模组（Sakura）才能合成彩蛋物品
 
 ### 移动发电系统
 
@@ -601,7 +607,7 @@ gradlew genIntellijRuns
 gradlew build
 
 # 构建产物位置
-build/libs/rsring-1.3.3.jar
+build/libs/rsring-1.7.jar
 ```
 
 ### 代码规范
@@ -709,7 +715,7 @@ build/libs/rsring-1.3.3.jar
 
 <div align="center">
 
-**Version**: 1.3.3  
+**Version**: 1.7  
 **Minecraft**: 1.12.2  
 **Forge**: 14.23.5.2847+  
 **Author**: bsyj
@@ -723,10 +729,14 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 ### ✨ Core Features
 
 - 🔄 **Smart Item Absorption** - Automatically collect dropped items, supports cross-dimensional transport
-- 💾 **Experience Storage Management** - Store and manage player experience, supports capacity upgrades
+- �️ **Smart Destroy System** - Auto cleanup trash items with black/white list filtering
+- 🔍 **Attribute Filtering** - Create-style attribute filter supporting 15+ item attributes
+- � **Experience Storage Management** - Store and manage player experience, supports capacity upgrades
 - 🎛️ **Unified Controller** - Batch manage all experience tanks, simplify operations
 - 🌐 **RS Network Integration** - Direct integration with Refined Storage network
 - 🎮 **Baubles Support** - Full compatibility with Baubles accessory system
+- ⚡ **Movement Energy Generation** - Walking, flying, swimming etc. can charge the ring
+- 🎁 **Easter Egg System** - Special Easter Egg ring and tank with extra attributes
 - ⚙️ **Highly Configurable** - Rich configuration options, customize behavior
 - 🔒 **Data Safety** - Experience preserved during upgrades, cross-dimensional item transport
 
@@ -741,28 +751,31 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 - Black/white list filtering system (9 filter slots)
 - Supports binding to RS controllers and regular chests
 - Cross-dimensional item transport
-- FE energy powered (max 10M FE)
+- FE energy powered (max 100K FE default, configurable)
 - Quick toggle with K key
 - Works in inventory, hand, or Baubles slots
+- Movement energy generation - walking, flying, swimming etc. can charge the ring
 
 **Technical Specs:**
 - Absorption range: 8 blocks (configurable)
 - Absorption interval: 5 ticks (configurable)
 - Energy cost: 1 FE/item (configurable)
-- Max energy: 10,000,000 FE (configurable)
+- Max energy: 100,000 FE (default, configurable range 1,000-10,000,000)
 - Filter slots: 9 (has default black/white list)
+- Supports three filter modes: Item ID / Mod / Attribute
 
 ### Experience Tank System
 
 **Tank Types:**
 
-| Tank Name | Capacity | Upgradeable |
-|-----------|----------|-------------|
-| Experience Pump (Base) | 1000 XP × 2^(level-1) | ✅ |
-| 100 Level Tank | 30,970 XP | ❌ |
-| 500 Level Tank | 1,045,970 XP | ❌ |
-| 1000 Level Tank | 4,339,720 XP | ❌ |
-| 2000 Level Tank | 17,677,220 XP | ❌ |
+| Tank Name | Capacity | Upgradeable | Easter Egg |
+|-----------|----------|-------------|------------|
+| Experience Pump (Base) | 1000 XP × 2^(level-1) | ✅ | ❌ |
+| 100 Level Tank | 30,970 XP | ❌ | ❌ |
+| 500 Level Tank | 1,045,970 XP | ❌ | ❌ |
+| 1000 Level Tank | 4,339,720 XP | ❌ | ❌ |
+| 2000 Level Tank | 17,677,220 XP | ❌ | ❌ |
+| 10000 Level Tank | 448,377,220 XP | ❌ | ✅ (+5 Luck) |
 
 **Core Features:**
 - Three working modes: Off / Extract from Player / Inject to Player
@@ -772,6 +785,49 @@ RS Rings and Tanks is a powerful Minecraft 1.12.2 mod that provides intelligent 
 - Overflow protection (convert to bottles when full)
 - Dynamic texture display (5 fill levels)
 - Experience preserved during upgrades
+
+### Easter Egg System
+
+**Easter Egg Ring**:
+- Special name: "至尊狂傲暴龙灭杀战神" (Supreme Arrogant Dragon Slayer War God)
+- Provides +5 Luck when equipped
+- Shows special enchantment glow effect
+- Crafting: Absorb Ring + Sakura mod dimension item (sakura:sakuradimension) in Anvil
+- Cost: 10 XP levels + 1 Sakura dimension item
+
+**Easter Egg Tank**:
+- 10000 Level Easter Egg Tank special name: "苍穹狂傲魔龙弑神战帝" (Sky Arrogant Demon Dragon God Slayer Emperor)
+- Provides +5 Luck when equipped
+- Shows special enchantment glow effect and标识
+- Crafting: 10000 Level Experience Tank + Sakura mod dimension item in Anvil
+- Cost: 10 XP levels + 1 Sakura dimension item
+
+**Notes**:
+- Easter Egg items will clear custom names when awakened
+- Sakura mod is required to craft Easter Egg items
+
+### Movement Energy Generation System
+
+**Function Description:**
+The ring can be automatically charged through player movement without external charging devices.
+
+**Energy Generation Methods:**
+| Movement Type | Energy | Description |
+|---------------|--------|-------------|
+| Walking | 1 FE | Basic movement |
+| Sprinting | 2 FE | Fast movement |
+| Flying | 2 FE | Creative mode or mod flight |
+| Swimming | 2 FE | Water movement |
+| Jumping | 3 FE | Each jump |
+| Falling | 1 FE | Free fall |
+| Riding | 1 FE | Horse/minecart etc. |
+| Climbing | 2 FE | Ladder/vine climbing |
+
+**Configuration Options:**
+- Enable/disable movement energy generation
+- Adjust generation interval (default every 20 ticks)
+- Set minimum movement distance threshold
+- Independent configuration for each movement type
 
 **Experience Formula (Minecraft Official):**
 - 0-15 levels: `level × (12 + level × 2) / 2`
@@ -1037,7 +1093,7 @@ gradlew genIntellijRuns
 gradlew build
 
 # Build output location
-build/libs/rsring-1.4.0.jar
+build/libs/rsring-1.7.jar
 ```
 
 ### Code Standards

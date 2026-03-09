@@ -278,7 +278,9 @@ public class NbtBatchProcessor {
                         op.callback.run();
                     }
                 } catch (Exception e) {
-                    LOGGER.error("NBT操作失败: {} - {}", op.type, e.getMessage());
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("NBT操作失败: {} - {}", op.type, e.getMessage());
+                    }
                 }
             }
 
@@ -287,13 +289,15 @@ public class NbtBatchProcessor {
             pendingBatches.decrementAndGet();
 
             // 记录性能
-            if (duration > 10_000_000) { // 超过10ms
+            if (duration > 10_000_000 && LOGGER.isWarnEnabled()) { // 超过10ms
                 LOGGER.warn("NBT批处理耗时过长: {} ms, 操作数: {}", 
                     duration / 1_000_000.0, batch.size());
             }
 
         } catch (Exception e) {
-            LOGGER.error("NBT批处理失败", e);
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("NBT批处理失败", e);
+            }
             pendingBatches.decrementAndGet();
         }
     }

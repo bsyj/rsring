@@ -194,7 +194,9 @@ public class NbtOptimizationManager {
         int usedPercent = (int) ((usedMemory * 100) / maxMemory);
 
         if (usedPercent > HIGH_MEMORY_THRESHOLD_PERCENT) {
-            LOGGER.warn("内存压力过高: {}%，执行紧急清理", usedPercent);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("内存压力过高: {}%，执行紧急清理", usedPercent);
+            }
 
             // 清理缓存
             nbtCache.clear();
@@ -205,7 +207,9 @@ public class NbtOptimizationManager {
             // 建议GC
             System.gc();
 
-            LOGGER.info("紧急清理完成");
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("紧急清理完成");
+            }
         }
     }
 
@@ -214,6 +218,9 @@ public class NbtOptimizationManager {
      */
     private void logStats() {
         if (!enabled.get()) return;
+
+        // 只在INFO级别启用时才收集统计
+        if (!LOGGER.isInfoEnabled()) return;
 
         // 对象池统计
         NbtObjectPool.PoolStats poolStats = NbtObjectPool.getStats();
@@ -232,16 +239,19 @@ public class NbtOptimizationManager {
         long optimized = optimizedOperations.get();
         double optimizeRate = total > 0 ? (optimized / (double) total) * 100 : 0;
 
-        LOGGER.info("=== NBT优化统计 ===");
-        LOGGER.info("对象池: {}", poolStats);
-        LOGGER.info("智能缓存: {}", cacheStats);
-        LOGGER.info("批处理器: {}", batchStats);
-        LOGGER.info("包装器: {}", wrapperStats);
-        LOGGER.info("总体优化率: {:.1f}%", optimizeRate);
-        LOGGER.info("===================");
+        // 使用StringBuilder批量输出，减少锁竞争
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("=== NBT优化统计 ===\n");
+        sb.append("对象池: ").append(poolStats).append('\n');
+        sb.append("智能缓存: ").append(cacheStats).append('\n');
+        sb.append("批处理器: ").append(batchStats).append('\n');
+        sb.append("包装器: ").append(wrapperStats).append('\n');
+        sb.append(String.format("总体优化率: %.1f%%\n", optimizeRate));
+        sb.append("===================");
+        LOGGER.info(sb.toString());
 
         // 如果命中率低，调整策略
-        if (cacheStats.hitRate < 50 && cacheStats.hits > 1000) {
+        if (cacheStats.hitRate < 50 && cacheStats.hits > 1000 && LOGGER.isWarnEnabled()) {
             LOGGER.warn("缓存命中率过低，建议检查缓存策略");
         }
     }

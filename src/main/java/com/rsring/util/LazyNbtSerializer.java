@@ -144,7 +144,7 @@ public class LazyNbtSerializer {
         serializeCount.incrementAndGet();
         
         long duration = System.nanoTime() - startTime;
-        if (duration > 1_000_000) { // 超过1ms记录警告
+        if (duration > 1_000_000 && LOGGER.isWarnEnabled()) { // 超过1ms记录警告
             LOGGER.warn("NBT序列化耗时过长: {} ms", duration / 1_000_000.0);
         }
         

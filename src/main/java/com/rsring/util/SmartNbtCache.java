@@ -392,7 +392,9 @@ public class SmartNbtCache<K> {
         if (evicted > 0) {
             evictionCount.addAndGet(evicted);
             currentSize.addAndGet(-evicted);
-            LOGGER.debug("SmartNbtCache[{}] 清理完成，淘汰 {} 个条目", name, evicted);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("SmartNbtCache[{}] 清理完成，淘汰 {} 个条目", name, evicted);
+            }
         }
     }
 

@@ -44,7 +44,9 @@ public class NbtObjectPool {
         for (int i = 0; i < INITIAL_SIZE; i++) {
             pool.offer(new NBTTagCompound());
         }
-        LOGGER.debug("NBT对象池初始化完成，预创建 {} 个对象", INITIAL_SIZE);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("NBT对象池初始化完成，预创建 {} 个对象", INITIAL_SIZE);
+        }
     }
     
     /**

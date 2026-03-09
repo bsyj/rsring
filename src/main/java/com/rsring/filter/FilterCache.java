@@ -1,5 +1,7 @@
 package com.rsring.filter;
 
+import com.rsring.util.NbtHashCache;
+import com.rsring.util.NbtMatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -75,6 +77,9 @@ public class FilterCache {
     // NBT模板缓存 - 存储过滤槽位的NBT数据
     private Map<Integer, NBTTagCompound> nbtTemplateCache = Collections.emptyMap();
     
+    // 预编译的NBT匹配器缓存 - 优化NBT匹配性能
+    private Map<Integer, NbtMatcher> nbtMatcherCache = Collections.emptyMap();
+    
     // 缓存是否有效
     private boolean valid = false;
     
@@ -121,8 +126,21 @@ public class FilterCache {
         // 构建NBT模板缓存
         if (nbtTemplates != null && !nbtTemplates.isEmpty()) {
             this.nbtTemplateCache = new HashMap<>(nbtTemplates);
+            // 预编译NBT匹配器
+            Map<Integer, NbtMatcher> matchers = new HashMap<>();
+            for (Map.Entry<Integer, NBTTagCompound> entry : nbtTemplates.entrySet()) {
+                NBTTagCompound template = entry.getValue();
+                if (template != null && !template.isEmpty()) {
+                    NbtMatcher matcher = NbtMatcher.getMatcher(template);
+                    if (matcher != null) {
+                        matchers.put(entry.getKey(), matcher);
+                    }
+                }
+            }
+            this.nbtMatcherCache = matchers;
         } else {
             this.nbtTemplateCache = Collections.emptyMap();
+            this.nbtMatcherCache = Collections.emptyMap();
         }
         
         this.valid = true;
@@ -177,18 +195,38 @@ public class FilterCache {
         
         lastAccessTime = System.currentTimeMillis();
         
-        for (NBTTagCompound template : nbtTemplateCache.values()) {
-            if (template == null || template.isEmpty()) continue;
-            
-            if (matchPartial) {
-                // 部分匹配：模板中的每个键值对都必须在物品NBT中存在且相等
-                if (isPartialMatch(template, itemNbt)) {
-                    return true;
+        // 优先使用预编译的NBT匹配器（性能优化）
+        if (!nbtMatcherCache.isEmpty()) {
+            for (NbtMatcher matcher : nbtMatcherCache.values()) {
+                if (matcher == null) continue;
+                
+                if (matchPartial) {
+                    // 使用预编译匹配器进行部分匹配
+                    if (matcher.matchesPartial(itemNbt)) {
+                        return true;
+                    }
+                } else {
+                    // 使用预编译匹配器进行完全匹配
+                    if (matcher.matchesExact(itemNbt)) {
+                        return true;
+                    }
                 }
-            } else {
-                // 完全匹配：NBT必须完全相同
-                if (template.equals(itemNbt)) {
-                    return true;
+            }
+        } else {
+            // 回退到传统匹配方式
+            for (NBTTagCompound template : nbtTemplateCache.values()) {
+                if (template == null || template.isEmpty()) continue;
+                
+                if (matchPartial) {
+                    // 部分匹配：模板中的每个键值对都必须在物品NBT中存在且相等
+                    if (isPartialMatch(template, itemNbt)) {
+                        return true;
+                    }
+                } else {
+                    // 完全匹配：使用NbtHashCache加速
+                    if (NbtHashCache.fastEquals(template, itemNbt)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -197,7 +235,8 @@ public class FilterCache {
     }
     
     /**
-     * 检查模板是否是目标NBT的子集
+     * 检查模板是否是目标NBT的子集（传统递归方式）
+     * 保留此方法作为回退方案
      */
     private boolean isPartialMatch(NBTTagCompound template, NBTTagCompound target) {
         for (String key : template.getKeySet()) {
@@ -226,6 +265,7 @@ public class FilterCache {
         this.itemIdCache = Collections.emptySet();
         this.modIdCache = Collections.emptySet();
         this.nbtTemplateCache = Collections.emptyMap();
+        this.nbtMatcherCache = Collections.emptyMap();
     }
     
     /**

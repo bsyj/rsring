@@ -1,5 +1,6 @@
 package com.rsring.util;
 
+import com.rsring.filter.attribute.NbtAttribute;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -7,356 +8,355 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * NBT优化管理器 - 整合所有NBT优化组件
+ * NBT优化管理器 - 统一管理和监控所有NBT优化组件
  *
- * 原理：
- * 1. 统一管理所有NBT优化组件
- * 2. 自动监控性能指标
- * 3. 动态调整优化策略
- * 4. 提供统一的NBT操作接口
- * 5. 自动清理和内存管理
+ * 核心职责：
+ * 1. 协调各个NBT优化组件
+ * 2. 监控内存使用情况
+ * 3. 在内存压力下触发清理
+ * 4. 收集性能指标
+ * 5. 提供统一的配置接口
  *
- * 性能收益：
- * - 综合性能提升100倍以上
- * - 内存使用减少70%
- * - GC停顿时间减少90%
+ * 优化策略：
+ * - 内存使用率>80%：减少缓存大小
+ * - 内存使用率>90%：清空所有缓存
+ * - 定期清理过期数据
+ * - 动态调整池大小
  */
 public class NbtOptimizationManager {
 
     private static final Logger LOGGER = LogManager.getLogger(NbtOptimizationManager.class);
 
-    // 单例
-    private static volatile NbtOptimizationManager instance;
-    private static final Object lock = new Object();
+    // 单例实例
+    private static NbtOptimizationManager INSTANCE;
 
-    // 智能缓存实例
-    private final SmartNbtCache<String> nbtCache;
+    // 性能指标
+    private final AtomicLong totalNbtOperations = new AtomicLong(0);
+    private final AtomicLong cacheHits = new AtomicLong(0);
+    private final AtomicLong cacheMisses = new AtomicLong(0);
+    private final AtomicLong pooledObjectsCreated = new AtomicLong(0);
+    private final AtomicLong pooledObjectsReused = new AtomicLong(0);
 
-    // 监控线程
-    private final ScheduledExecutorService monitorExecutor;
+    // 内存监控
+    private final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    private volatile long lastMemoryCheck = 0;
+    private volatile int lastMemoryUsagePercent = 0;
 
-    // 运行状态
-    private final AtomicBoolean enabled = new AtomicBoolean(true);
+    // 定时任务执行器
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "NbtOptimization-Scheduler");
+        t.setDaemon(true);
+        return t;
+    });
 
-    // 统计
-    private final AtomicLong totalOperations = new AtomicLong(0);
-    private final AtomicLong optimizedOperations = new AtomicLong(0);
-
-    // 性能阈值
-    private static final long SLOW_OPERATION_THRESHOLD_NS = 1_000_000; // 1ms
-    private static final int HIGH_MEMORY_THRESHOLD_PERCENT = 80;
-
-    public static NbtOptimizationManager getInstance() {
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new NbtOptimizationManager();
-                }
-            }
-        }
-        return instance;
-    }
+    // 配置参数
+    private volatile boolean autoCleanupEnabled = true;
+    private volatile int memoryThresholdHigh = 80; // 80%
+    private volatile int memoryThresholdCritical = 90; // 90%
+    private volatile long cleanupIntervalMs = 30000; // 30秒
 
     private NbtOptimizationManager() {
-        this.nbtCache = new SmartNbtCache<>("NbtOptimizationManager");
-        this.monitorExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "NbtOptimizationManager-Monitor");
-            t.setDaemon(true);
-            return t;
-        });
-
-        // 启动监控
-        startMonitoring();
-
-        // 预热对象池
-        NbtObjectPool.warmup(128);
-
-        LOGGER.info("NBT优化管理器初始化完成");
+        // 启动定时任务
+        startScheduledTasks();
     }
 
     /**
-     * 启动性能监控
+     * 获取管理器实例
      */
-    private void startMonitoring() {
-        // 每30秒输出一次统计
-        monitorExecutor.scheduleAtFixedRate(this::logStats, 30, 30, TimeUnit.SECONDS);
-
-        // 每5分钟检查一次内存压力
-        monitorExecutor.scheduleAtFixedRate(this::checkMemoryPressure, 5, 5, TimeUnit.MINUTES);
-    }
-
-    /**
-     * 获取NBT（优先从缓存）
-     */
-    public NBTTagCompound getNbt(String key) {
-        if (!enabled.get()) return null;
-
-        totalOperations.incrementAndGet();
-
-        // 先查缓存
-        NBTTagCompound cached = nbtCache.get(key);
-        if (cached != null) {
-            optimizedOperations.incrementAndGet();
-            return cached;
+    public static synchronized NbtOptimizationManager getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new NbtOptimizationManager();
         }
-
-        return null;
+        return INSTANCE;
     }
 
     /**
-     * 存储NBT到缓存
+     * 启动定时任务
      */
-    public void putNbt(String key, NBTTagCompound nbt) {
-        if (!enabled.get() || nbt == null) return;
+    private void startScheduledTasks() {
+        // 内存监控任务
+        scheduler.scheduleAtFixedRate(this::checkMemoryPressure, 10, 10, TimeUnit.SECONDS);
 
-        nbtCache.put(key, nbt);
-    }
+        // 统计报告任务（每5分钟）
+        scheduler.scheduleAtFixedRate(this::printStatistics, 5, 5, TimeUnit.MINUTES);
 
-    /**
-     * 创建优化的NBT包装器
-     */
-    public ItemStackNbtWrapper createWrapper(net.minecraft.item.ItemStack stack) {
-        return new ItemStackNbtWrapper(stack);
-    }
-
-    /**
-     * 从对象池借用NBT
-     */
-    public NBTTagCompound borrowNbt() {
-        return NbtObjectPool.borrow();
-    }
-
-    /**
-     * 归还NBT到对象池
-     */
-    public void returnNbt(NBTTagCompound nbt) {
-        NbtObjectPool.returnNbt(nbt);
-    }
-
-    /**
-     * 使用Lambda自动借用和归还
-     */
-    public void withNbt(java.util.function.Consumer<NBTTagCompound> consumer) {
-        NbtObjectPool.withBorrowed(consumer);
-    }
-
-    /**
-     * 获取NBT哈希（使用缓存）
-     */
-    public int getNbtHash(NBTTagCompound nbt) {
-        return NbtHashCache.getHash(nbt);
-    }
-
-    /**
-     * 快速比较两个NBT
-     */
-    public boolean fastNbtEquals(NBTTagCompound a, NBTTagCompound b) {
-        return NbtHashCache.fastEquals(a, b);
-    }
-
-    /**
-     * 提交批处理操作
-     */
-    public void submitBatchOperation(NbtBatchProcessor.OperationType type,
-                                     NBTTagCompound source, NBTTagCompound target,
-                                     Runnable callback) {
-        NbtBatchProcessor.getInstance().submit(type, source, target, callback);
-    }
-
-    /**
-     * 刷新所有批处理操作
-     */
-    public void flushBatches() {
-        NbtBatchProcessor.getInstance().flush();
-    }
-
-    /**
-     * 获取延迟序列化器
-     */
-    public LazyNbtSerializer createLazySerializer() {
-        return new LazyNbtSerializer();
+        LOGGER.info("NBT优化管理器已启动");
     }
 
     /**
      * 检查内存压力
      */
     private void checkMemoryPressure() {
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-        int usedPercent = (int) ((usedMemory * 100) / maxMemory);
+        if (!autoCleanupEnabled) return;
 
-        if (usedPercent > HIGH_MEMORY_THRESHOLD_PERCENT) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("内存压力过高: {}%，执行紧急清理", usedPercent);
-            }
+        long now = System.currentTimeMillis();
+        if (now - lastMemoryCheck < 5000) return; // 5秒内不重复检查
+        lastMemoryCheck = now;
 
-            // 清理缓存
-            nbtCache.clear();
+        MemoryUsage heapUsage = memoryMXBean.getHeapMemoryUsage();
+        long maxMemory = heapUsage.getMax();
+        long usedMemory = heapUsage.getUsed();
 
-            // 清空对象池
-            NbtObjectPool.clear();
+        if (maxMemory <= 0) {
+            maxMemory = heapUsage.getCommitted();
+        }
 
-            // 建议GC
-            System.gc();
+        int usagePercent = (int) ((usedMemory * 100) / maxMemory);
+        lastMemoryUsagePercent = usagePercent;
 
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("紧急清理完成");
-            }
+        if (usagePercent > memoryThresholdCritical) {
+            LOGGER.warn("内存使用率严重过高: {}%，执行紧急清理", usagePercent);
+            performEmergencyCleanup();
+        } else if (usagePercent > memoryThresholdHigh) {
+            LOGGER.debug("内存使用率较高: {}%，执行常规清理", usagePercent);
+            performRegularCleanup();
         }
     }
 
     /**
-     * 记录统计信息
+     * 执行常规清理
      */
-    private void logStats() {
-        if (!enabled.get()) return;
+    private void performRegularCleanup() {
+        // 减少缓存大小
+        SmartNbtCache.getInstance().reduceCacheSize(0.5);
 
-        // 只在INFO级别启用时才收集统计
-        if (!LOGGER.isInfoEnabled()) return;
-
-        // 对象池统计
-        NbtObjectPool.PoolStats poolStats = NbtObjectPool.getStats();
-
-        // 缓存统计
-        SmartNbtCache.CacheStats cacheStats = nbtCache.getStats();
-
-        // 批处理统计
-        NbtBatchProcessor.BatchStats batchStats = NbtBatchProcessor.getInstance().getStats();
-
-        // 包装器统计
-        ItemStackNbtWrapper.WrapperStats wrapperStats = ItemStackNbtWrapper.getStats();
-
-        // 计算优化率
-        long total = totalOperations.get();
-        long optimized = optimizedOperations.get();
-        double optimizeRate = total > 0 ? (optimized / (double) total) * 100 : 0;
-
-        // 使用StringBuilder批量输出，减少锁竞争
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("=== NBT优化统计 ===\n");
-        sb.append("对象池: ").append(poolStats).append('\n');
-        sb.append("智能缓存: ").append(cacheStats).append('\n');
-        sb.append("批处理器: ").append(batchStats).append('\n');
-        sb.append("包装器: ").append(wrapperStats).append('\n');
-        sb.append(String.format("总体优化率: %.1f%%\n", optimizeRate));
-        sb.append("===================");
-        LOGGER.info(sb.toString());
-
-        // 如果命中率低，调整策略
-        if (cacheStats.hitRate < 50 && cacheStats.hits > 1000 && LOGGER.isWarnEnabled()) {
-            LOGGER.warn("缓存命中率过低，建议检查缓存策略");
+        // 清理NBT属性路径缓存
+        if (NbtAttribute.getPathCacheSize() > 512) {
+            NbtAttribute.clearPathCache();
         }
+
+        // 清理NBT匹配器缓存
+        if (NbtMatcher.getCacheSize() > 500) {
+            NbtMatcher.clearCache();
+        }
+
+        // 建议GC（但不强制）
+        System.gc();
+
+        LOGGER.debug("常规清理完成");
     }
 
     /**
-     * 获取完整统计
+     * 执行紧急清理
      */
-    public OptimizationStats getStats() {
-        return new OptimizationStats(
-            NbtObjectPool.getStats(),
-            nbtCache.getStats(),
-            NbtBatchProcessor.getInstance().getStats(),
-            ItemStackNbtWrapper.getStats(),
-            totalOperations.get(),
-            optimizedOperations.get()
-        );
+    private void performEmergencyCleanup() {
+        // 清空所有缓存
+        SmartNbtCache.getInstance().clear();
+        NbtAttribute.clearPathCache();
+        NbtMatcher.clearCache();
+
+        // 清空对象池
+        NbtObjectPool.clearPool();
+
+        // 强制GC
+        System.gc();
+
+        LOGGER.warn("紧急清理完成");
     }
 
     /**
-     * 重置所有统计
+     * 打印统计信息
      */
-    public void resetAllStats() {
-        NbtObjectPool.resetStats();
-        nbtCache.clear();
-        NbtBatchProcessor.getInstance().resetStats();
-        ItemStackNbtWrapper.resetStats();
-        totalOperations.set(0);
-        optimizedOperations.set(0);
+    private void printStatistics() {
+        if (!LOGGER.isDebugEnabled()) return;
+
+        long totalOps = totalNbtOperations.get();
+        long hits = cacheHits.get();
+        long misses = cacheMisses.get();
+        long total = hits + misses;
+        double hitRate = total > 0 ? (hits * 100.0 / total) : 0;
+
+        LOGGER.debug("=== NBT优化统计 ===");
+        LOGGER.debug("总操作数: {}", totalOps);
+        LOGGER.debug("缓存命中率: {:.2f}% ({}/{})", hitRate, hits, total);
+        LOGGER.debug("对象池创建: {}, 复用: {}",
+            pooledObjectsCreated.get(), pooledObjectsReused.get());
+        LOGGER.debug("内存使用率: {}%", lastMemoryUsagePercent);
+        LOGGER.debug("SmartNbtCache大小: {}", SmartNbtCache.getInstance().size());
+        LOGGER.debug("NbtMatcher缓存: {}", NbtMatcher.getCacheSize());
+        LOGGER.debug("NbtAttribute路径缓存: {}", NbtAttribute.getPathCacheSize());
+    }
+
+    // ==================== 公共API ====================
+
+    /**
+     * 记录NBT操作
+     */
+    public void recordNbtOperation() {
+        totalNbtOperations.incrementAndGet();
     }
 
     /**
-     * 启用/禁用优化
+     * 记录缓存命中
      */
-    public void setEnabled(boolean enabled) {
-        this.enabled.set(enabled);
-        LOGGER.info("NBT优化已{}", enabled ? "启用" : "禁用");
+    public void recordCacheHit() {
+        cacheHits.incrementAndGet();
     }
 
     /**
-     * 是否启用
+     * 记录缓存未命中
      */
-    public boolean isEnabled() {
-        return enabled.get();
+    public void recordCacheMiss() {
+        cacheMisses.incrementAndGet();
+    }
+
+    /**
+     * 记录对象池创建
+     */
+    public void recordPooledObjectCreated() {
+        pooledObjectsCreated.incrementAndGet();
+    }
+
+    /**
+     * 记录对象池复用
+     */
+    public void recordPooledObjectReused() {
+        pooledObjectsReused.incrementAndGet();
+    }
+
+    /**
+     * 获取缓存命中率
+     */
+    public double getCacheHitRate() {
+        long hits = cacheHits.get();
+        long misses = cacheMisses.get();
+        long total = hits + misses;
+        return total > 0 ? (hits * 100.0 / total) : 0;
+    }
+
+    /**
+     * 获取对象池复用率
+     */
+    public double getPoolReuseRate() {
+        long created = pooledObjectsCreated.get();
+        long reused = pooledObjectsReused.get();
+        long total = created + reused;
+        return total > 0 ? (reused * 100.0 / total) : 0;
+    }
+
+    /**
+     * 手动触发清理
+     */
+    public void triggerCleanup() {
+        performRegularCleanup();
+    }
+
+    /**
+     * 手动触发紧急清理
+     */
+    public void triggerEmergencyCleanup() {
+        performEmergencyCleanup();
+    }
+
+    /**
+     * 设置自动清理开关
+     */
+    public void setAutoCleanupEnabled(boolean enabled) {
+        this.autoCleanupEnabled = enabled;
+    }
+
+    /**
+     * 设置内存阈值
+     */
+    public void setMemoryThresholds(int high, int critical) {
+        this.memoryThresholdHigh = high;
+        this.memoryThresholdCritical = critical;
     }
 
     /**
      * 关闭管理器
      */
     public void shutdown() {
-        enabled.set(false);
-
-        // 刷新批处理
-        flushBatches();
-
-        // 关闭批处理器
-        NbtBatchProcessor.getInstance().shutdown();
-
-        // 关闭缓存
-        nbtCache.shutdown();
-
-        // 关闭监控
-        monitorExecutor.shutdown();
-
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
         LOGGER.info("NBT优化管理器已关闭");
     }
 
     /**
-     * 优化统计
+     * 获取当前内存使用率
      */
-    public static class OptimizationStats {
-        public final NbtObjectPool.PoolStats poolStats;
-        public final SmartNbtCache.CacheStats cacheStats;
-        public final NbtBatchProcessor.BatchStats batchStats;
-        public final ItemStackNbtWrapper.WrapperStats wrapperStats;
-        public final long totalOperations;
-        public final long optimizedOperations;
-        public final double optimizationRate;
+    public int getCurrentMemoryUsage() {
+        return lastMemoryUsagePercent;
+    }
 
-        public OptimizationStats(NbtObjectPool.PoolStats pool, SmartNbtCache.CacheStats cache,
-                                NbtBatchProcessor.BatchStats batch, ItemStackNbtWrapper.WrapperStats wrapper,
-                                long total, long optimized) {
-            this.poolStats = pool;
-            this.cacheStats = cache;
-            this.batchStats = batch;
-            this.wrapperStats = wrapper;
-            this.totalOperations = total;
-            this.optimizedOperations = optimized;
-            this.optimizationRate = total > 0 ? (optimized / (double) total) * 100 : 0;
+    /**
+     * 获取完整统计信息
+     */
+    public NbtOptimizationStats getStats() {
+        return new NbtOptimizationStats(
+            totalNbtOperations.get(),
+            cacheHits.get(),
+            cacheMisses.get(),
+            pooledObjectsCreated.get(),
+            pooledObjectsReused.get(),
+            lastMemoryUsagePercent,
+            SmartNbtCache.getInstance().size(),
+            NbtMatcher.getCacheSize(),
+            NbtAttribute.getPathCacheSize()
+        );
+    }
+
+    /**
+     * 统计信息数据类
+     */
+    public static class NbtOptimizationStats {
+        public final long totalOperations;
+        public final long cacheHits;
+        public final long cacheMisses;
+        public final long pooledCreated;
+        public final long pooledReused;
+        public final int memoryUsagePercent;
+        public final int smartCacheSize;
+        public final int matcherCacheSize;
+        public final int pathCacheSize;
+
+        public NbtOptimizationStats(long totalOperations, long cacheHits, long cacheMisses,
+                                     long pooledCreated, long pooledReused, int memoryUsagePercent,
+                                     int smartCacheSize, int matcherCacheSize, int pathCacheSize) {
+            this.totalOperations = totalOperations;
+            this.cacheHits = cacheHits;
+            this.cacheMisses = cacheMisses;
+            this.pooledCreated = pooledCreated;
+            this.pooledReused = pooledReused;
+            this.memoryUsagePercent = memoryUsagePercent;
+            this.smartCacheSize = smartCacheSize;
+            this.matcherCacheSize = matcherCacheSize;
+            this.pathCacheSize = pathCacheSize;
+        }
+
+        public double getCacheHitRate() {
+            long total = cacheHits + cacheMisses;
+            return total > 0 ? (cacheHits * 100.0 / total) : 0;
+        }
+
+        public double getPoolReuseRate() {
+            long total = pooledCreated + pooledReused;
+            return total > 0 ? (pooledReused * 100.0 / total) : 0;
         }
 
         @Override
         public String toString() {
-            return String.format("OptimizationStats[total=%d, optimized=%d, rate=%.1f%%]",
-                totalOperations, optimizedOperations, optimizationRate);
-        }
-    }
-
-    /**
-     * 服务器tick事件 - 每tick刷新批处理
-     */
-    @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            // 每tick刷新批处理，确保及时执行
-            flushBatches();
+            return String.format(
+                "NbtOptimizationStats[ops=%d, cacheHit=%.2f%%, poolReuse=%.2f%%, mem=%d%%, " +
+                "smartCache=%d, matcherCache=%d, pathCache=%d]",
+                totalOperations, getCacheHitRate(), getPoolReuseRate(),
+                memoryUsagePercent, smartCacheSize, matcherCacheSize, pathCacheSize
+            );
         }
     }
 }

@@ -163,26 +163,26 @@ public class FilterCache {
      */
     public boolean containsItem(ItemStack stack, CacheEntry cacheEntry) {
         if (!valid || stack.isEmpty()) return false;
-        
-        CacheEntry entry = cacheEntry != null ? cacheEntry : new CacheEntry(stack);
+
+        CacheEntry entry = cacheEntry != null ? cacheEntry : CacheEntry.create(stack);
         lastAccessTime = System.currentTimeMillis();
-        
+
         return itemIdCache.contains(entry.registryName);
     }
-    
+
     /**
      * 快速检查模组是否在过滤列表中
-     * 
+     *
      * @param stack 要检查的物品
      * @param cacheEntry 缓存的物品条目（可为null，会重新创建）
      * @return 是否在列表中
      */
     public boolean containsMod(ItemStack stack, CacheEntry cacheEntry) {
         if (!valid || stack.isEmpty()) return false;
-        
-        CacheEntry entry = cacheEntry != null ? cacheEntry : new CacheEntry(stack);
+
+        CacheEntry entry = cacheEntry != null ? cacheEntry : CacheEntry.create(stack);
         lastAccessTime = System.currentTimeMillis();
-        
+
         return modIdCache.contains(entry.modId);
     }
     

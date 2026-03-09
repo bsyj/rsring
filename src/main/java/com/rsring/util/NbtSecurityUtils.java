@@ -137,7 +137,9 @@ public class NbtSecurityUtils {
     public static byte[] writeNbtToBytes(NBTTagCompound nbt) {
         if (nbt == null) return new byte[0];
         try {
-            return CompressedStreamTools.writeCompressed(nbt);
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            CompressedStreamTools.writeCompressed(nbt, baos);
+            return baos.toByteArray();
         } catch (IOException e) {
             LOGGER.error("NBT序列化失败", e);
             return new byte[0];

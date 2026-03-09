@@ -26,9 +26,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * - 零阻塞清理，平均延迟<1ms
  * - 支持内存不足时自动释放
  */
-public class SmartNbtCache<K> {
+public class SmartNbtCache {
 
     private static final Logger LOGGER = LogManager.getLogger(SmartNbtCache.class);
+
+    // 单例实例
+    private static SmartNbtCache instance;
 
     // 缓存层级配置 - 优化大小
     private static final int HOT_CACHE_SIZE = 128;   // 增大热缓存
@@ -46,16 +49,16 @@ public class SmartNbtCache<K> {
     private static final long MEMORY_CRITICAL_THRESHOLD = 90; // 90%内存使用率
 
     // 热数据缓存 - 高并发优化
-    private final ConcurrentHashMap<K, CacheEntry> hotCache = new ConcurrentHashMap<>(HOT_CACHE_SIZE);
+    private final ConcurrentHashMap<Object, CacheEntry> hotCache = new ConcurrentHashMap<>(HOT_CACHE_SIZE);
 
     // 温数据缓存
-    private final ConcurrentHashMap<K, CacheEntry> warmCache = new ConcurrentHashMap<>(WARM_CACHE_SIZE);
+    private final ConcurrentHashMap<Object, CacheEntry> warmCache = new ConcurrentHashMap<>(WARM_CACHE_SIZE);
 
     // 冷数据缓存 - 使用SoftReference，内存不足时自动释放
-    private final ConcurrentHashMap<K, SoftReference<CacheEntry>> coldCache = new ConcurrentHashMap<>(COLD_CACHE_SIZE);
+    private final ConcurrentHashMap<Object, SoftReference<CacheEntry>> coldCache = new ConcurrentHashMap<>(COLD_CACHE_SIZE);
 
     // 访问频率统计 - 使用LongAdder减少竞争
-    private final ConcurrentHashMap<K, AccessFrequency> frequencyMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Object, AccessFrequency> frequencyMap = new ConcurrentHashMap<>();
 
     // 统计信息
     private final AtomicLong hitCount = new AtomicLong(0);
@@ -182,10 +185,19 @@ public class SmartNbtCache<K> {
     }
 
     /**
+     * 获取单例实例
+     */
+    public static synchronized SmartNbtCache getInstance() {
+        if (instance == null) {
+            instance = new SmartNbtCache("default");
+        }
+        return instance;
+    }
+
+    /**
      * 获取缓存值 - 极致优化版
      */
-    @SuppressWarnings("unchecked")
-    public NBTTagCompound get(K key) {
+    public NBTTagCompound get(Object key) {
         Object k = key; // 避免泛型转换开销
 
         // 1. 查热缓存 - O(1)
@@ -231,8 +243,7 @@ public class SmartNbtCache<K> {
     /**
      * 放入缓存 - 极致优化版
      */
-    @SuppressWarnings("unchecked")
-    public void put(K key, NBTTagCompound value) {
+    public void put(Object key, NBTTagCompound value) {
         if (key == null || value == null) return;
 
         Object k = key;
@@ -383,7 +394,7 @@ public class SmartNbtCache<K> {
     /**
      * 减少缓存大小
      */
-    private void reduceCacheSize() {
+    public void reduceCacheSize() {
         // 清理冷缓存的25%
         int coldSize = coldCache.size();
         if (coldSize > COLD_CACHE_SIZE * 0.75) {
@@ -531,6 +542,13 @@ public class SmartNbtCache<K> {
             }
         }
         return evicted;
+    }
+
+    /**
+     * 获取缓存大小
+     */
+    public int size() {
+        return hotCache.size() + warmCache.size() + coldCache.size();
     }
 
     /**

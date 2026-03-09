@@ -326,15 +326,8 @@ public class ItemStackNbtWrapper {
      * @return 长整数数组，不存在返回空数组
      */
     public long[] getLongArray(String key) {
-        if (!hasNbt()) {
-            return new long[0];
-        }
-        // 1.12.2可能不支持getLongArray，使用兼容性处理
-        try {
-            return cachedNbt.getLongArray(key);
-        } catch (NoSuchMethodError e) {
-            return new long[0];
-        }
+        // 1.12.2 不支持 getLongArray，直接返回空数组
+        return new long[0];
     }
 
     /**

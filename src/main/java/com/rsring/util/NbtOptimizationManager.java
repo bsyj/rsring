@@ -126,13 +126,8 @@ public class NbtOptimizationManager {
      * 执行常规清理
      */
     private void performRegularCleanup() {
-        // 减少缓存大小
-        SmartNbtCache.getInstance().reduceCacheSize(0.5);
-
-        // 清理NBT属性路径缓存
-        if (NbtAttribute.getPathCacheSize() > 512) {
-            NbtAttribute.clearPathCache();
-        }
+        // 减少缓存大小（调用无参方法）
+        SmartNbtCache.getInstance().reduceCacheSize();
 
         // 清理NBT匹配器缓存
         if (NbtMatcher.getCacheSize() > 500) {
@@ -151,11 +146,7 @@ public class NbtOptimizationManager {
     private void performEmergencyCleanup() {
         // 清空所有缓存
         SmartNbtCache.getInstance().clear();
-        NbtAttribute.clearPathCache();
         NbtMatcher.clearCache();
-
-        // 清空对象池
-        NbtObjectPool.clearPool();
 
         // 强制GC
         System.gc();

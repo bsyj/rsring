@@ -56,9 +56,34 @@ Thumbs.db
 1.md
 BUTTON_TEXTURES.md
 CHANGELOG-RELEASE.md
+CHANGELOG-RSRING.md
 CODE_OPTIMIZATION_SUGGESTIONS.md
 DEBUG_COMMANDS_AND_EASTER_EGGS.md
 IMPLEMENTATION_PROGRESS.md
 adventure_mods_repositories.md
+CHEST-RING-CLEANUP-COMPLETE.md
+DEPLOYMENT-CHECKLIST.md
+PROJECT-STATUS.md
+QUICK-TEST-GUIDE.md
+run-baubles-error-tests.md
 spec.md
 百科.md
+
+# Generated texture files
+experience_tank_*.png
+5f049160-*.png
+
+# Generated scripts
+*.py
+copy-*.bat
+verify-*.bat
+
+# IDE analysis files
+qodana.yaml
+qodana.sarif.json
+rsring.cfg.preview
+
+# Other
+MOD
+todo
+index.html

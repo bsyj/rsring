@@ -30,14 +30,14 @@ public class RsRingCapability implements IRsRingCapability {
 
     // ==================== 脏标记机制 - NBT优化 ====================
     // 使用位标记来追踪哪些数据发生了变化，避免不必要的序列化
-    private static final int DIRTY_TERMINAL = 1 << 0;      // 终端绑定
-    private static final int DIRTY_ENERGY = 1 << 1;        // 能量存储
-    private static final int DIRTY_ENABLED = 1 << 2;       // 启用状态
-    private static final int DIRTY_FILTER_MODE = 1 << 3;   // 过滤模式
-    private static final int DIRTY_FILTERS = 1 << 4;       // 过滤列表
-    private static final int DIRTY_DESTROY = 1 << 5;       // 销毁模式
-    private static final int DIRTY_TRASH = 1 << 6;         // 垃圾箱绑定
-    private static final int DIRTY_MISC = 1 << 7;          // 其他杂项
+    public static final int DIRTY_TERMINAL = 1 << 0;      // 终端绑定
+    public static final int DIRTY_ENERGY = 1 << 1;        // 能量存储
+    public static final int DIRTY_ENABLED = 1 << 2;       // 启用状态
+    public static final int DIRTY_FILTER_MODE = 1 << 3;   // 过滤模式
+    public static final int DIRTY_FILTERS = 1 << 4;       // 过滤列表
+    public static final int DIRTY_DESTROY = 1 << 5;       // 销毁模式
+    public static final int DIRTY_TRASH = 1 << 6;         // 垃圾箱绑定
+    public static final int DIRTY_MISC = 1 << 7;          // 其他杂项
     
     private transient int dirtyFlags = 0xFFFFFFFF; // 初始标记所有字段为脏（首次序列化需要）
     private transient boolean dirty = true;

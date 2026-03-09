@@ -121,8 +121,10 @@ public class RsRingMod
         network.registerMessage(com.rsring.network.PacketSyncTankSlots.Handler.class, com.rsring.network.PacketSyncTankSlots.class, 5, Side.CLIENT);
         // Register packet for opening ring filter GUI
         network.registerMessage(com.rsring.network.PacketOpenRingGui.Handler.class, com.rsring.network.PacketOpenRingGui.class, 6, Side.SERVER);
-        // Register packet for syncing capability from server -> client
+        // Register packet for syncing capability from server -> client (完整同步)
         network.registerMessage(com.rsring.network.PacketSyncCapabilityToClient.Handler.class, com.rsring.network.PacketSyncCapabilityToClient.class, 7, Side.CLIENT);
+        // Register packet for delta syncing capability from server -> client (增量同步)
+        network.registerMessage(com.rsring.network.PacketSyncCapabilityDelta.Handler.class, com.rsring.network.PacketSyncCapabilityDelta.class, 13, Side.CLIENT);
         // Register packet for syncing advanced filter from client -> server
         network.registerMessage(com.rsring.network.PacketSyncAdvancedFilter.Handler.class, com.rsring.network.PacketSyncAdvancedFilter.class, 8, Side.SERVER);
         // Register packet for syncing destroy toggle from client -> server

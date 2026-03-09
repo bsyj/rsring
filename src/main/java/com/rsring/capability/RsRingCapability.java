@@ -28,6 +28,20 @@ public class RsRingCapability implements IRsRingCapability {
     @CapabilityInject(IRsRingCapability.class)
     public static final Capability<IRsRingCapability> RS_RING_CAPABILITY = null;
 
+    // ==================== 脏标记机制 - NBT优化 ====================
+    // 使用位标记来追踪哪些数据发生了变化，避免不必要的序列化
+    private static final int DIRTY_TERMINAL = 1 << 0;      // 终端绑定
+    private static final int DIRTY_ENERGY = 1 << 1;        // 能量存储
+    private static final int DIRTY_ENABLED = 1 << 2;       // 启用状态
+    private static final int DIRTY_FILTER_MODE = 1 << 3;   // 过滤模式
+    private static final int DIRTY_FILTERS = 1 << 4;       // 过滤列表
+    private static final int DIRTY_DESTROY = 1 << 5;       // 销毁模式
+    private static final int DIRTY_TRASH = 1 << 6;         // 垃圾箱绑定
+    private static final int DIRTY_MISC = 1 << 7;          // 其他杂项
+    
+    private transient int dirtyFlags = 0xFFFFFFFF; // 初始标记所有字段为脏（首次序列化需要）
+    private transient boolean dirty = true;
+    
     private BlockPos terminalPos;
     private int terminalDimension;
     private boolean enabled = false;
@@ -181,16 +195,37 @@ public class RsRingCapability implements IRsRingCapability {
         }
     }
 
+    // ==================== 脏标记辅助方法 ====================
+    private void markDirty(int flag) {
+        this.dirty = true;
+        this.dirtyFlags |= flag;
+    }
+    
+    public boolean isDirty() {
+        return dirty;
+    }
+    
+    public void clearDirty() {
+        this.dirty = false;
+        this.dirtyFlags = 0;
+    }
+    
+    public int getDirtyFlags() {
+        return dirtyFlags;
+    }
+    
     @Override
     public void bindTerminal(World world, BlockPos pos) {
         this.terminalPos = pos;
         this.terminalDimension = world.provider.getDimension();
+        markDirty(DIRTY_TERMINAL);
     }
 
     @Override
     public void unbindTerminal() {
         this.terminalPos = null;
         this.terminalDimension = 0;
+        markDirty(DIRTY_TERMINAL);
     }
 
     @Override
@@ -215,7 +250,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        if (this.enabled != enabled) {
+            this.enabled = enabled;
+            markDirty(DIRTY_ENABLED);
+        }
     }
 
     @Override
@@ -309,7 +347,11 @@ public class RsRingCapability implements IRsRingCapability {
         if (!allowCustomFilters()) return;
         if (slot < 0 || slot > 8) return;
         while (blacklistItems.size() <= slot) blacklistItems.add("");
-        blacklistItems.set(slot, itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName);
+        String newValue = itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName;
+        if (!blacklistItems.get(slot).equals(newValue)) {
+            blacklistItems.set(slot, newValue);
+            markDirty(DIRTY_FILTERS);
+        }
     }
 
     @Override
@@ -332,7 +374,11 @@ public class RsRingCapability implements IRsRingCapability {
         if (!allowCustomFilters()) return;
         if (slot < 0 || slot > 8) return;
         while (modFilterSlots.size() <= slot) modFilterSlots.add("");
-        modFilterSlots.set(slot, modId == null || modId.isEmpty() ? "" : modId);
+        String newValue = modId == null || modId.isEmpty() ? "" : modId;
+        if (!modFilterSlots.get(slot).equals(newValue)) {
+            modFilterSlots.set(slot, newValue);
+            markDirty(DIRTY_FILTERS);
+        }
     }
 
     @Override
@@ -348,9 +394,14 @@ public class RsRingCapability implements IRsRingCapability {
     public void setFilterSlotNBT(int slot, NBTTagCompound nbt) {
         if (slot < 0 || slot > 8) return;
         if (nbt == null) {
-            filterSlotNBTs.remove(slot);
+            if (filterSlotNBTs.remove(slot) != null) {
+                markDirty(DIRTY_FILTERS);
+            }
         } else {
-            filterSlotNBTs.put(slot, nbt);
+            NBTTagCompound old = filterSlotNBTs.put(slot, nbt);
+            if (old == null || !old.equals(nbt)) {
+                markDirty(DIRTY_FILTERS);
+            }
         }
     }
 
@@ -364,9 +415,14 @@ public class RsRingCapability implements IRsRingCapability {
     public void setModFilterSlotNBT(int slot, NBTTagCompound nbt) {
         if (slot < 0 || slot > 8) return;
         if (nbt == null) {
-            modFilterSlotNBTs.remove(slot);
+            if (modFilterSlotNBTs.remove(slot) != null) {
+                markDirty(DIRTY_FILTERS);
+            }
         } else {
-            modFilterSlotNBTs.put(slot, nbt);
+            NBTTagCompound old = modFilterSlotNBTs.put(slot, nbt);
+            if (old == null || !old.equals(nbt)) {
+                markDirty(DIRTY_FILTERS);
+            }
         }
     }
 
@@ -383,7 +439,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setSealed(boolean sealed) {
-        this.sealed = sealed;
+        if (this.sealed != sealed) {
+            this.sealed = sealed;
+            markDirty(DIRTY_MISC);
+        }
     }
 
     @Override
@@ -393,7 +452,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setFilterMode(FilterMode mode) {
-        this.filterMode = mode;
+        if (this.filterMode != mode) {
+            this.filterMode = mode;
+            markDirty(DIRTY_FILTER_MODE);
+        }
     }
 
     @Override
@@ -403,7 +465,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setMatchAllMode(boolean matchAll) {
-        this.matchAllMode = matchAll;
+        if (this.matchAllMode != matchAll) {
+            this.matchAllMode = matchAll;
+            markDirty(DIRTY_FILTER_MODE);
+        }
     }
 
     @Override
@@ -481,13 +546,16 @@ public class RsRingCapability implements IRsRingCapability {
         if (!allowCustomFilters()) return;
         if (modId != null && !this.filterMods.contains(modId)) {
             this.filterMods.add(modId);
+            markDirty(DIRTY_FILTERS);
         }
     }
 
     @Override
     public void removeFilterMod(String modId) {
         if (!allowCustomFilters()) return;
-        this.filterMods.remove(modId);
+        if (this.filterMods.remove(modId)) {
+            markDirty(DIRTY_FILTERS);
+        }
     }
 
     // 属性过滤模式的输入槽位（存储完整ItemStack NBT）
@@ -496,7 +564,11 @@ public class RsRingCapability implements IRsRingCapability {
     @Override
     public void setAttributeInputSlotNBT(NBTTagCompound nbt) {
         if (!allowCustomFilters()) return;
-        this.attributeInputSlotNBT = nbt != null ? nbt : new NBTTagCompound();
+        NBTTagCompound newNbt = nbt != null ? nbt : new NBTTagCompound();
+        if (!newNbt.equals(this.attributeInputSlotNBT)) {
+            this.attributeInputSlotNBT = newNbt;
+            markDirty(DIRTY_FILTERS);
+        }
     }
 
     @Override
@@ -522,12 +594,19 @@ public class RsRingCapability implements IRsRingCapability {
     public void setAttributeInputStack(ItemStack stack) {
         if (!allowCustomFilters()) return;
         if (stack == null || stack.isEmpty()) {
-            clearAttributeInputSlot();
+            if (!this.attributeInputSlotNBT.isEmpty()) {
+                clearAttributeInputSlot();
+                markDirty(DIRTY_FILTERS);
+            }
         } else {
             // 保存物品的完整NBT数据（数量设为1）
             ItemStack copy = stack.copy();
             copy.setCount(1);
-            this.attributeInputSlotNBT = copy.writeToNBT(new NBTTagCompound());
+            NBTTagCompound newNbt = copy.writeToNBT(new NBTTagCompound());
+            if (!newNbt.equals(this.attributeInputSlotNBT)) {
+                this.attributeInputSlotNBT = newNbt;
+                markDirty(DIRTY_FILTERS);
+            }
         }
     }
 
@@ -539,7 +618,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setMatchNbt(boolean matchNbt) {
-        this.matchNbt = matchNbt;
+        if (this.matchNbt != matchNbt) {
+            this.matchNbt = matchNbt;
+            markDirty(DIRTY_FILTER_MODE);
+        }
     }
 
     @Override
@@ -549,7 +631,10 @@ public class RsRingCapability implements IRsRingCapability {
 
     @Override
     public void setMatchDurability(boolean matchDurability) {
-        this.matchDurability = matchDurability;
+        if (this.matchDurability != matchDurability) {
+            this.matchDurability = matchDurability;
+            markDirty(DIRTY_FILTER_MODE);
+        }
     }
     
     // ==================== 销毁模式方法实现 ====================
@@ -571,47 +656,63 @@ public class RsRingCapability implements IRsRingCapability {
     
     @Override
     public void setDestroyEnabled(boolean enabled) {
-        this.destroyEnabled = enabled;
+        if (this.destroyEnabled != enabled) {
+            this.destroyEnabled = enabled;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public DestroyModeType getDestroyModeType() {
         return this.destroyModeType;
     }
-    
+
     @Override
     public void setDestroyModeType(DestroyModeType type) {
-        this.destroyModeType = type;
+        if (this.destroyModeType != type) {
+            this.destroyModeType = type;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public FilterMode getDestroyFilterMode() {
         return this.destroyFilterMode;
     }
-    
+
     @Override
     public void setDestroyFilterMode(FilterMode mode) {
-        this.destroyFilterMode = mode;
+        if (this.destroyFilterMode != mode) {
+            this.destroyFilterMode = mode;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public boolean isDestroyWhitelistMode() {
         return this.destroyWhitelistMode;
     }
-    
+
     @Override
     public void setDestroyWhitelistMode(boolean whitelist) {
-        this.destroyWhitelistMode = whitelist;
+        if (this.destroyWhitelistMode != whitelist) {
+            this.destroyWhitelistMode = whitelist;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public void setDestroyFilterSlot(int slot, String itemRegistryName) {
         if (!allowCustomFilters()) return;
         if (slot < 0 || slot > 8) return;
         while (destroyFilterSlots.size() <= slot) destroyFilterSlots.add("");
-        destroyFilterSlots.set(slot, itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName);
+        String newValue = itemRegistryName == null || itemRegistryName.isEmpty() ? "" : itemRegistryName;
+        if (!destroyFilterSlots.get(slot).equals(newValue)) {
+            destroyFilterSlots.set(slot, newValue);
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public String getDestroyFilterSlot(int slot) {
         if (!allowCustomFilters()) return "";
@@ -620,15 +721,19 @@ public class RsRingCapability implements IRsRingCapability {
         String s = destroyFilterSlots.get(slot);
         return s == null ? "" : s;
     }
-    
+
     @Override
     public void setDestroyModFilterSlot(int slot, String modId) {
         if (!allowCustomFilters()) return;
         if (slot < 0 || slot > 8) return;
         while (destroyModFilterSlots.size() <= slot) destroyModFilterSlots.add("");
-        destroyModFilterSlots.set(slot, modId == null || modId.isEmpty() ? "" : modId);
+        String newValue = modId == null || modId.isEmpty() ? "" : modId;
+        if (!destroyModFilterSlots.get(slot).equals(newValue)) {
+            destroyModFilterSlots.set(slot, newValue);
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public String getDestroyModFilterSlot(int slot) {
         if (!allowCustomFilters()) return "";
@@ -642,9 +747,14 @@ public class RsRingCapability implements IRsRingCapability {
     public void setDestroyFilterSlotNBT(int slot, NBTTagCompound nbt) {
         if (slot < 0 || slot > 8) return;
         if (nbt == null) {
-            destroyFilterSlotNBTs.remove(slot);
+            if (destroyFilterSlotNBTs.remove(slot) != null) {
+                markDirty(DIRTY_DESTROY);
+            }
         } else {
-            destroyFilterSlotNBTs.put(slot, nbt);
+            NBTTagCompound old = destroyFilterSlotNBTs.put(slot, nbt);
+            if (old == null || !old.equals(nbt)) {
+                markDirty(DIRTY_DESTROY);
+            }
         }
     }
 
@@ -658,9 +768,14 @@ public class RsRingCapability implements IRsRingCapability {
     public void setDestroyModFilterSlotNBT(int slot, NBTTagCompound nbt) {
         if (slot < 0 || slot > 8) return;
         if (nbt == null) {
-            destroyModFilterSlotNBTs.remove(slot);
+            if (destroyModFilterSlotNBTs.remove(slot) != null) {
+                markDirty(DIRTY_DESTROY);
+            }
         } else {
-            destroyModFilterSlotNBTs.put(slot, nbt);
+            NBTTagCompound old = destroyModFilterSlotNBTs.put(slot, nbt);
+            if (old == null || !old.equals(nbt)) {
+                markDirty(DIRTY_DESTROY);
+            }
         }
     }
 
@@ -686,67 +801,85 @@ public class RsRingCapability implements IRsRingCapability {
                 }
             }
             this.destroyFilterAttributes.add(Pair.of(attr, inverted));
+            markDirty(DIRTY_DESTROY);
         }
     }
-    
+
     @Override
     public void removeDestroyFilterAttribute(int index) {
         if (!allowCustomFilters()) return;
         if (index >= 0 && index < this.destroyFilterAttributes.size()) {
             this.destroyFilterAttributes.remove(index);
+            markDirty(DIRTY_DESTROY);
         }
     }
-    
+
     @Override
     public void setDestroyFilterAttributeInverted(int index, boolean inverted) {
         if (!allowCustomFilters()) return;
         if (index >= 0 && index < this.destroyFilterAttributes.size()) {
             Pair<ItemAttribute, Boolean> current = this.destroyFilterAttributes.get(index);
-            this.destroyFilterAttributes.set(index, Pair.of(current.getKey(), inverted));
+            if (current.getValue() != inverted) {
+                this.destroyFilterAttributes.set(index, Pair.of(current.getKey(), inverted));
+                markDirty(DIRTY_DESTROY);
+            }
         }
     }
-    
+
     @Override
     public void clearDestroyFilterAttributes() {
-        this.destroyFilterAttributes.clear();
+        if (!this.destroyFilterAttributes.isEmpty()) {
+            this.destroyFilterAttributes.clear();
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public List<String> getDestroyFilterMods() {
         return new ArrayList<>(this.destroyFilterMods);
     }
-    
+
     @Override
     public void addDestroyFilterMod(String modId) {
         if (!allowCustomFilters()) return;
         if (modId != null && !this.destroyFilterMods.contains(modId)) {
             this.destroyFilterMods.add(modId);
+            markDirty(DIRTY_DESTROY);
         }
     }
-    
+
     @Override
     public void removeDestroyFilterMod(String modId) {
         if (!allowCustomFilters()) return;
-        this.destroyFilterMods.remove(modId);
+        if (this.destroyFilterMods.remove(modId)) {
+            markDirty(DIRTY_DESTROY);
+        }
     }
     
     @Override
     public void setDestroyAttributeInputSlotNBT(NBTTagCompound nbt) {
         if (!allowCustomFilters()) return;
-        this.destroyAttributeInputSlotNBT = nbt != null ? nbt : new NBTTagCompound();
+        NBTTagCompound newNbt = nbt != null ? nbt : new NBTTagCompound();
+        if (!newNbt.equals(this.destroyAttributeInputSlotNBT)) {
+            this.destroyAttributeInputSlotNBT = newNbt;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public NBTTagCompound getDestroyAttributeInputSlotNBT() {
         if (!allowCustomFilters()) return new NBTTagCompound();
         return this.destroyAttributeInputSlotNBT;
     }
-    
+
     @Override
     public void clearDestroyAttributeInputSlot() {
-        this.destroyAttributeInputSlotNBT = new NBTTagCompound();
+        if (!this.destroyAttributeInputSlotNBT.isEmpty()) {
+            this.destroyAttributeInputSlotNBT = new NBTTagCompound();
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public ItemStack getDestroyAttributeInputStack() {
         if (destroyAttributeInputSlotNBT == null || destroyAttributeInputSlotNBT.isEmpty()) {
@@ -754,37 +887,49 @@ public class RsRingCapability implements IRsRingCapability {
         }
         return new ItemStack(destroyAttributeInputSlotNBT);
     }
-    
+
     @Override
     public void setDestroyAttributeInputStack(ItemStack stack) {
         if (!allowCustomFilters()) return;
         if (stack == null || stack.isEmpty()) {
-            clearDestroyAttributeInputSlot();
+            if (!this.destroyAttributeInputSlotNBT.isEmpty()) {
+                clearDestroyAttributeInputSlot();
+            }
         } else {
             ItemStack copy = stack.copy();
             copy.setCount(1);
-            this.destroyAttributeInputSlotNBT = copy.writeToNBT(new NBTTagCompound());
+            NBTTagCompound newNbt = copy.writeToNBT(new NBTTagCompound());
+            if (!newNbt.equals(this.destroyAttributeInputSlotNBT)) {
+                this.destroyAttributeInputSlotNBT = newNbt;
+                markDirty(DIRTY_DESTROY);
+            }
         }
     }
-    
+
     @Override
     public boolean isDestroyMatchAllMode() {
         return this.destroyMatchAllMode;
     }
-    
+
     @Override
     public void setDestroyMatchAllMode(boolean matchAll) {
-        this.destroyMatchAllMode = matchAll;
+        if (this.destroyMatchAllMode != matchAll) {
+            this.destroyMatchAllMode = matchAll;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public boolean shouldDestroyMatchNbt() {
         return this.destroyMatchNbt;
     }
-    
+
     @Override
     public void setDestroyMatchNbt(boolean matchNbt) {
-        this.destroyMatchNbt = matchNbt;
+        if (this.destroyMatchNbt != matchNbt) {
+            this.destroyMatchNbt = matchNbt;
+            markDirty(DIRTY_DESTROY);
+        }
     }
     
     @Override
@@ -794,30 +939,38 @@ public class RsRingCapability implements IRsRingCapability {
     
     @Override
     public void setDestroyMatchDurability(boolean matchDurability) {
-        this.destroyMatchDurability = matchDurability;
+        if (this.destroyMatchDurability != matchDurability) {
+            this.destroyMatchDurability = matchDurability;
+            markDirty(DIRTY_DESTROY);
+        }
     }
-    
+
     @Override
     public boolean shouldWorkInGUI() {
         return this.shouldWorkInGUI;
     }
-    
+
     @Override
     public void setShouldWorkInGUI(boolean shouldWork) {
-        this.shouldWorkInGUI = shouldWork;
+        if (this.shouldWorkInGUI != shouldWork) {
+            this.shouldWorkInGUI = shouldWork;
+            markDirty(DIRTY_MISC);
+        }
     }
-    
+
     // ==================== 垃圾箱绑定方法实现 ====================
     @Override
     public void bindTrashCan(World world, BlockPos pos) {
         this.trashCanPos = pos;
         this.trashCanDimension = world.provider.getDimension();
+        markDirty(DIRTY_TRASH);
     }
-    
+
     @Override
     public void unbindTrashCan() {
         this.trashCanPos = null;
         this.trashCanDimension = 0;
+        markDirty(DIRTY_TRASH);
     }
     
     @Override
@@ -848,7 +1001,100 @@ public class RsRingCapability implements IRsRingCapability {
     
     @Override
     public void setEasterEgg(boolean easterEgg) {
-        this.easterEgg = easterEgg;
+        if (this.easterEgg != easterEgg) {
+            this.easterEgg = easterEgg;
+            markDirty(DIRTY_MISC);
+        }
+    }
+
+    // ==================== 布尔值打包方法 - NBT优化 ====================
+    // 位标记定义
+    private static final int FLAG_ENABLED = 1 << 0;
+    private static final int FLAG_WHITELIST_MODE = 1 << 1;
+    private static final int FLAG_SEALED = 1 << 2;
+    private static final int FLAG_MATCH_ALL = 1 << 3;
+    private static final int FLAG_MATCH_NBT = 1 << 4;
+    private static final int FLAG_MATCH_DURABILITY = 1 << 5;
+    private static final int FLAG_EASTER_EGG = 1 << 6;
+    
+    // 销毁模式位标记
+    private static final int FLAG_DESTROY_ENABLED = 1 << 0;
+    private static final int FLAG_DESTROY_WHITELIST = 1 << 1;
+    private static final int FLAG_DESTROY_MATCH_ALL = 1 << 2;
+    private static final int FLAG_DESTROY_MATCH_NBT = 1 << 3;
+    private static final int FLAG_DESTROY_MATCH_DURABILITY = 1 << 4;
+    private static final int FLAG_SHOULD_WORK_IN_GUI = 1 << 5;
+    
+    /**
+     * 打包主要布尔值到单个字节
+     */
+    private static byte packBooleanFlags(RsRingCapability cap) {
+        byte flags = 0;
+        if (cap.enabled) flags |= FLAG_ENABLED;
+        if (cap.whitelistMode) flags |= FLAG_WHITELIST_MODE;
+        if (cap.sealed) flags |= FLAG_SEALED;
+        if (cap.matchAllMode) flags |= FLAG_MATCH_ALL;
+        if (cap.matchNbt) flags |= FLAG_MATCH_NBT;
+        if (cap.matchDurability) flags |= FLAG_MATCH_DURABILITY;
+        if (cap.easterEgg) flags |= FLAG_EASTER_EGG;
+        return flags;
+    }
+    
+    /**
+     * 从字节解包主要布尔值
+     */
+    private static void unpackBooleanFlags(RsRingCapability cap, byte flags) {
+        cap.enabled = (flags & FLAG_ENABLED) != 0;
+        cap.whitelistMode = (flags & FLAG_WHITELIST_MODE) != 0;
+        cap.sealed = (flags & FLAG_SEALED) != 0;
+        cap.matchAllMode = (flags & FLAG_MATCH_ALL) != 0;
+        cap.matchNbt = (flags & FLAG_MATCH_NBT) != 0;
+        cap.matchDurability = (flags & FLAG_MATCH_DURABILITY) != 0;
+        cap.easterEgg = (flags & FLAG_EASTER_EGG) != 0;
+    }
+    
+    /**
+     * 打包匹配相关布尔值
+     */
+    private static byte packMatchFlags(RsRingCapability cap) {
+        byte flags = 0;
+        if (cap.matchNbt) flags |= FLAG_MATCH_NBT;
+        if (cap.matchDurability) flags |= FLAG_MATCH_DURABILITY;
+        return flags;
+    }
+    
+    /**
+     * 解包匹配相关布尔值
+     */
+    private static void unpackMatchFlags(RsRingCapability cap, byte flags) {
+        cap.matchNbt = (flags & FLAG_MATCH_NBT) != 0;
+        cap.matchDurability = (flags & FLAG_MATCH_DURABILITY) != 0;
+    }
+    
+    /**
+     * 打包销毁模式布尔值
+     */
+    private static byte packDestroyFlags(RsRingCapability cap) {
+        byte flags = 0;
+        if (cap.destroyEnabled) flags |= FLAG_DESTROY_ENABLED;
+        if (cap.destroyWhitelistMode) flags |= FLAG_DESTROY_WHITELIST;
+        if (cap.destroyMatchAllMode) flags |= FLAG_DESTROY_MATCH_ALL;
+        if (cap.destroyMatchNbt) flags |= FLAG_DESTROY_MATCH_NBT;
+        if (cap.destroyMatchDurability) flags |= FLAG_DESTROY_MATCH_DURABILITY;
+        if (cap.shouldWorkInGUI) flags |= FLAG_SHOULD_WORK_IN_GUI;
+        return flags;
+    }
+    
+    /**
+     * 解包销毁模式布尔值
+     */
+    private static void unpackDestroyFlags(RsRingCapability cap, byte flags) {
+        cap.destroyEnabled = (flags & FLAG_DESTROY_ENABLED) != 0;
+        cap.destroyWhitelistMode = (flags & FLAG_DESTROY_WHITELIST) != 0;
+        cap.destroyMatchAllMode = (flags & FLAG_DESTROY_MATCH_ALL) != 0;
+        cap.destroyMatchNbt = (flags & FLAG_DESTROY_MATCH_NBT) != 0;
+        cap.destroyMatchDurability = (flags & FLAG_DESTROY_MATCH_DURABILITY) != 0;
+        cap.shouldWorkInGUI = (flags & FLAG_SHOULD_WORK_IN_GUI) != 0;
     }
 
     public static class RsRingStorage implements Capability.IStorage<IRsRingCapability> {
@@ -864,15 +1110,14 @@ public class RsRingCapability implements IRsRingCapability {
                 tag.setInteger("dimension", cap.terminalDimension);
             }
 
-            tag.setBoolean("enabled", cap.enabled);
+            // 使用字节打包多个布尔值，减少NBT大小
+            byte boolFlags = packBooleanFlags(cap);
+            tag.setByte("boolFlags", boolFlags);
+            
             tag.setInteger("energy", cap.energyStorage.getEnergyStored());
-
-            tag.setBoolean("whitelistMode", cap.whitelistMode);
-            tag.setBoolean("sealed", cap.sealed);
             
             // 保存高级过滤数据
             tag.setString("filterMode", cap.filterMode.getName());
-            tag.setBoolean("matchAllMode", cap.matchAllMode);
             
             net.minecraft.nbt.NBTTagList blacklistList = new net.minecraft.nbt.NBTTagList();
             for (String item : cap.blacklistItems) {
@@ -924,19 +1169,17 @@ public class RsRingCapability implements IRsRingCapability {
                 tag.setTag("attributeInputSlotNBT", cap.attributeInputSlotNBT);
             }
 
-            // 保存NBT和耐久匹配选项
-            tag.setBoolean("matchNbt", cap.matchNbt);
-            tag.setBoolean("matchDurability", cap.matchDurability);
+            // 保存NBT和耐久匹配选项 - 使用字节打包
+            byte matchFlags = packMatchFlags(cap);
+            tag.setByte("matchFlags", matchFlags);
             
             // ==================== 保存销毁模式数据 ====================
-            tag.setBoolean("destroyEnabled", cap.destroyEnabled);
             tag.setString("destroyModeType", cap.destroyModeType.getName());
             tag.setString("destroyFilterMode", cap.destroyFilterMode.getName());
-            tag.setBoolean("destroyWhitelistMode", cap.destroyWhitelistMode);
-            tag.setBoolean("destroyMatchAllMode", cap.destroyMatchAllMode);
-            tag.setBoolean("destroyMatchNbt", cap.destroyMatchNbt);
-            tag.setBoolean("destroyMatchDurability", cap.destroyMatchDurability);
-            tag.setBoolean("shouldWorkInGUI", cap.shouldWorkInGUI);
+            
+            // 销毁模式布尔值打包
+            byte destroyFlags = packDestroyFlags(cap);
+            tag.setByte("destroyFlags", destroyFlags);
             
             // 保存销毁物品过滤槽
             net.minecraft.nbt.NBTTagList destroySlotList = new net.minecraft.nbt.NBTTagList();
@@ -997,7 +1240,7 @@ public class RsRingCapability implements IRsRingCapability {
             }
             
             // ==================== 保存彩蛋模式 ====================
-            tag.setBoolean("easterEgg", cap.easterEgg);
+            // 彩蛋模式已包含在boolFlags中
 
             return tag;
         }
@@ -1012,23 +1255,30 @@ public class RsRingCapability implements IRsRingCapability {
                 cap.terminalDimension = tag.getInteger("dimension");
             }
 
-            cap.enabled = tag.getBoolean("enabled");
+            // 读取打包的布尔值（新版本）或单独字段（向后兼容）
+            if (tag.hasKey("boolFlags")) {
+                unpackBooleanFlags(cap, tag.getByte("boolFlags"));
+            } else {
+                // 向后兼容：读取旧格式的单独字段
+                cap.enabled = tag.getBoolean("enabled");
+                if (tag.hasKey("whitelistMode")) {
+                    cap.whitelistMode = tag.getBoolean("whitelistMode");
+                } else {
+                    cap.whitelistMode = getConfiguredWhitelistMode();
+                }
+                cap.sealed = tag.getBoolean("sealed");
+                cap.matchAllMode = tag.getBoolean("matchAllMode");
+                cap.easterEgg = tag.getBoolean("easterEgg");
+            }
+            
             int maxEnergy = getConfiguredMaxEnergy();
             int energy = Math.min(tag.getInteger("energy"), maxEnergy);
             cap.energyStorage = new EnergyStorage(maxEnergy, MAX_IO, MAX_IO, energy);
-
-            if (tag.hasKey("whitelistMode")) {
-                cap.whitelistMode = tag.getBoolean("whitelistMode");
-            } else {
-                cap.whitelistMode = getConfiguredWhitelistMode();
-            }
-            cap.sealed = tag.getBoolean("sealed");
             
             // 读取高级过滤数据
             if (tag.hasKey("filterMode")) {
                 cap.filterMode = FilterMode.fromName(tag.getString("filterMode"));
             }
-            cap.matchAllMode = tag.getBoolean("matchAllMode");
             
             // 读取模组过滤列表
             cap.filterMods.clear();
@@ -1104,24 +1354,37 @@ tag.getTagList("blacklistItems", 8); // 8 = String tag
                 cap.attributeInputSlotNBT = new NBTTagCompound();
             }
 
-            // 读取NBT和耐久匹配选项
-            cap.matchNbt = tag.getBoolean("matchNbt");
-            cap.matchDurability = tag.getBoolean("matchDurability");
+            // 读取NBT和耐久匹配选项 - 优先使用打包格式
+            if (tag.hasKey("matchFlags")) {
+                unpackMatchFlags(cap, tag.getByte("matchFlags"));
+            } else {
+                // 向后兼容
+                cap.matchNbt = tag.getBoolean("matchNbt");
+                cap.matchDurability = tag.getBoolean("matchDurability");
+            }
             
             // ==================== 读取销毁模式数据 ====================
-            cap.destroyEnabled = tag.getBoolean("destroyEnabled");
-            if (tag.hasKey("destroyModeType")) {
-                cap.destroyModeType = DestroyModeType.fromName(tag.getString("destroyModeType"));
-            }
             if (tag.hasKey("destroyFilterMode")) {
                 cap.destroyFilterMode = FilterMode.fromName(tag.getString("destroyFilterMode"));
             }
-            cap.destroyWhitelistMode = tag.getBoolean("destroyWhitelistMode");
-            cap.destroyMatchAllMode = tag.getBoolean("destroyMatchAllMode");
-            cap.destroyMatchNbt = tag.getBoolean("destroyMatchNbt");
-            cap.destroyMatchDurability = tag.getBoolean("destroyMatchDurability");
-            if (tag.hasKey("shouldWorkInGUI")) {
-                cap.shouldWorkInGUI = tag.getBoolean("shouldWorkInGUI");
+            
+            // 读取销毁模式布尔值 - 优先使用打包格式
+            if (tag.hasKey("destroyFlags")) {
+                unpackDestroyFlags(cap, tag.getByte("destroyFlags"));
+            } else {
+                // 向后兼容
+                cap.destroyEnabled = tag.getBoolean("destroyEnabled");
+                cap.destroyWhitelistMode = tag.getBoolean("destroyWhitelistMode");
+                cap.destroyMatchAllMode = tag.getBoolean("destroyMatchAllMode");
+                cap.destroyMatchNbt = tag.getBoolean("destroyMatchNbt");
+                cap.destroyMatchDurability = tag.getBoolean("destroyMatchDurability");
+                if (tag.hasKey("shouldWorkInGUI")) {
+                    cap.shouldWorkInGUI = tag.getBoolean("shouldWorkInGUI");
+                }
+            }
+            
+            if (tag.hasKey("destroyModeType")) {
+                cap.destroyModeType = DestroyModeType.fromName(tag.getString("destroyModeType"));
             }
             
             // 读取销毁物品过滤槽

@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.DimensionManager;
 import com.rsring.filter.FilterMode;
 import com.rsring.filter.ItemAttribute;
+import com.rsring.filter.FilterCache;
 import com.rsring.util.Pair;
 import com.rsring.config.RsRingConfig;
 import java.util.List;
@@ -90,6 +91,12 @@ public class RsRingCapability implements IRsRingCapability {
     
     // ==================== 彩蛋模式字段 ====================
     private boolean easterEgg = false; // 彩蛋戒指标记
+
+    // ==================== 过滤缓存 - 性能优化 ====================
+    private transient FilterCache absorbFilterCache = new FilterCache();
+    private transient FilterCache destroyFilterCache = new FilterCache();
+    private transient int absorbCacheVersion = 0;  // 缓存版本，用于检测是否需要重建
+    private transient int destroyCacheVersion = 0;
 
     // Constructor
     public RsRingCapability() {
@@ -213,7 +220,116 @@ public class RsRingCapability implements IRsRingCapability {
     public int getDirtyFlags() {
         return dirtyFlags;
     }
-    
+
+    // ==================== 过滤缓存管理 ====================
+
+    /**
+     * 获取吸收模式过滤缓存（自动重建）
+     */
+    public FilterCache getAbsorbFilterCache() {
+        if (!absorbFilterCache.isValid() || absorbCacheVersion != absorbFilterCache.getVersion()) {
+            rebuildAbsorbFilterCache();
+        }
+        return absorbFilterCache;
+    }
+
+    /**
+     * 获取销毁模式过滤缓存（自动重建）
+     */
+    public FilterCache getDestroyFilterCache() {
+        if (!destroyFilterCache.isValid() || destroyCacheVersion != destroyFilterCache.getVersion()) {
+            rebuildDestroyFilterCache();
+        }
+        return destroyFilterCache;
+    }
+
+    /**
+     * 重建吸收模式过滤缓存
+     */
+    private void rebuildAbsorbFilterCache() {
+        List<String> itemIds = new ArrayList<>();
+        List<String> modIds = new ArrayList<>();
+
+        // 根据过滤模式收集数据
+        if (filterMode == FilterMode.ITEM) {
+            // 物品ID模式：使用blacklistItems（过滤槽位）
+            for (int i = 0; i < 9; i++) {
+                String slot = getFilterSlot(i);
+                if (slot != null && !slot.isEmpty()) {
+                    itemIds.add(slot);
+                }
+            }
+        } else if (filterMode == FilterMode.MOD) {
+            // 模组模式：使用modFilterSlots
+            for (int i = 0; i < 9; i++) {
+                String slot = getModFilterSlot(i);
+                if (slot != null && !slot.isEmpty()) {
+                    modIds.add(slot);
+                }
+            }
+            // 同时添加filterMods列表
+            modIds.addAll(filterMods);
+        }
+
+        absorbFilterCache.buildCache(itemIds, modIds, filterSlotNBTs);
+        absorbCacheVersion = absorbFilterCache.getVersion();
+    }
+
+    /**
+     * 重建销毁模式过滤缓存
+     */
+    private void rebuildDestroyFilterCache() {
+        List<String> itemIds = new ArrayList<>();
+        List<String> modIds = new ArrayList<>();
+
+        // 根据过滤模式收集数据
+        if (destroyFilterMode == FilterMode.ITEM) {
+            // 物品ID模式
+            for (int i = 0; i < 9; i++) {
+                String slot = getDestroyFilterSlot(i);
+                if (slot != null && !slot.isEmpty()) {
+                    itemIds.add(slot);
+                }
+            }
+        } else if (destroyFilterMode == FilterMode.MOD) {
+            // 模组模式
+            for (int i = 0; i < 9; i++) {
+                String slot = getDestroyModFilterSlot(i);
+                if (slot != null && !slot.isEmpty()) {
+                    modIds.add(slot);
+                }
+            }
+            modIds.addAll(destroyFilterMods);
+        }
+
+        destroyFilterCache.buildCache(itemIds, modIds, destroyFilterSlotNBTs);
+        destroyCacheVersion = destroyFilterCache.getVersion();
+    }
+
+    /**
+     * 使吸收模式缓存失效（过滤列表变化时调用）
+     */
+    public void invalidateAbsorbCache() {
+        absorbFilterCache.invalidate();
+        absorbCacheVersion = 0;
+    }
+
+    /**
+     * 使销毁模式缓存失效
+     */
+    public void invalidateDestroyCache() {
+        destroyFilterCache.invalidate();
+        destroyCacheVersion = 0;
+    }
+
+    /**
+     * 使所有缓存失效
+     */
+    public void invalidateAllCaches() {
+        invalidateAbsorbCache();
+        invalidateDestroyCache();
+    }
+
     @Override
     public void bindTerminal(World world, BlockPos pos) {
         this.terminalPos = pos;
@@ -286,6 +402,7 @@ public class RsRingCapability implements IRsRingCapability {
             String itemName = item.getItem().getRegistryName().toString();
             if (!blacklistItems.contains(itemName)) {
                 blacklistItems.add(itemName);
+                invalidateAbsorbCache(); // 使缓存失效
             }
         }
     }
@@ -295,7 +412,9 @@ public class RsRingCapability implements IRsRingCapability {
         if (!allowCustomFilters()) return;
         if (!item.isEmpty()) {
             String itemName = item.getItem().getRegistryName().toString();
-            blacklistItems.remove(itemName);
+            if (blacklistItems.remove(itemName)) {
+                invalidateAbsorbCache(); // 使缓存失效
+            }
         }
     }
 
@@ -351,6 +470,7 @@ public class RsRingCapability implements IRsRingCapability {
         if (!blacklistItems.get(slot).equals(newValue)) {
             blacklistItems.set(slot, newValue);
             markDirty(DIRTY_FILTERS);
+            invalidateAbsorbCache(); // 使吸收模式缓存失效
         }
     }
 
@@ -378,6 +498,7 @@ public class RsRingCapability implements IRsRingCapability {
         if (!modFilterSlots.get(slot).equals(newValue)) {
             modFilterSlots.set(slot, newValue);
             markDirty(DIRTY_FILTERS);
+            invalidateAbsorbCache(); // 使吸收模式缓存失效
         }
     }
 
@@ -396,11 +517,13 @@ public class RsRingCapability implements IRsRingCapability {
         if (nbt == null) {
             if (filterSlotNBTs.remove(slot) != null) {
                 markDirty(DIRTY_FILTERS);
+                invalidateAbsorbCache(); // 使吸收模式缓存失效
             }
         } else {
             NBTTagCompound old = filterSlotNBTs.put(slot, nbt);
             if (old == null || !old.equals(nbt)) {
                 markDirty(DIRTY_FILTERS);
+                invalidateAbsorbCache(); // 使吸收模式缓存失效
             }
         }
     }
@@ -710,6 +833,7 @@ public class RsRingCapability implements IRsRingCapability {
         if (!destroyFilterSlots.get(slot).equals(newValue)) {
             destroyFilterSlots.set(slot, newValue);
             markDirty(DIRTY_DESTROY);
+            invalidateDestroyCache(); // 使销毁模式缓存失效
         }
     }
 
@@ -731,6 +855,7 @@ public class RsRingCapability implements IRsRingCapability {
         if (!destroyModFilterSlots.get(slot).equals(newValue)) {
             destroyModFilterSlots.set(slot, newValue);
             markDirty(DIRTY_DESTROY);
+            invalidateDestroyCache(); // 使销毁模式缓存失效
         }
     }
 
@@ -749,11 +874,13 @@ public class RsRingCapability implements IRsRingCapability {
         if (nbt == null) {
             if (destroyFilterSlotNBTs.remove(slot) != null) {
                 markDirty(DIRTY_DESTROY);
+                invalidateDestroyCache(); // 使销毁模式缓存失效
             }
         } else {
             NBTTagCompound old = destroyFilterSlotNBTs.put(slot, nbt);
             if (old == null || !old.equals(nbt)) {
                 markDirty(DIRTY_DESTROY);
+                invalidateDestroyCache(); // 使销毁模式缓存失效
             }
         }
     }
@@ -770,10 +897,13 @@ public class RsRingCapability implements IRsRingCapability {
         if (nbt == null) {
             if (destroyModFilterSlotNBTs.remove(slot) != null) {
                 markDirty(DIRTY_DESTROY);
+                invalidateDestroyCache(); // 使销毁模式缓存失效
             }
         } else {
             NBTTagCompound old = destroyModFilterSlotNBTs.put(slot, nbt);
             if (old == null || !old.equals(nbt)) {
+                markDirty(DIRTY_DESTROY);
+                invalidateDestroyCache(); // 使销毁模式缓存失效
                 markDirty(DIRTY_DESTROY);
             }
         }

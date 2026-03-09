@@ -52,41 +52,41 @@ import java.util.concurrent.TimeUnit;
 public class ItemAbsorbRing extends Item implements IBauble {
     private static final Logger LOGGER = LogManager.getLogger(ItemAbsorbRing.class);
 
-    // 垃圾箱警告冷却机制：每个玩家60秒只提示一次 - 使用ConcurrentHashMap保证线程安全
-    private static final Map<UUID, Long> TRASH_CAN_WARNING_COOLDOWN = new ConcurrentHashMap<>();
+    // 垃圾箱警告冷却机制：每个玩家60秒只提示一次
+    // 使用HashMap + synchronized，因为只在主线程访问
+    private static final Map<UUID, Long> TRASH_CAN_WARNING_COOLDOWN = new HashMap<>();
     private static final long WARNING_COOLDOWN_MS = 60000; // 60秒
 
     // 吸收箱警告冷却机制：每个玩家60秒只提示一次
-    private static final Map<UUID, Long> TERMINAL_WARNING_COOLDOWN = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> TERMINAL_WARNING_COOLDOWN = new HashMap<>();
     private static final long TERMINAL_WARNING_COOLDOWN_MS = 60000; // 60秒
 
-    // 定时清理线程 - 防止内存泄漏
-    private static final ScheduledExecutorService CLEANUP_EXECUTOR = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = new Thread(r, "ItemAbsorbRing-Cleanup");
-        t.setDaemon(true);
-        return t;
-    });
-
-    // 初始化定时清理任务
-    static {
-        CLEANUP_EXECUTOR.scheduleAtFixedRate(
-            ItemAbsorbRing::cleanupExpiredCooldowns,
-            5, 5, TimeUnit.MINUTES // 每5分钟清理一次
-        );
-    }
+    // 上次清理时间
+    private static long lastCleanupTime = 0;
+    private static final long CLEANUP_INTERVAL_MS = 300000; // 5分钟
 
     /**
-     * 清理过期的冷却数据，防止内存泄漏 - 极致优化版
-     * 使用ConcurrentHashMap的removeIf原子操作
+     * 清理过期的冷却数据，防止内存泄漏
+     * 使用synchronized保证线程安全，只在主线程调用
      */
     private static void cleanupExpiredCooldowns() {
         long now = System.currentTimeMillis();
+
+        // 检查是否需要清理
+        if (now - lastCleanupTime < CLEANUP_INTERVAL_MS) {
+            return;
+        }
+        lastCleanupTime = now;
+
         long trashThreshold = now - WARNING_COOLDOWN_MS * 2; // 2倍冷却期后清理
         long terminalThreshold = now - TERMINAL_WARNING_COOLDOWN_MS * 2;
 
-        // 使用removeIf清理过期条目
-        TRASH_CAN_WARNING_COOLDOWN.entrySet().removeIf(entry -> entry.getValue() < trashThreshold);
-        TERMINAL_WARNING_COOLDOWN.entrySet().removeIf(entry -> entry.getValue() < terminalThreshold);
+        synchronized (TRASH_CAN_WARNING_COOLDOWN) {
+            TRASH_CAN_WARNING_COOLDOWN.entrySet().removeIf(entry -> entry.getValue() < trashThreshold);
+        }
+        synchronized (TERMINAL_WARNING_COOLDOWN) {
+            TERMINAL_WARNING_COOLDOWN.entrySet().removeIf(entry -> entry.getValue() < terminalThreshold);
+        }
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("清理冷却数据完成 - 垃圾箱: {}, 吸收箱: {}",
@@ -101,11 +101,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
         cleanupExpiredCooldowns();
         long now = System.currentTimeMillis();
         UUID playerId = player.getUniqueID();
-        long lastWarning = TRASH_CAN_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
 
-        if (now - lastWarning > WARNING_COOLDOWN_MS) {
-            player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
-            TRASH_CAN_WARNING_COOLDOWN.put(playerId, now);
+        synchronized (TRASH_CAN_WARNING_COOLDOWN) {
+            long lastWarning = TRASH_CAN_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
+            if (now - lastWarning > WARNING_COOLDOWN_MS) {
+                player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
+                TRASH_CAN_WARNING_COOLDOWN.put(playerId, now);
+            }
         }
     }
 
@@ -116,11 +118,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
         cleanupExpiredCooldowns();
         long now = System.currentTimeMillis();
         UUID playerId = player.getUniqueID();
-        long lastWarning = TERMINAL_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
 
-        if (now - lastWarning > TERMINAL_WARNING_COOLDOWN_MS) {
-            player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
-            TERMINAL_WARNING_COOLDOWN.put(playerId, now);
+        synchronized (TERMINAL_WARNING_COOLDOWN) {
+            long lastWarning = TERMINAL_WARNING_COOLDOWN.getOrDefault(playerId, 0L);
+            if (now - lastWarning > TERMINAL_WARNING_COOLDOWN_MS) {
+                player.sendMessage(new TextComponentString(TextFormatting.YELLOW + message));
+                TERMINAL_WARNING_COOLDOWN.put(playerId, now);
+            }
         }
     }
 

@@ -53,9 +53,10 @@ public class CommonEventHandler {
     // 左键绑定冷却时间（毫秒）
     private static final long BIND_COOLDOWN_MS = 500;
     private final Map<UUID, Long> lastLeftClickBindTime = new HashMap<>();
-    
+
     // 低电量提醒冷却记录（玩家UUID -> 上次提醒时间戳）
-    private static final Map<UUID, Long> lowEnergyWarningCache = new ConcurrentHashMap<>();
+    // 使用HashMap替代ConcurrentHashMap，因为只在主线程访问
+    private static final Map<UUID, Long> lowEnergyWarningCache = new HashMap<>();
     // 低电量提醒检测间隔（tick），每5秒检测一次
     private static final int LOW_ENERGY_CHECK_INTERVAL = 100;
     private int lowEnergyCheckCounter = 0;
@@ -63,6 +64,12 @@ public class CommonEventHandler {
     // 缓存清理相关
     private static long lastCacheCleanupTime = 0;
     private static final long CACHE_CLEANUP_INTERVAL_MS = 600000; // 10分钟清理一次
+
+    // 分帧处理相关 - 将工作分散到多个tick执行
+    private int tickCounter = 0;
+    private static final int RING_PROCESS_INTERVAL = 1;      // 每tick处理戒指
+    private static final int CONTROLLER_PROCESS_INTERVAL = 5; // 每5tick处理控制器
+    private static final int PUMP_PROCESS_INTERVAL = 2;       // 每2tick处理储罐
 
     public CommonEventHandler() {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
@@ -316,92 +323,122 @@ public class CommonEventHandler {
         EntityPlayer player = event.player;
         if (player == null || player.world.isRemote) return;
 
-        // 戒指功能 - 支持多戒指和严格模式
+        // 增加tick计数器
+        tickCounter++;
+
+        // ===== 每tick执行：戒指功能 =====
+        if (tickCounter % RING_PROCESS_INTERVAL == 0) {
+            processRings(player);
+        }
+
+        // ===== 每5tick执行：控制器功能 =====
+        if (tickCounter % CONTROLLER_PROCESS_INTERVAL == 0) {
+            processController(player);
+        }
+
+        // ===== 每2tick执行：储罐功能 =====
+        if (tickCounter % PUMP_PROCESS_INTERVAL == 0) {
+            processPump(player);
+        }
+
+        // 移动发电 - 每tick执行（轻量级操作）
+        com.rsring.service.MovementEnergyGenerator.getInstance().onPlayerTick(player);
+    }
+
+    /**
+     * 处理戒指逻辑 - 每tick执行
+     */
+    private void processRings(EntityPlayer player) {
         List<ItemStack> absorbRings = findAllRings(player, ItemAbsorbRing.class);
         boolean anyRingActive = false;
-        
+
         for (ItemStack absorbRingStack : absorbRings) {
             if (absorbRingStack.isEmpty()) continue;
-            
+
             // 检查严格模式：开启时只有饰品栏中的戒指才能工作
             boolean strictMode = com.rsring.config.RsRingConfig.absorbRing.strictMode;
             boolean inBaubles = isInBaublesSlot(player, absorbRingStack);
-            
+
             if (!strictMode || inBaubles) {
                 ((ItemAbsorbRing) absorbRingStack.getItem()).onWornTick(absorbRingStack, player);
                 anyRingActive = true;
             }
-            
+
             // 低电量提醒检测（降低检测频率）- 只检查第一个激活的戒指
             if (anyRingActive) {
                 checkLowEnergyWarning(player, absorbRingStack);
             }
         }
-        
+
         // 只要有激活的戒指，就执行定时清理
         if (anyRingActive) {
             DestroyManager.onTickCleanup(player);
         }
+    }
 
-        // 移动发电 - 支持所有戒指
-        com.rsring.service.MovementEnergyGenerator.getInstance().onPlayerTick(player);
-
-        // Controller-driven behavior (sync all tanks and pump via central controller)
+    /**
+     * 处理控制器逻辑 - 每5tick执行
+     */
+    private void processController(EntityPlayer player) {
         ItemStack controllerStack = findExperiencePumpController(player);
-        if (!controllerStack.isEmpty()) {
-            ItemExperiencePumpController controllerItem = (ItemExperiencePumpController) controllerStack.getItem();
-            int mode = controllerItem.getMode(controllerStack);
-            int retainLevel = controllerItem.getRetainLevel(controllerStack);
-            boolean useForMending = controllerItem.isUseForMending(controllerStack);
+        if (controllerStack.isEmpty()) return;
 
-            com.rsring.experience.ExperiencePumpController controller = com.rsring.experience.ExperiencePumpController.getInstance();
-            com.rsring.experience.TankScanResult scan = controller.scanAllInventories(player);
-            List<ItemStack> tanks = scan.getAllTanks();
+        ItemExperiencePumpController controllerItem = (ItemExperiencePumpController) controllerStack.getItem();
+        int mode = controllerItem.getMode(controllerStack);
+        int retainLevel = controllerItem.getRetainLevel(controllerStack);
+        boolean useForMending = controllerItem.isUseForMending(controllerStack);
 
-            int maxManaged = com.rsring.config.ExperienceTankConfig.controller.maxManagedTanks;
-            if (maxManaged > 0 && tanks.size() > maxManaged) {
-                tanks = tanks.subList(0, maxManaged);
-            }
+        com.rsring.experience.ExperiencePumpController controller = com.rsring.experience.ExperiencePumpController.getInstance();
+        com.rsring.experience.TankScanResult scan = controller.scanAllInventories(player);
+        List<ItemStack> tanks = scan.getAllTanks();
 
-            for (ItemStack tank : tanks) {
-                IExperiencePumpCapability cap = tank.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
-                if (cap == null) continue;
-                cap.setMode(mode);
-                cap.setRetainLevel(retainLevel);
-                cap.setUseForMending(useForMending);
-                ItemExperiencePump.syncCapabilityToStack(tank, cap);
-            }
+        int maxManaged = com.rsring.config.ExperienceTankConfig.controller.maxManagedTanks;
+        if (maxManaged > 0 && tanks.size() > maxManaged) {
+            tanks = tanks.subList(0, maxManaged);
+        }
 
-            if (mode == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
-                int playerTotal = controller.getPlayerTotalExperience(player);
-                int targetXp = controller.convertLevelToXP(retainLevel);
-                if (playerTotal < targetXp) {
-                    int need = targetXp - playerTotal;
-                    int available = controller.calculateTotalStored(player);
-                    int toMove = Math.min(need, available);
-                    if (toMove > 0) {
-                        controller.performExperienceOperation(player, toMove, true);
-                    }
+        for (ItemStack tank : tanks) {
+            IExperiencePumpCapability cap = tank.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+            if (cap == null) continue;
+            cap.setMode(mode);
+            cap.setRetainLevel(retainLevel);
+            cap.setUseForMending(useForMending);
+            ItemExperiencePump.syncCapabilityToStack(tank, cap);
+        }
+
+        if (mode == IExperiencePumpCapability.MODE_PUMP_TO_PLAYER) {
+            int playerTotal = controller.getPlayerTotalExperience(player);
+            int targetXp = controller.convertLevelToXP(retainLevel);
+            if (playerTotal < targetXp) {
+                int need = targetXp - playerTotal;
+                int available = controller.calculateTotalStored(player);
+                int toMove = Math.min(need, available);
+                if (toMove > 0) {
+                    controller.performExperienceOperation(player, toMove, true);
                 }
-            } else if (mode == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
-                int canExtract = controller.calculateLevelBasedExtraction(player, retainLevel);
-                if (canExtract > 0) {
-                    int availableSpace = controller.calculateTotalRemainingCapacity(player);
-                    int toMove = Math.min(canExtract, availableSpace);
-                    if (toMove > 0) {
-                        controller.performExperienceOperation(player, toMove, false);
-                    }
+            }
+        } else if (mode == IExperiencePumpCapability.MODE_PUMP_FROM_PLAYER) {
+            int canExtract = controller.calculateLevelBasedExtraction(player, retainLevel);
+            if (canExtract > 0) {
+                int availableSpace = controller.calculateTotalRemainingCapacity(player);
+                int toMove = Math.min(canExtract, availableSpace);
+                if (toMove > 0) {
+                    controller.performExperienceOperation(player, toMove, false);
                 }
             }
         }
+    }
 
-        // 储罐功能 - 支持严格模式
+    /**
+     * 处理储罐逻辑 - 每2tick执行
+     */
+    private void processPump(EntityPlayer player) {
         ItemStack pumpStack = findExperiencePump(player);
         if (!pumpStack.isEmpty()) {
             // 检查严格模式：开启时只有饰品栏中的储罐才能工作
             boolean tankStrictMode = com.rsring.config.ExperienceTankConfig.tank.strictMode;
             boolean inBaubles = isInBaublesSlot(player, pumpStack);
-            
+
             if (!tankStrictMode || inBaubles) {
                 ((ItemExperiencePump) pumpStack.getItem()).onWornTick(pumpStack, player);
                 checkPlayerExperienceChange(player, pumpStack);
@@ -663,6 +700,7 @@ public class CommonEventHandler {
     
     /**
      * 清理过期的缓存数据，防止内存泄漏
+     * 使用synchronized保证线程安全
      */
     private static void cleanupWarningCaches() {
         long now = System.currentTimeMillis();
@@ -674,8 +712,10 @@ public class CommonEventHandler {
         int cooldownSeconds = com.rsring.config.RsRingConfig.absorbRing.lowEnergyWarningCooldown;
         long maxAgeMs = (cooldownSeconds + 60) * 1000L; // 冷却时间 + 60秒缓冲
 
-        lowEnergyWarningCache.entrySet().removeIf(entry ->
-            now - entry.getValue() > maxAgeMs);
+        synchronized (lowEnergyWarningCache) {
+            lowEnergyWarningCache.entrySet().removeIf(entry ->
+                now - entry.getValue() > maxAgeMs);
+        }
     }
 
     /**
@@ -724,20 +764,23 @@ public class CommonEventHandler {
             return;
         }
         
-        // 检查冷却时间
+        // 检查冷却时间 - 使用synchronized保证线程安全
         UUID playerId = player.getUniqueID();
         long currentTime = System.currentTimeMillis();
-        Long lastWarningTime = lowEnergyWarningCache.get(playerId);
-        
-        if (lastWarningTime != null) {
-            long elapsedSeconds = (currentTime - lastWarningTime) / 1000;
-            if (elapsedSeconds < cooldownSeconds) {
-                return; // 冷却中，不提醒
+
+        synchronized (lowEnergyWarningCache) {
+            Long lastWarningTime = lowEnergyWarningCache.get(playerId);
+
+            if (lastWarningTime != null) {
+                long elapsedSeconds = (currentTime - lastWarningTime) / 1000;
+                if (elapsedSeconds < cooldownSeconds) {
+                    return; // 冷却中，不提醒
+                }
             }
+
+            // 更新提醒时间
+            lowEnergyWarningCache.put(playerId, currentTime);
         }
-        
-        // 更新提醒时间
-        lowEnergyWarningCache.put(playerId, currentTime);
         
         // 发送提醒消息
         String message = String.format(

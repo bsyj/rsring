@@ -25,35 +25,41 @@ public class FilterCache {
         NBT_DATA      // NBT数据过滤
     }
     
-    // 缓存条目
+    // 缓存条目 - 使用对象池减少GC压力
     public static class CacheEntry {
         public final String registryName;
         public final String modId;
         public final int nbtHash;
         public final boolean hasNbt;
-        
-        public CacheEntry(ItemStack stack) {
+
+        // 空条目常量，避免重复创建
+        public static final CacheEntry EMPTY = new CacheEntry("", "", 0, false);
+
+        private CacheEntry(String registryName, String modId, int nbtHash, boolean hasNbt) {
+            this.registryName = registryName;
+            this.modId = modId;
+            this.nbtHash = nbtHash;
+            this.hasNbt = hasNbt;
+        }
+
+        public static CacheEntry create(ItemStack stack) {
             if (stack.isEmpty()) {
-                this.registryName = "";
-                this.modId = "";
-                this.nbtHash = 0;
-                this.hasNbt = false;
+                return EMPTY;
+            }
+
+            // 使用局部变量减少字段访问
+            String registryName = stack.getItem().getRegistryName().toString();
+            int colonIndex = registryName.indexOf(':');
+            String modId = colonIndex > 0 ? registryName.substring(0, colonIndex) : "minecraft";
+
+            NBTTagCompound nbt = stack.getTagCompound();
+            if (nbt != null && !nbt.isEmpty()) {
+                return new CacheEntry(registryName, modId, nbt.hashCode(), true);
             } else {
-                this.registryName = stack.getItem().getRegistryName().toString();
-                int colonIndex = this.registryName.indexOf(':');
-                this.modId = colonIndex > 0 ? this.registryName.substring(0, colonIndex) : "minecraft";
-                
-                NBTTagCompound nbt = stack.getTagCompound();
-                if (nbt != null && !nbt.isEmpty()) {
-                    this.nbtHash = nbt.hashCode();
-                    this.hasNbt = true;
-                } else {
-                    this.nbtHash = 0;
-                    this.hasNbt = false;
-                }
+                return new CacheEntry(registryName, modId, 0, false);
             }
         }
-        
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -61,7 +67,7 @@ public class FilterCache {
             CacheEntry that = (CacheEntry) o;
             return registryName.equals(that.registryName);
         }
-        
+
         @Override
         public int hashCode() {
             return registryName.hashCode();

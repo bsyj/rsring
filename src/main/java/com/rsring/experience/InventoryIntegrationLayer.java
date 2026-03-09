@@ -13,13 +13,30 @@ import java.util.*;
 /**
  * Unified inventory access layer for experience tank detection
  * Supports player inventory, hotbar, and Baubles slots
+ *
+ * 性能优化：
+ * 1. 使用对象池复用列表对象
+ * 2. 缓存Baubles反射方法
+ * 3. 批量扫描减少重复遍历
  */
 public class InventoryIntegrationLayer {
     private static final Logger LOGGER = LogManager.getLogger(InventoryIntegrationLayer.class);
     private static InventoryIntegrationLayer instance;
     private Boolean baublesAvailable = null;
 
-    private InventoryIntegrationLayer() {}
+    // 缓存Baubles反射方法
+    private Class<?> baublesApiClass;
+    private java.lang.reflect.Method getBaublesHandlerMethod;
+    private java.lang.reflect.Method getSizeMethod;
+    private java.lang.reflect.Method getStackInSlotMethod;
+    private boolean baublesReflected = false;
+
+    // 列表对象池 - 减少GC压力
+    private final ThreadLocal<List<ItemStack>> listPool = ThreadLocal.withInitial(() -> new ArrayList<>(36));
+
+    private InventoryIntegrationLayer() {
+        initBaublesReflection();
+    }
 
     public static InventoryIntegrationLayer getInstance() {
         if (instance == null) instance = new InventoryIntegrationLayer();
@@ -29,6 +46,32 @@ public class InventoryIntegrationLayer {
     public static void initialize() {
         getInstance();
         LOGGER.info("Inventory integration layer initialized");
+    }
+
+    /**
+     * 初始化Baubles反射 - 只执行一次
+     */
+    private void initBaublesReflection() {
+        if (!isBaublesAvailable()) return;
+
+        try {
+            baublesApiClass = Class.forName("baubles.api.BaublesApi");
+            getBaublesHandlerMethod = baublesApiClass.getMethod("getBaublesHandler", EntityPlayer.class);
+
+            // 预获取方法引用
+            Object handler = getBaublesHandlerMethod.invoke(null, (EntityPlayer) null);
+            if (handler != null) {
+                try {
+                    getSizeMethod = handler.getClass().getMethod("getSlots");
+                } catch (NoSuchMethodException e) {
+                    getSizeMethod = handler.getClass().getMethod("getSizeInventory");
+                }
+                getStackInSlotMethod = handler.getClass().getMethod("getStackInSlot", int.class);
+                baublesReflected = true;
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Baubles reflection init failed: {}", e.getMessage());
+        }
     }
 
     /**
@@ -64,48 +107,53 @@ public class InventoryIntegrationLayer {
     }
 
     /**
-     * Scan Baubles slots for experience tanks
+     * Scan Baubles slots for experience tanks - 使用缓存的反射方法
      */
     public List<ItemStack> getBaublesTanks(EntityPlayer player) {
-        List<ItemStack> tanks = new ArrayList<>();
-        if (player == null || !isBaublesAvailable()) return tanks;
+        List<ItemStack> tanks = listPool.get();
+        tanks.clear();
+
+        if (player == null || !isBaublesAvailable()) return new ArrayList<>(tanks);
 
         try {
-            Class<?> apiClass = Class.forName("baubles.api.BaublesApi");
-            Object handler = apiClass.getMethod("getBaublesHandler", EntityPlayer.class).invoke(null, player);
-            if (handler == null) return tanks;
-
-            java.lang.reflect.Method sizeMethod = null;
-            java.lang.reflect.Method stackMethod = null;
-
-            try {
-                sizeMethod = handler.getClass().getMethod("getSizeInventory");
-            } catch (NoSuchMethodException e) {
-                try { sizeMethod = handler.getClass().getMethod("getSlots"); } catch (NoSuchMethodException ignored) {}
+            Object handler;
+            if (baublesReflected) {
+                handler = getBaublesHandlerMethod.invoke(null, player);
+            } else {
+                // 回退到动态反射
+                handler = Class.forName("baubles.api.BaublesApi")
+                    .getMethod("getBaublesHandler", EntityPlayer.class)
+                    .invoke(null, player);
             }
 
-            try {
-                stackMethod = handler.getClass().getMethod("getStackInSlot", int.class);
-            } catch (NoSuchMethodException ignored) {}
+            if (handler == null) return new ArrayList<>(tanks);
 
-            if (sizeMethod != null && stackMethod != null) {
-                int size = (int) sizeMethod.invoke(handler);
-                for (int i = 0; i < size; i++) {
-                    ItemStack stack = (ItemStack) stackMethod.invoke(handler, i);
-                    if (isExperienceTank(stack)) tanks.add(stack);
-                }
+            int size;
+            if (baublesReflected && getSizeMethod != null) {
+                size = (int) getSizeMethod.invoke(handler);
             } else if (handler instanceof IInventory) {
-                IInventory baublesInventory = (IInventory) handler;
-                for (int i = 0; i < baublesInventory.getSizeInventory(); i++) {
-                    ItemStack stack = baublesInventory.getStackInSlot(i);
-                    if (isExperienceTank(stack)) tanks.add(stack);
+                size = ((IInventory) handler).getSizeInventory();
+            } else {
+                return new ArrayList<>(tanks);
+            }
+
+            for (int i = 0; i < size; i++) {
+                ItemStack stack;
+                if (baublesReflected && getStackInSlotMethod != null) {
+                    stack = (ItemStack) getStackInSlotMethod.invoke(handler, i);
+                } else if (handler instanceof IInventory) {
+                    stack = ((IInventory) handler).getStackInSlot(i);
+                } else {
+                    continue;
                 }
+
+                if (isExperienceTank(stack)) tanks.add(stack);
             }
         } catch (Exception e) {
             LOGGER.debug("Error scanning Baubles: {}", e.getMessage());
         }
 
-        return tanks;
+        return new ArrayList<>(tanks);
     }
 
     /**

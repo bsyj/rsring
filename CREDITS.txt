@@ -63,3 +63,15 @@ with credit to it's authors.
 Forge Mod Loader downloads components from the Minecraft Coder Pack
 (http://mcp.ocean-labs.de/index.php/Main_Page) with kind permission from the MCP team.
 
+=========================================================================
+
+Third-Party Libraries:
+
+* IBXM Library (http://www.geocities.com/sunet2000/)
+  Copyright (c) 2007, Martin Cameron
+  Licensed under the BSD License
+
+* Paulscode SoundSystem CodecIBXM (http://www.paulscode.com)
+  Author: Paul Lamb
+  Free to use for any purpose, commercial or otherwise
+

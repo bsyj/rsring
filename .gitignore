@@ -87,3 +87,7 @@ rsring.cfg.preview
 MOD
 todo
 index.html
+
+# Duplicate/unnecessary files
+README.txt
+LICENSE-Paulscode*.txt

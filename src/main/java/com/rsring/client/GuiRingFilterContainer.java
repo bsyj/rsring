@@ -89,6 +89,10 @@ private static final int PAD = 8;
     private int attributeScrollOffset = 0; // 属性列表滚动偏移量
     private List<ItemAttribute> availableAttributes = new ArrayList<>(); // 可添加的属性列表
     private List<Pair<ItemAttribute, Boolean>> currentAttributes = new ArrayList<>(); // 当前已添加的属性列表
+    
+    // Tooltip滚动相关 - 参考机械动力 SelectionScrollInput 实现
+    private static final int MAX_TOOLTIP_ITEMS = 8; // Tooltip最大显示行数
+    private boolean isHoveringAddButton = false; // 鼠标是否悬停在加号按钮上
 
     public GuiRingFilterContainer(ContainerRingFilter container, ItemStack ringStack, String title) {
         super(container);
@@ -1222,6 +1226,90 @@ private static final int PAD = 8;
         }
     }
 
+    /**
+     * 绘制带滚轮选择的可滚动属性tooltip
+     * 参考机械动力 SelectionScrollInput.updateTooltip() 实现
+     * 
+     * 显示格式：
+     * > ... (上方有更多)
+     * > xxx
+     * -> xxx (当前选中，跑马灯颜色)
+     * > xxx
+     * > ... (下方有更多)
+     * 
+     * @param mouseX 鼠标X坐标
+     * @param mouseY 鼠标Y坐标
+     * @param attributes 属性列表
+     * @param selectedIndex 当前选中索引
+     * @param title tooltip标题
+     */
+    private void drawScrollableAttributeTooltip(int mouseX, int mouseY, 
+            List<ItemAttribute> attributes, int selectedIndex, String title) {
+        List<String> tooltip = new ArrayList<>();
+        
+        // 跑马灯颜色计算
+        long t = System.currentTimeMillis();
+        int period = 2000;
+        float hue = ((t % period) / (float) period) % 1.0f;
+        TextFormatting[] colors = {
+            TextFormatting.RED,
+            TextFormatting.GOLD,
+            TextFormatting.YELLOW,
+            TextFormatting.GREEN,
+            TextFormatting.AQUA,
+            TextFormatting.BLUE,
+            TextFormatting.LIGHT_PURPLE,
+            TextFormatting.DARK_PURPLE
+        };
+        int titleColorIndex = (int)(hue * colors.length) % colors.length;
+        int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+        
+        // 标题 - 使用跑马灯颜色
+        tooltip.add(colors[titleColorIndex] + title);
+        
+        // 计算显示范围（类似机械动力的 min/max 逻辑）
+        // 确保选中项在中间位置
+        int min = Math.max(0, Math.min(attributes.size() - MAX_TOOLTIP_ITEMS, 
+                selectedIndex - MAX_TOOLTIP_ITEMS / 2));
+        int max = Math.min(attributes.size(), min + MAX_TOOLTIP_ITEMS);
+        
+        // 调整min确保显示满MAX_TOOLTIP_ITEMS行（如果数据足够）
+        if (max - min < MAX_TOOLTIP_ITEMS && attributes.size() >= MAX_TOOLTIP_ITEMS) {
+            min = Math.max(0, max - MAX_TOOLTIP_ITEMS);
+        }
+        
+        // 上方省略号（如果上方有更多项）
+        if (min > 0) {
+            tooltip.add(TextFormatting.GRAY + "> ...");
+        }
+        
+        // 显示属性列表
+        for (int i = min; i < max; i++) {
+            ItemAttribute attr = attributes.get(i);
+            String text = attr.format(false).getUnformattedText();
+            
+            if (i == selectedIndex) {
+                // 当前选中项：-> 前缀 + 跑马灯颜色高亮
+                int attrColorIndex = (int)((hue + i * 0.1) * colors.length) % colors.length;
+                tooltip.add(colors[attrColorIndex] + "-> " + text);
+            } else {
+                // 其他项：> 前缀 + 灰色
+                tooltip.add(TextFormatting.GRAY + "> " + text);
+            }
+        }
+        
+        // 下方省略号（如果下方有更多项）
+        if (max < attributes.size()) {
+            tooltip.add(TextFormatting.GRAY + "> ...");
+        }
+        
+        // 操作提示 - 使用跑马灯颜色
+        tooltip.add("");
+        tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "滚轮选择，左键添加");
+        
+        this.drawHoveringText(tooltip, mouseX, mouseY);
+    }
+
     private void drawCustomTooltips(int mouseX, int mouseY) {
         if (capability == null) return;
         boolean customAllowed = isCustomFiltersAllowed();
@@ -1456,9 +1544,22 @@ private static final int PAD = 8;
                 tooltip.add(colors[colorIndex] + "退出销毁模式");
                 tooltip.add(colors[secondColorIndex] + "返回吸收模式配置");
             } else {
-                tooltip.add(TextFormatting.RED + "⚠ 销毁模式");
-                tooltip.add(TextFormatting.YELLOW + "警告：匹配的物品将被永久销毁！");
-                tooltip.add(TextFormatting.GRAY + "建议使用白名单模式防止误销毁");
+                // 警示跑马灯颜色（红色系）
+                int warningPeriod = 1000; // 更快的闪烁频率
+                float warningHue = ((t % warningPeriod) / (float) warningPeriod) % 1.0f;
+                TextFormatting[] warningColors = {
+                    TextFormatting.DARK_RED,
+                    TextFormatting.RED,
+                    TextFormatting.GOLD,
+                    TextFormatting.YELLOW
+                };
+                int warningColorIndex = (int)(warningHue * warningColors.length) % warningColors.length;
+                int secondWarningIndex = (int)((warningHue + 0.25) * warningColors.length) % warningColors.length;
+                
+                tooltip.add(warningColors[warningColorIndex] + "⚠ 销毁模式");
+                tooltip.add(warningColors[secondWarningIndex] + "警告：匹配的物品将被永久销毁！");
+                int thirdWarningIndex = (int)((warningHue + 0.5) * warningColors.length) % warningColors.length;
+                tooltip.add(warningColors[thirdWarningIndex] + "" + TextFormatting.ITALIC + "建议使用白名单模式防止误销毁");
             }
             tooltip.add("");
             tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "点击" + (isDestroyModeUI ? "退出" : "进入"));
@@ -1667,7 +1768,7 @@ private static final int PAD = 8;
                 
                 tooltip.add(colors[titleColorIndex] + "移除属性");
                 if (currentAttributes.isEmpty()) {
-                    tooltip.add(TextFormatting.DARK_GRAY + "没有可移除的属性");
+                    tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "没有可移除的属性");
                 } else {
                     // 显示已添加的属性列表，当前选中项用跑马灯颜色标记
                     for (int i = 0; i < currentAttributes.size(); i++) {
@@ -1686,36 +1787,89 @@ private static final int PAD = 8;
                 return;
             }
             
-            // 加号按钮（添加属性）tooltip - 跑马灯效果
+            // 加号按钮（添加属性）tooltip - 参考机械动力 SelectionScrollInput 实现
             int addBtnX = SLOTX_START + 6 * SQ - 1;
             if (isMouseOverButton(relativeX, relativeY, addBtnX, btnDrawY)) {
-                java.util.List<String> tooltip = new java.util.ArrayList<>();
+                isHoveringAddButton = true;
                 
-                // 跑马灯颜色
-                long t = System.currentTimeMillis();
-                int period = 2000;
-                float hue = ((t % period) / (float) period) % 1.0f;
-                net.minecraft.util.text.TextFormatting[] colors = {
-                    net.minecraft.util.text.TextFormatting.RED,
-                    net.minecraft.util.text.TextFormatting.GOLD,
-                    net.minecraft.util.text.TextFormatting.YELLOW,
-                    net.minecraft.util.text.TextFormatting.GREEN,
-                    net.minecraft.util.text.TextFormatting.AQUA,
-                    net.minecraft.util.text.TextFormatting.BLUE,
-                    net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
-                    net.minecraft.util.text.TextFormatting.DARK_PURPLE
-                };
-                int titleColorIndex = (int)(hue * colors.length) % colors.length;
-                int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
-                
-                tooltip.add(colors[titleColorIndex] + "添加属性");
                 boolean isDestroyModeUIForTooltip = capability != null && capability.isDestroyModeUI();
                 ItemStack inputStackForTooltip = isDestroyModeUIForTooltip ? capability.getDestroyAttributeInputStack() : capability.getAttributeInputStack();
+                
                 if (inputStackForTooltip.isEmpty()) {
-                    tooltip.add(TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC + "在槽位放入物品");
+                    // 槽位为空时的提示 - 带跑马灯效果
+                    java.util.List<String> tooltip = new java.util.ArrayList<>();
+                    
+                    // 跑马灯颜色
+                    long t = System.currentTimeMillis();
+                    int period = 2000;
+                    float hue = ((t % period) / (float) period) % 1.0f;
+                    TextFormatting[] colors = {
+                        TextFormatting.RED,
+                        TextFormatting.GOLD,
+                        TextFormatting.YELLOW,
+                        TextFormatting.GREEN,
+                        TextFormatting.AQUA,
+                        TextFormatting.BLUE,
+                        TextFormatting.LIGHT_PURPLE,
+                        TextFormatting.DARK_PURPLE
+                    };
+                    int titleColorIndex = (int)(hue * colors.length) % colors.length;
+                    int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+                    
+                    tooltip.add(colors[titleColorIndex] + "添加属性");
+                    tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "在槽位放入物品");
+                    this.drawHoveringText(tooltip, mouseX, mouseY);
                 } else if (availableAttributes.isEmpty()) {
+                    // 没有可添加属性时的提示 - 带跑马灯效果
+                    java.util.List<String> tooltip = new java.util.ArrayList<>();
+                    
+                    // 跑马灯颜色
+                    long t = System.currentTimeMillis();
+                    int period = 2000;
+                    float hue = ((t % period) / (float) period) % 1.0f;
+                    TextFormatting[] colors = {
+                        TextFormatting.RED,
+                        TextFormatting.GOLD,
+                        TextFormatting.YELLOW,
+                        TextFormatting.GREEN,
+                        TextFormatting.AQUA,
+                        TextFormatting.BLUE,
+                        TextFormatting.LIGHT_PURPLE,
+                        TextFormatting.DARK_PURPLE
+                    };
+                    int titleColorIndex = (int)(hue * colors.length) % colors.length;
+                    int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+                    
+                    tooltip.add(colors[titleColorIndex] + "添加属性");
                     tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "没有更多可添加的属性");
+                    this.drawHoveringText(tooltip, mouseX, mouseY);
+                } else if (availableAttributes.size() > MAX_TOOLTIP_ITEMS) {
+                    // 属性过多时使用可滚动tooltip（参考机械动力）
+                    drawScrollableAttributeTooltip(mouseX, mouseY, availableAttributes, 
+                            selectedAttributeIndex, "添加属性");
                 } else {
+                    // 属性较少时使用原样式（带跑马灯效果）
+                    java.util.List<String> tooltip = new java.util.ArrayList<>();
+                    
+                    // 跑马灯颜色
+                    long t = System.currentTimeMillis();
+                    int period = 2000;
+                    float hue = ((t % period) / (float) period) % 1.0f;
+                    net.minecraft.util.text.TextFormatting[] colors = {
+                        net.minecraft.util.text.TextFormatting.RED,
+                        net.minecraft.util.text.TextFormatting.GOLD,
+                        net.minecraft.util.text.TextFormatting.YELLOW,
+                        net.minecraft.util.text.TextFormatting.GREEN,
+                        net.minecraft.util.text.TextFormatting.AQUA,
+                        net.minecraft.util.text.TextFormatting.BLUE,
+                        net.minecraft.util.text.TextFormatting.LIGHT_PURPLE,
+                        net.minecraft.util.text.TextFormatting.DARK_PURPLE
+                    };
+                    int titleColorIndex = (int)(hue * colors.length) % colors.length;
+                    int hintColorIndex = (int)((hue + 0.5) * colors.length) % colors.length;
+                    
+                    tooltip.add(colors[titleColorIndex] + "添加属性");
+                    
                     // 显示可添加的属性列表，当前选中项用跑马灯颜色标记
                     for (int i = 0; i < availableAttributes.size(); i++) {
                         ItemAttribute attr = availableAttributes.get(i);
@@ -1728,9 +1882,11 @@ private static final int PAD = 8;
                         }
                     }
                     tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "滚轮选择，左键添加");
+                    this.drawHoveringText(tooltip, mouseX, mouseY);
                 }
-                this.drawHoveringText(tooltip, mouseX, mouseY);
                 return;
+            } else {
+                isHoveringAddButton = false;
             }
             
             // 匹配模式按钮tooltip - 跑马灯效果
@@ -1758,7 +1914,8 @@ private static final int PAD = 8;
                 boolean isDestroyModeUIForMatch = capability.isDestroyModeUI();
                 boolean matchAll = isDestroyModeUIForMatch ? capability.isDestroyMatchAllMode() : capability.isMatchAllMode();
                 tooltip.add(colors[titleColorIndex] + (matchAll ? "匹配全部 (AND)" : "匹配任意 (OR)"));
-                tooltip.add(TextFormatting.GRAY + (matchAll ? "物品必须满足所有属性" : "物品满足任一属性即可"));
+                int descColorIndex = (int)((hue + 0.25) * colors.length) % colors.length;
+                tooltip.add(colors[descColorIndex] + (matchAll ? "物品必须满足所有属性" : "物品满足任一属性即可"));
                 tooltip.add("");
                 tooltip.add(colors[hintColorIndex] + "" + TextFormatting.ITALIC + "点击切换");
                 this.drawHoveringText(tooltip, mouseX, mouseY);

@@ -48,6 +48,32 @@ config.rsring.ring.lowEnergyWarningThreshold.comment=Trigger warning when energy
 config.rsring.ring.lowEnergyWarningCooldown=Low Energy Warning Cooldown
 config.rsring.ring.lowEnergyWarningCooldown.comment=Minimum seconds between warnings\nRange: 10-300, Default: 180 (3 minutes)
 
+# Movement Energy Generation Configuration
+config.rsring.ring.creativeModeNoEnergyCost=Creative Mode No Energy Cost
+config.rsring.ring.creativeModeNoEnergyCost.comment=Ring absorption/destruction does not consume energy in creative mode\nUseful for testing
+config.rsring.ring.enableMovementGeneration=Enable Movement Energy Generation
+config.rsring.ring.enableMovementGeneration.comment=Automatically charge rings when player moves\nJust enough: 2000 blocks = ~3 stacks of items absorbed
+config.rsring.ring.movementGenerationInterval=Movement Generation Interval
+config.rsring.ring.movementGenerationInterval.comment=Ticks between each energy generation\nRange: 1-100, Default: 20 (lower frequency)
+config.rsring.ring.movementMinDistance=Minimum Movement Distance
+config.rsring.ring.movementMinDistance.comment=Minimum distance to trigger energy generation\nRange: 0.01-1.0, Default: 0.5
+config.rsring.ring.energyPerWalk=Walking Energy Generation
+config.rsring.ring.energyPerWalk.comment=Energy generated per distance while walking\nRange: 0-1000, Default: 1 (minimal)
+config.rsring.ring.energyPerSprint=Sprinting Energy Generation
+config.rsring.ring.energyPerSprint.comment=Energy generated per distance while sprinting\nRange: 0-1000, Default: 2 (slightly more)
+config.rsring.ring.energyPerFly=Flying Energy Generation
+config.rsring.ring.energyPerFly.comment=Energy generated per distance while flying\nRange: 0-1000, Default: 2
+config.rsring.ring.energyPerSwim=Swimming Energy Generation
+config.rsring.ring.energyPerSwim.comment=Energy generated per distance while swimming\nRange: 0-1000, Default: 2
+config.rsring.ring.energyPerJump=Jumping Energy Generation
+config.rsring.ring.energyPerJump.comment=Energy generated when jumping\nRange: 0-1000, Default: 3 (small bonus)
+config.rsring.ring.energyPerFall=Falling Energy Generation
+config.rsring.ring.energyPerFall.comment=Energy generated per distance while falling\nRange: 0-1000, Default: 1
+config.rsring.ring.energyPerRide=Riding Energy Generation
+config.rsring.ring.energyPerRide.comment=Energy generated per distance while riding\nRange: 0-1000, Default: 1
+config.rsring.ring.energyPerClimb=Climbing Energy Generation
+config.rsring.ring.energyPerClimb.comment=Energy generated per distance while climbing\nRange: 0-1000, Default: 2
+
 # Experience Tank Configuration
 config.rsring.tank=Experience Tank Settings
 config.rsring.tank.enabled=Enabled
@@ -220,6 +246,10 @@ item_attributes.beacon_payment=Beacon Payment
 item_attributes.beacon_payment.inverted=Not Beacon Payment
 item_attributes.redstone_related=Redstone Related
 item_attributes.redstone_related.inverted=Not Redstone Related
+item_attributes.smeltable=Smeltable
+item_attributes.smeltable.inverted=Not Smeltable
+item_attributes.compostable=Compostable
+item_attributes.compostable.inverted=Not Compostable
 
 # Tag Attribute
 item_attributes.in_tag=In Tag %s
@@ -228,6 +258,10 @@ item_attributes.in_tag.inverted=Not In Tag %s
 # Mod Attribute
 item_attributes.added_by=Added By %s
 item_attributes.added_by.inverted=Not Added By %s
+
+# Creative Tab Attribute
+item_attributes.in_item_group=In Creative Tab: %s
+item_attributes.in_item_group.inverted=Not In Creative Tab: %s
 
 # Enchantment Attribute
 item_attributes.enchantment=Enchantment %s
@@ -268,6 +302,52 @@ gui.rsring.match_durability.enabled=Enabled
 gui.rsring.match_durability.disabled=Disabled
 gui.rsring.add_inverted=Right-click to add inverted attribute
 gui.rsring.add_normal=Left-click to add attribute
+
+# Item Type Attribute
+item_attributes.item_type=Item Type: %s
+item_attributes.item_type.inverted=Not Item Type: %s
+
+# Shulker Fill Level Attribute
+item_attributes.shulker_level=Shulker Level: %s
+item_attributes.shulker_level.inverted=Not Shulker Level: %s
+
+# Fluid Contents Attribute
+item_attributes.has_fluid=Has Fluid: %s
+item_attributes.has_fluid.inverted=No Fluid: %s
+
+# Ore Dictionary Attribute
+item_attributes.ore_dict=Ore Dictionary: %s
+item_attributes.ore_dict.inverted=Not Ore Dictionary: %s
+
+# Adventure Mod Attributes
+item_attributes.adventure_mod=Adventure Mod: %s
+item_attributes.adventure_mod.inverted=Not Adventure Mod: %s
+item_attributes.adventure_mod_monsters=Monster Mod: %s
+item_attributes.adventure_mod_monsters.inverted=Not Monster Mod: %s
+item_attributes.adventure_mod_dungeons=Dungeon Mod: %s
+item_attributes.adventure_mod_dungeons.inverted=Not Dungeon Mod: %s
+item_attributes.adventure_mod_dimensions=Dimension Mod: %s
+item_attributes.adventure_mod_dimensions.inverted=Not Dimension Mod: %s
+item_attributes.adventure_mod_weapons=Weapon Mod: %s
+item_attributes.adventure_mod_weapons.inverted=Not Weapon Mod: %s
+item_attributes.adventure_mod_quests=Quest Mod: %s
+item_attributes.adventure_mod_quests.inverted=Not Quest Mod: %s
+item_attributes.adventure_mod_trinkets=Trinket Mod: %s
+item_attributes.adventure_mod_trinkets.inverted=Not Trinket Mod: %s
+item_attributes.adventure_mod_exploration=Exploration Mod: %s
+item_attributes.adventure_mod_exploration.inverted=Not Exploration Mod: %s
+item_attributes.adventure_mod_other=Other Adventure Mod: %s
+item_attributes.adventure_mod_other.inverted=Not Other Adventure Mod: %s
+
+# Adventure Tag Attributes
+item_attributes.adventure_tag_boss=Boss Item
+item_attributes.adventure_tag_boss.inverted=Not Boss Item
+item_attributes.adventure_tag_elite=Elite Item
+item_attributes.adventure_tag_elite.inverted=Not Elite Item
+item_attributes.adventure_tag_dungeon=Dungeon Item
+item_attributes.adventure_tag_dungeon.inverted=Not Dungeon Item
+item_attributes.adventure_tag_explore=Exploration Item
+item_attributes.adventure_tag_explore.inverted=Not Exploration Item
 
 # Behavior Tag Attributes
 item_attributes.behavior_tag=Behavior: %s

@@ -381,11 +381,46 @@ public enum StandardTraits implements ItemAttribute {
      */
     REDSTONE_RELATED(stack -> {
         Item item = stack.getItem();
-        return item == Items.REDSTONE || item == Items.REPEATER || 
-               item == Items.COMPARATOR || 
+        return item == Items.REDSTONE || item == Items.REPEATER ||
+               item == Items.COMPARATOR ||
                item == Item.getItemFromBlock(net.minecraft.init.Blocks.REDSTONE_TORCH);
-    }, "redstone_related");
-    
+    }, "redstone_related"),
+
+    /**
+     * 可熔炼（可在熔炉中烧炼）
+     */
+    SMELTABLE(stack -> {
+        // 检查是否有熔炉烧炼配方
+        return getSmeltingResult(stack) != null;
+    }, "smeltable"),
+
+    /**
+     * 可堆肥（可放入堆肥桶）
+     */
+    COMPOSTABLE(stack -> {
+        // 1.12.2 使用 ComposterBlock 的 compostables 列表
+        // 由于1.12.2没有堆肥桶，这里模拟一些常见的可堆肥物品
+        Item item = stack.getItem();
+        // 种子类
+        if (item == Items.WHEAT_SEEDS || item == Items.PUMPKIN_SEEDS ||
+            item == Items.MELON_SEEDS || item == Items.BEETROOT_SEEDS) return true;
+        // 植物类
+        if (item == Item.getItemFromBlock(net.minecraft.init.Blocks.LEAVES) ||
+            item == Item.getItemFromBlock(net.minecraft.init.Blocks.LEAVES2)) return true;
+        if (item == Item.getItemFromBlock(net.minecraft.init.Blocks.SAPLING)) return true;
+        if (item == Item.getItemFromBlock(net.minecraft.init.Blocks.TALLGRASS)) return true;
+        // 食物残渣
+        if (item == Items.APPLE || item == Items.POTATO || item == Items.CARROT ||
+            item == Items.BEETROOT || item == Items.MELON || item == Items.WHEAT ||
+            item == Items.BREAD || item == Items.COOKIE || item == Items.CAKE ||
+            item == Items.PUMPKIN_PIE) return true;
+        // 其他有机物
+        if (item == Items.EGG) return true;
+        if (item == Items.FISH || item == Items.COOKED_FISH) return true;
+        if (item == Items.STRING) return true;
+        return false;
+    }, "compostable");
+
     private final Predicate<ItemStack> test;
     private final String translationKey;
     
@@ -401,24 +436,41 @@ public enum StandardTraits implements ItemAttribute {
         if (!stack.isItemEnchanted()) {
             return false;
         }
-        
+
         net.minecraft.nbt.NBTTagList enchantments = stack.getEnchantmentTagList();
         if (enchantments == null) {
             return false;
         }
-        
+
         for (int i = 0; i < enchantments.tagCount(); i++) {
             net.minecraft.nbt.NBTTagCompound enchantment = enchantments.getCompoundTagAt(i);
             int enchantId = enchantment.getShort("id");
             int level = enchantment.getShort("lvl");
-            
+
             net.minecraft.enchantment.Enchantment enchant = net.minecraft.enchantment.Enchantment.getEnchantmentByID(enchantId);
             if (enchant != null && level >= enchant.getMaxLevel()) {
                 return true;
             }
         }
-        
+
         return false;
+    }
+
+    /**
+     * 获取熔炉烧炼结果
+     * 用于检测物品是否可熔炼
+     */
+    private static ItemStack getSmeltingResult(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return null;
+        }
+
+        try {
+            // 使用 FurnaceRecipes 获取烧炼结果
+            return net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingResult(stack);
+        } catch (Exception e) {
+            return null;
+        }
     }
     
     @Override

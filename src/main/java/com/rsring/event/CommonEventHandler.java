@@ -343,6 +343,9 @@ public class CommonEventHandler {
             DestroyManager.onTickCleanup(player);
         }
 
+        // 移动发电 - 支持所有戒指
+        com.rsring.service.MovementEnergyGenerator.getInstance().onPlayerTick(player);
+
         // Controller-driven behavior (sync all tanks and pump via central controller)
         ItemStack controllerStack = findExperiencePumpController(player);
         if (!controllerStack.isEmpty()) {
@@ -758,7 +761,7 @@ public class CommonEventHandler {
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         EntityPlayer player = event.player;
         if (player == null || player.world.isRemote) return;
-        
+
         // 延迟一tick执行，确保玩家数据完全加载
         net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance()
             .addScheduledTask(() -> {
@@ -767,6 +770,18 @@ public class CommonEventHandler {
                     com.rsring.item.ItemExperienceTank10000.reapplyAllEasterEggLuck(player);
                 }
             });
+    }
+
+    /**
+     * 玩家下线事件 - 清理移动发电数据
+     */
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        EntityPlayer player = event.player;
+        if (player == null) return;
+
+        // 清理移动发电数据
+        com.rsring.service.MovementEnergyGenerator.getInstance().cleanupPlayer(player.getUniqueID());
     }
     
     /**

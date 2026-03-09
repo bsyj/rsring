@@ -41,6 +41,13 @@ public class ItemExperienceTank10000 extends ItemExperiencePump implements IBaub
     }
 
     @Override
+    public boolean hasEffect(ItemStack stack) {
+        // 彩蛋储罐显示发光附魔效果
+        IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
+        return cap != null && cap.isEasterEgg();
+    }
+
+    @Override
     public String getItemStackDisplayName(ItemStack stack) {
         IExperiencePumpCapability cap = stack.getCapability(ExperiencePumpCapability.EXPERIENCE_PUMP_CAPABILITY, null);
         if (cap != null && cap.isEasterEgg()) {
@@ -59,7 +66,6 @@ public class ItemExperienceTank10000 extends ItemExperiencePump implements IBaub
         if (cap != null && cap.isEasterEgg()) {
             tooltip.add(TextFormatting.LIGHT_PURPLE + "[ 彩蛋觉醒 ]");
             tooltip.add(TextFormatting.YELLOW + "  +5 幸运值 (装备时)");
-            tooltip.add("");
         }
 
         // 优先从 Capability 读取数据，确保获取最新的经验值

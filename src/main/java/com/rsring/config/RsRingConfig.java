@@ -35,6 +35,25 @@ public class RsRingConfig implements IHasConfig {
         public int lowEnergyWarningCooldown = 180;
         // 是否启用低电量提醒
         public boolean enableLowEnergyWarning = true;
+        // 创造模式是否不消耗电量
+        public boolean creativeModeNoEnergyCost = true;
+
+        // ==================== 移动发电配置 ====================
+        // 是否启用移动发电
+        public boolean enableMovementGeneration = true;
+        // 移动发电间隔（tick）- 微微够用
+        public int movementGenerationInterval = 20;
+        // 最小移动距离阈值 - 走2000格约吸收3组物品
+        public float movementMinDistance = 0.5f;
+        // 各种移动方式的发电量 - 微微够用
+        public int energyPerWalk = 1;      // 走路 - 微量补充
+        public int energyPerSprint = 2;    // 疾跑 - 稍微多点
+        public int energyPerFly = 2;       // 飞行 - 稍微多点
+        public int energyPerSwim = 2;      // 游泳 - 稍微多点
+        public int energyPerJump = 3;      // 跳跃 - 少量奖励
+        public int energyPerFall = 1;      // 坠落 - 微量
+        public int energyPerRide = 1;      // 骑乘 - 微量
+        public int energyPerClimb = 2;     // 攀爬 - 稍微多点
     }
     
     /**
@@ -189,7 +208,7 @@ public class RsRingConfig implements IHasConfig {
             true,
             "config.rsring.ring.enableLowEnergyWarning",
             "config.rsring.ring.enableLowEnergyWarning");
-        
+
         absorbRing.lowEnergyWarningThreshold = config.getInt("lowEnergyWarningThreshold",
             RsRingMod.MODID + ".ring",
             5,
@@ -197,7 +216,7 @@ public class RsRingConfig implements IHasConfig {
             50,
             "config.rsring.ring.lowEnergyWarningThreshold",
             "config.rsring.ring.lowEnergyWarningThreshold");
-        
+
         absorbRing.lowEnergyWarningCooldown = config.getInt("lowEnergyWarningCooldown",
             RsRingMod.MODID + ".ring",
             180,
@@ -205,6 +224,101 @@ public class RsRingConfig implements IHasConfig {
             300,
             "config.rsring.ring.lowEnergyWarningCooldown",
             "config.rsring.ring.lowEnergyWarningCooldown");
+
+        // 创造模式不消耗电量配置
+        absorbRing.creativeModeNoEnergyCost = config.getBoolean("creativeModeNoEnergyCost",
+            RsRingMod.MODID + ".ring",
+            true,
+            "config.rsring.ring.creativeModeNoEnergyCost",
+            "config.rsring.ring.creativeModeNoEnergyCost");
+
+        // ==================== 移动发电配置 ====================
+        absorbRing.enableMovementGeneration = config.getBoolean("enableMovementGeneration",
+            RsRingMod.MODID + ".ring",
+            true,
+            "config.rsring.ring.enableMovementGeneration",
+            "config.rsring.ring.enableMovementGeneration");
+
+        absorbRing.movementGenerationInterval = config.getInt("movementGenerationInterval",
+            RsRingMod.MODID + ".ring",
+            20,
+            1,
+            100,
+            "config.rsring.ring.movementGenerationInterval",
+            "config.rsring.ring.movementGenerationInterval");
+
+        absorbRing.movementMinDistance = config.getFloat("movementMinDistance",
+            RsRingMod.MODID + ".ring",
+            0.5f,
+            0.01f,
+            1.0f,
+            "config.rsring.ring.movementMinDistance",
+            "config.rsring.ring.movementMinDistance");
+
+        // 各种移动方式的发电量 - 微微够用，走2000格约吸收3组物品
+        absorbRing.energyPerWalk = config.getInt("energyPerWalk",
+            RsRingMod.MODID + ".ring",
+            1,
+            0,
+            1000,
+            "config.rsring.ring.energyPerWalk",
+            "config.rsring.ring.energyPerWalk");
+
+        absorbRing.energyPerSprint = config.getInt("energyPerSprint",
+            RsRingMod.MODID + ".ring",
+            2,
+            0,
+            1000,
+            "config.rsring.ring.energyPerSprint",
+            "config.rsring.ring.energyPerSprint");
+
+        absorbRing.energyPerFly = config.getInt("energyPerFly",
+            RsRingMod.MODID + ".ring",
+            2,
+            0,
+            1000,
+            "config.rsring.ring.energyPerFly",
+            "config.rsring.ring.energyPerFly");
+
+        absorbRing.energyPerSwim = config.getInt("energyPerSwim",
+            RsRingMod.MODID + ".ring",
+            2,
+            0,
+            1000,
+            "config.rsring.ring.energyPerSwim",
+            "config.rsring.ring.energyPerSwim");
+
+        absorbRing.energyPerJump = config.getInt("energyPerJump",
+            RsRingMod.MODID + ".ring",
+            3,
+            0,
+            1000,
+            "config.rsring.ring.energyPerJump",
+            "config.rsring.ring.energyPerJump");
+
+        absorbRing.energyPerFall = config.getInt("energyPerFall",
+            RsRingMod.MODID + ".ring",
+            1,
+            0,
+            1000,
+            "config.rsring.ring.energyPerFall",
+            "config.rsring.ring.energyPerFall");
+
+        absorbRing.energyPerRide = config.getInt("energyPerRide",
+            RsRingMod.MODID + ".ring",
+            1,
+            0,
+            1000,
+            "config.rsring.ring.energyPerRide",
+            "config.rsring.ring.energyPerRide");
+
+        absorbRing.energyPerClimb = config.getInt("energyPerClimb",
+            RsRingMod.MODID + ".ring",
+            6,
+            0,
+            1000,
+            "config.rsring.ring.energyPerClimb",
+            "config.rsring.ring.energyPerClimb");
         
         // ==================== 销毁模式配置（放在吸收戒指设置下）====================
         destroyMode.defaultBlacklistItems = config.getStringList("destroyDefaultBlacklistItems",

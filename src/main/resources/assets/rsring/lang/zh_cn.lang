@@ -48,6 +48,32 @@ config.rsring.ring.lowEnergyWarningThreshold.comment=电量低于此百分比时
 config.rsring.ring.lowEnergyWarningCooldown=低电量提醒冷却时间
 config.rsring.ring.lowEnergyWarningCooldown.comment=两次提醒之间的最小间隔秒数\n范围: 10-300，默认: 180（3分钟）
 
+# 移动发电配置
+config.rsring.ring.creativeModeNoEnergyCost=创造模式不消耗电量
+config.rsring.ring.creativeModeNoEnergyCost.comment=创造模式下戒指吸收/销毁物品不消耗电量\n方便测试使用
+config.rsring.ring.enableMovementGeneration=启用移动发电
+config.rsring.ring.enableMovementGeneration.comment=玩家移动时自动为戒指充能\n微微够用，走2000格约吸收3组物品
+config.rsring.ring.movementGenerationInterval=移动发电间隔
+config.rsring.ring.movementGenerationInterval.comment=每次发电之间的间隔刻数\n范围: 1-100，默认: 20（降低频率）
+config.rsring.ring.movementMinDistance=最小移动距离
+config.rsring.ring.movementMinDistance.comment=触发发电的最小移动距离\n范围: 0.01-1.0，默认: 0.5
+config.rsring.ring.energyPerWalk=走路发电量
+config.rsring.ring.energyPerWalk.comment=玩家走路时每段距离产生的能量\n范围: 0-1000，默认: 1（微量）
+config.rsring.ring.energyPerSprint=疾跑发电量
+config.rsring.ring.energyPerSprint.comment=玩家疾跑时每段距离产生的能量\n范围: 0-1000，默认: 2（稍微多点）
+config.rsring.ring.energyPerFly=飞行发电量
+config.rsring.ring.energyPerFly.comment=玩家飞行时每段距离产生的能量\n范围: 0-1000，默认: 2
+config.rsring.ring.energyPerSwim=游泳发电量
+config.rsring.ring.energyPerSwim.comment=玩家游泳时每段距离产生的能量\n范围: 0-1000，默认: 2
+config.rsring.ring.energyPerJump=跳跃发电量
+config.rsring.ring.energyPerJump.comment=玩家跳跃时产生的能量\n范围: 0-1000，默认: 3（少量奖励）
+config.rsring.ring.energyPerFall=坠落发电量
+config.rsring.ring.energyPerFall.comment=玩家坠落时每段距离产生的能量\n范围: 0-1000，默认: 1
+config.rsring.ring.energyPerRide=骑乘发电量
+config.rsring.ring.energyPerRide.comment=玩家骑乘时每段距离产生的能量\n范围: 0-1000，默认: 1
+config.rsring.ring.energyPerClimb=攀爬发电量
+config.rsring.ring.energyPerClimb.comment=玩家攀爬时每段距离产生的能量\n范围: 0-1000，默认: 2
+
 # 经验储罐配置
 config.rsring.tank=经验储罐设置
 config.rsring.tank.enabled=启用
@@ -226,6 +252,14 @@ item_attributes.beacon_payment=信标供品
 item_attributes.beacon_payment.inverted=非信标供品
 item_attributes.redstone_related=红石相关
 item_attributes.redstone_related.inverted=非红石相关
+item_attributes.smeltable=可熔炼
+item_attributes.smeltable.inverted=不可熔炼
+item_attributes.compostable=可堆肥
+item_attributes.compostable.inverted=不可堆肥
+
+# 创造模式标签页属性
+item_attributes.in_item_group=属于创造标签页: %s
+item_attributes.in_item_group.inverted=不属于创造标签页: %s
 
 # 标签属性
 item_attributes.in_tag=属于标签 %s
@@ -274,6 +308,52 @@ gui.rsring.match_durability.enabled=开启
 gui.rsring.match_durability.disabled=关闭
 gui.rsring.add_inverted=右键添加反转属性
 gui.rsring.add_normal=左键添加属性
+
+# 物品类型属性
+item_attributes.item_type=物品类型: %s
+item_attributes.item_type.inverted=非物品类型: %s
+
+# 潜影盒填充等级属性
+item_attributes.shulker_level=潜影盒状态: %s
+item_attributes.shulker_level.inverted=非潜影盒状态: %s
+
+# 流体内容属性
+item_attributes.has_fluid=包含流体: %s
+item_attributes.has_fluid.inverted=不包含流体: %s
+
+# 矿物词典属性
+item_attributes.ore_dict=矿物词典: %s
+item_attributes.ore_dict.inverted=非矿物词典: %s
+
+# 冒险模组属性
+item_attributes.adventure_mod=冒险模组: %s
+item_attributes.adventure_mod.inverted=非冒险模组: %s
+item_attributes.adventure_mod_monsters=怪物模组: %s
+item_attributes.adventure_mod_monsters.inverted=非怪物模组: %s
+item_attributes.adventure_mod_dungeons=地牢模组: %s
+item_attributes.adventure_mod_dungeons.inverted=非地牢模组: %s
+item_attributes.adventure_mod_dimensions=维度模组: %s
+item_attributes.adventure_mod_dimensions.inverted=非维度模组: %s
+item_attributes.adventure_mod_weapons=武器模组: %s
+item_attributes.adventure_mod_weapons.inverted=非武器模组: %s
+item_attributes.adventure_mod_quests=任务模组: %s
+item_attributes.adventure_mod_quests.inverted=非任务模组: %s
+item_attributes.adventure_mod_trinkets=饰品模组: %s
+item_attributes.adventure_mod_trinkets.inverted=非饰品模组: %s
+item_attributes.adventure_mod_exploration=探索模组: %s
+item_attributes.adventure_mod_exploration.inverted=非探索模组: %s
+item_attributes.adventure_mod_other=其他冒险模组: %s
+item_attributes.adventure_mod_other.inverted=非其他冒险模组: %s
+
+# 冒险标签属性
+item_attributes.adventure_tag_boss=Boss物品
+item_attributes.adventure_tag_boss.inverted=非Boss物品
+item_attributes.adventure_tag_elite=精英物品
+item_attributes.adventure_tag_elite.inverted=非精英物品
+item_attributes.adventure_tag_dungeon=地牢物品
+item_attributes.adventure_tag_dungeon.inverted=非地牢物品
+item_attributes.adventure_tag_explore=探索物品
+item_attributes.adventure_tag_explore.inverted=非探索物品
 
 # 行为标签属性
 item_attributes.behavior_tag=行为: %s
@@ -578,7 +658,6 @@ behavior_tag.end_crystals=末影水晶
 
 # 杂项
 behavior_tag.fireworks=烟花
-behavior_tag.music_discs=音乐唱片
 behavior_tag.maps=地图
 behavior_tag.eggs=鸡蛋
 behavior_tag.snowballs=雪球

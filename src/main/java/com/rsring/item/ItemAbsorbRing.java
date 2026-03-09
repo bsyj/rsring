@@ -114,6 +114,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabs.MISC);
     }
+
+    @Override
+    public boolean hasEffect(ItemStack stack) {
+        // 彩蛋戒指显示发光附魔效果
+        IRsRingCapability cap = stack.getCapability(RsRingCapability.RS_RING_CAPABILITY, null);
+        return cap != null && cap.isEasterEgg();
+    }
     
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
@@ -370,6 +377,38 @@ public class ItemAbsorbRing extends Item implements IBauble {
         return "吸收箱";
     }
 
+    /**
+     * 判断是否优先使用背包
+     * 根据玩家实际拥有的背包类型和对应配置决定
+     * 与buildPriorityText逻辑保持一致
+     *
+     * @param hasUsefulBackpacks 是否有实用背包
+     * @param hasWearableBackpacks 是否有可穿戴背包
+     * @return 是否优先使用背包
+     */
+    private static boolean shouldPreferBackpacks(boolean hasUsefulBackpacks, boolean hasWearableBackpacks) {
+        boolean usefulPrefer = com.rsring.config.RsRingConfig.usefulBackpacksCompat.preferBackpacks;
+        boolean wearablePrefer = com.rsring.config.RsRingConfig.wearableBackpacksCompat.preferBackpacks;
+
+        // 只有实用背包
+        if (hasUsefulBackpacks && !hasWearableBackpacks) {
+            return usefulPrefer;
+        }
+
+        // 只有可穿戴背包
+        if (!hasUsefulBackpacks && hasWearableBackpacks) {
+            return wearablePrefer;
+        }
+
+        // 两种背包都有：只要有一个配置了优先背包，就优先背包
+        if (hasUsefulBackpacks && hasWearableBackpacks) {
+            return usefulPrefer || wearablePrefer;
+        }
+
+        // 没有背包时默认不优先背包
+        return false;
+    }
+
     public static int getEnergyCostPerItem() {
         int base = com.rsring.config.RsRingConfig.absorbRing.energyCostPerItem;
         double mult = com.rsring.config.RsRingConfig.absorbRing.energyCostMultiplier;
@@ -379,6 +418,19 @@ public class ItemAbsorbRing extends Item implements IBauble {
         double cost = base * mult;
         if (cost < 1) return 1; // 最小成本为1
         return (int) Math.ceil(cost);
+    }
+
+    /**
+     * 检查是否应该消耗能量
+     * 创造模式下如果配置启用则不消耗电量
+     */
+    public static boolean shouldConsumeEnergy(EntityPlayer player) {
+        if (player == null) return true;
+        // 创造模式且启用了创造模式不消耗电量配置
+        if (player.isCreative() && com.rsring.config.RsRingConfig.absorbRing.creativeModeNoEnergyCost) {
+            return false;
+        }
+        return true;
     }
 
     private static String getDimensionName(int dim) {
@@ -730,10 +782,12 @@ public class ItemAbsorbRing extends Item implements IBauble {
     private void absorbItemsToChest(EntityPlayer player, IRsRingCapability capability) {
         if (capability == null) return;
 
-        // 检查是否启用了背包优先模式
-        boolean preferUsefulBackpacks = com.rsring.config.RsRingConfig.usefulBackpacksCompat.preferBackpacks;
-        boolean preferWearableBackpacks = com.rsring.config.RsRingConfig.wearableBackpacksCompat.preferBackpacks;
-        boolean preferBackpacks = preferUsefulBackpacks || preferWearableBackpacks;
+        // 检查玩家实际拥有的背包类型
+        boolean hasUsefulBackpacks = com.rsring.compat.usefulbackpacks.UsefulBackpacksCompat.hasBackpack(player);
+        boolean hasWearableBackpacks = com.rsring.compat.wearablebackpacks.WearableBackpacksCompat.hasEquippedBackpack(player);
+
+        // 根据实际拥有的背包类型计算优先度
+        boolean preferBackpacks = shouldPreferBackpacks(hasUsefulBackpacks, hasWearableBackpacks);
         boolean isBound = capability.isBound();
 
         // 如果没有绑定目标且没有启用任何背包兼容，直接返回
@@ -752,6 +806,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
 
         IEnergyStorage energyStorage = capability.getEnergyStorage();
         int costPerItem = getEnergyCostPerItem();
+        boolean consumeEnergy = shouldConsumeEnergy(player);
 
         // 检查玩家是否有背包模组的背包
         boolean hasBackpack = CompatManager.isAnyBackpackModAvailable() && CompatManager.hasAnyBackpack(player);
@@ -767,7 +822,8 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 // 再次检查，防止获取物品后状态变化
                 if (item.isDead) continue;
                 
-                if (costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) continue;
+                // 非创造模式或配置要求消耗能量时，检查能量是否足够
+                if (consumeEnergy && costPerItem > 0 && energyStorage.getEnergyStored() < costPerItem) continue;
 
                 // 检查销毁模式
                 if (capability.isDestroyEnabled() && shouldDestroyItem(capability, itemStack)) {
@@ -775,10 +831,10 @@ public class ItemAbsorbRing extends Item implements IBauble {
                     if (hasBackpack && capability.getDestroyModeType() == com.rsring.capability.DestroyModeType.STORAGE_OVERFLOW) {
                         // 先尝试吸收到背包，剩余物品销毁
                         // 注意：只存入背包，不存入绑定吸收箱
-                        handleItemAbsorptionForDestroyFlow(player, capability, item, itemStack, energyStorage, costPerItem);
+                        handleItemAbsorptionForDestroyFlow(player, capability, item, itemStack, energyStorage, costPerItem, consumeEnergy);
                     } else {
                         // 无背包 或 ALWAYS/SLOT_OVERFLOW模式：直接销毁
-                        handleDestroyForGroundItem(player, capability, item, itemStack, energyStorage, costPerItem);
+                        handleDestroyForGroundItem(player, capability, item, itemStack, energyStorage, costPerItem, consumeEnergy);
                     }
                     continue;
                 }
@@ -787,7 +843,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
                 if (shouldFilterItem(capability, itemStack)) continue;
 
                 // 处理物品吸收
-                handleItemAbsorption(player, capability, item, itemStack, energyStorage, costPerItem, isBound, preferBackpacks);
+                handleItemAbsorption(player, capability, item, itemStack, energyStorage, costPerItem, isBound, preferBackpacks, consumeEnergy);
             }
         }
     }
@@ -808,10 +864,11 @@ public class ItemAbsorbRing extends Item implements IBauble {
      * @param itemStack 物品堆
      * @param energyStorage 能量存储
      * @param costPerItem 每个物品的能量消耗
+     * @param consumeEnergy 是否消耗能量
      */
     private void handleDestroyForGroundItem(EntityPlayer player, IRsRingCapability capability,
                                             net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
-                                            IEnergyStorage energyStorage, int costPerItem) {
+                                            IEnergyStorage energyStorage, int costPerItem, boolean consumeEnergy) {
         int originalCount = itemStack.getCount();
         
         // 检查垃圾箱是否可访问（绑定且未被破坏）
@@ -827,7 +884,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         
         if (sentToTrash >= originalCount) {
             // 全部送入垃圾箱
-            if (costPerItem > 0) {
+            if (consumeEnergy && costPerItem > 0) {
                 energyStorage.extractEnergy(costPerItem * originalCount, false);
             }
             item.setDead();
@@ -837,7 +894,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         if (sentToTrash > 0) {
             // 部分送入垃圾箱，剩余部分销毁
             // 扣除全部物品的能量（送入垃圾箱的 + 销毁的）
-            if (costPerItem > 0) {
+            if (consumeEnergy && costPerItem > 0) {
                 energyStorage.extractEnergy(costPerItem * originalCount, false);
             }
             item.setDead();
@@ -845,7 +902,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
         }
         
         // 未绑定垃圾箱或垃圾箱满了，真正销毁
-        if (costPerItem > 0) {
+        if (consumeEnergy && costPerItem > 0) {
             energyStorage.extractEnergy(costPerItem * originalCount, false);
         }
         item.setDead();
@@ -858,10 +915,13 @@ public class ItemAbsorbRing extends Item implements IBauble {
     private void handleItemAbsorption(EntityPlayer player, IRsRingCapability capability,
                                       net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
                                       IEnergyStorage energyStorage, int costPerItem,
-                                      boolean isBound, boolean preferBackpacks) {
+                                      boolean isBound, boolean preferBackpacks, boolean consumeEnergy) {
         int originalCount = itemStack.getCount();
         
-        int maxAffordable = costPerItem > 0 ? Math.max(1, energyStorage.getEnergyStored() / costPerItem) : Integer.MAX_VALUE;
+        // 创造模式下不检查能量，可以吸收所有物品
+        int maxAffordable = (!consumeEnergy || costPerItem <= 0) 
+            ? Integer.MAX_VALUE 
+            : Math.max(1, energyStorage.getEnergyStored() / costPerItem);
         int attemptCount = Math.min(originalCount, maxAffordable);
         ItemStack attemptStack = itemStack.copy();
         attemptStack.setCount(attemptCount);
@@ -915,11 +975,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
             inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, false);
         }
 
-        if (inserted > 0) {
-            if (costPerItem > 0) {
-                int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
-                energyStorage.extractEnergy(energyToUse, false);
-            }
+        if (inserted > 0 && consumeEnergy && costPerItem > 0) {
+            int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
+            energyStorage.extractEnergy(energyToUse, false);
         }
 
         // 处理剩余物品：保留在地上
@@ -939,9 +997,12 @@ public class ItemAbsorbRing extends Item implements IBauble {
      */
     private void handleItemAbsorptionForDestroyFlow(EntityPlayer player, IRsRingCapability capability,
                                                      net.minecraft.entity.item.EntityItem item, ItemStack itemStack,
-                                                     IEnergyStorage energyStorage, int costPerItem) {
+                                                     IEnergyStorage energyStorage, int costPerItem, boolean consumeEnergy) {
         int originalCount = itemStack.getCount();
-        int maxAffordable = costPerItem > 0 ? Math.max(1, energyStorage.getEnergyStored() / costPerItem) : Integer.MAX_VALUE;
+        // 创造模式下不检查能量
+        int maxAffordable = (!consumeEnergy || costPerItem <= 0)
+            ? Integer.MAX_VALUE
+            : Math.max(1, energyStorage.getEnergyStored() / costPerItem);
         int attemptCount = Math.min(originalCount, maxAffordable);
         ItemStack attemptStack = itemStack.copy();
         attemptStack.setCount(attemptCount);
@@ -949,11 +1010,9 @@ public class ItemAbsorbRing extends Item implements IBauble {
         // 只尝试存入背包
         int inserted = CompatManager.absorbToAnyBackpack(player, attemptStack, capability, false);
 
-        if (inserted > 0) {
-            if (costPerItem > 0) {
-                int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
-                energyStorage.extractEnergy(energyToUse, false);
-            }
+        if (inserted > 0 && consumeEnergy && costPerItem > 0) {
+            int energyToUse = Math.min(energyStorage.getEnergyStored(), inserted * costPerItem);
+            energyStorage.extractEnergy(energyToUse, false);
         }
 
         // 处理剩余物品：直接销毁
@@ -964,7 +1023,7 @@ public class ItemAbsorbRing extends Item implements IBauble {
             // 销毁剩余物品
             ItemStack remainingStack = itemStack.copy();
             remainingStack.setCount(remaining);
-            handleDestroyForGroundItem(player, capability, item, remainingStack, energyStorage, costPerItem);
+            handleDestroyForGroundItem(player, capability, item, remainingStack, energyStorage, costPerItem, consumeEnergy);
         }
     }
 

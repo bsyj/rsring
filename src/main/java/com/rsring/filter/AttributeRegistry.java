@@ -14,26 +14,30 @@ public class AttributeRegistry {
      * 初始化并注册所有属性类型
      */
     public static void init() {
-        // 注册内置属性类型（ItemAttribute接口中的内部类）
-        ItemAttribute.register(new ItemAttribute.InTag());
-        // 注意：AddedBy已被ModAttribute替代，两者功能相同
-        
         // 注册标准特性 - 只需注册一个代理，因为StandardTraits使用统一的NBT键
         // readNBT会根据写入的枚举名称返回正确的trait
         ItemAttribute.register(StandardTraits.DUMMY);
-        
+
         // 注册行为标签属性（模拟 1.20.x 的 minecraft:piglin_loved 等）
         ItemAttribute.register(new BehaviorTagAttribute());
-        
+
         // 注册其他属性（参考机械动力）
-        ItemAttribute.register(new ModAttribute());
-        ItemAttribute.register(new NbtAttribute());
-        ItemAttribute.register(new EnchantAttribute());
-        ItemAttribute.register(new ColorAttribute());
-        ItemAttribute.register(new ItemNameAttribute());
-        ItemAttribute.register(new BookAuthorAttribute());
-        ItemAttribute.register(new BookCopyAttribute());
-        ItemAttribute.register(new OreDictAttribute());
+        ItemAttribute.register(new ModAttribute());        // 模组来源
+        ItemAttribute.register(new CreativeTabAttribute()); // 创造模式标签页
+        ItemAttribute.register(new OreDictAttribute());    // 矿物词典标签
+        ItemAttribute.register(new NbtAttribute());        // NBT数据
+        ItemAttribute.register(new EnchantAttribute());    // 附魔
+        ItemAttribute.register(new ColorAttribute());      // 颜色
+        ItemAttribute.register(new ItemNameAttribute());   // 物品自定义名称
+        ItemAttribute.register(new ItemTypeAttribute());   // 物品类型名称
+        ItemAttribute.register(new BookAuthorAttribute()); // 书籍作者
+        ItemAttribute.register(new BookCopyAttribute());   // 书籍复制状态
+        ItemAttribute.register(new FluidContentsAttribute()); // 流体内容
+        ItemAttribute.register(new ShulkerFillLevelAttribute()); // 潜影盒填充等级
+
+        // 注册冒险模组相关属性
+        ItemAttribute.register(new AdventureModAttribute()); // 冒险模组分类
+        ItemAttribute.register(new AdventureItemTags());     // 冒险物品标签
     }
     
     /**
